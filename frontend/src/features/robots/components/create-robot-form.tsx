@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 
 import { schemas } from "@/lib/api/generated/api";
 
+import { useRobotTypeLabel } from "@/shared/hooks/use-status-labels";
+import { ROBOT_TYPE } from "@/shared/lib/status-constants";
 import { Button } from "@/shared/ui/button";
 import {
   Form,
@@ -37,6 +39,7 @@ interface CreateRobotFormProps {
 
 export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
   const { t } = useTranslation();
+  const getRobotTypeLabel = useRobotTypeLabel();
   const { mutate, isPending } = useCreateRobotMutation();
 
   // Fetch sites and locations for dropdowns
@@ -65,7 +68,7 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
       name: "",
       organization_id: meData?.organization_id ?? undefined,
       location_id: undefined,
-      robot_type: undefined,
+      robot_type: ROBOT_TYPE.YUBI,
       robot_config: undefined,
     },
   });
@@ -179,10 +182,20 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
             <FormItem>
               <FormLabel>{t("robotForm.robotType")}</FormLabel>
               <FormControl>
-                <Input
-                  placeholder={t("robotForm.robotTypePlaceholder")}
-                  {...field}
-                  value={field.value || ""}
+                <SearchableSelect
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                  options={[
+                    {
+                      value: ROBOT_TYPE.YUBI,
+                      label: getRobotTypeLabel(ROBOT_TYPE.YUBI),
+                    },
+                    {
+                      value: ROBOT_TYPE.YUBI_PORTABLE,
+                      label: getRobotTypeLabel(ROBOT_TYPE.YUBI_PORTABLE),
+                    },
+                  ]}
+                  placeholder={t("robotForm.selectRobotType")}
                 />
               </FormControl>
               <FormMessage />

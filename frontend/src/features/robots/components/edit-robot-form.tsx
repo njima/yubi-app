@@ -7,7 +7,8 @@ import { useTranslation } from "react-i18next";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { ROBOT_STATUS } from "@/shared/lib/status-constants";
+import { useRobotTypeLabel } from "@/shared/hooks/use-status-labels";
+import { ROBOT_STATUS, ROBOT_TYPE } from "@/shared/lib/status-constants";
 import { Button } from "@/shared/ui/button";
 import {
   Form,
@@ -48,6 +49,7 @@ export function EditRobotForm({
   onCancel,
 }: EditRobotFormProps) {
   const { t } = useTranslation();
+  const getRobotTypeLabel = useRobotTypeLabel();
   const { mutate, isPending } = useUpdateRobotMutation();
 
   // Auto-select site from robot's current location
@@ -93,7 +95,11 @@ export function EditRobotForm({
       name: defaultValues.name,
       organization_id: defaultValues.organization_id,
       location_id: defaultValues.location_id,
-      robot_type: defaultValues.robot_type,
+      robot_type:
+        defaultValues.robot_type === ROBOT_TYPE.YUBI ||
+        defaultValues.robot_type === ROBOT_TYPE.YUBI_PORTABLE
+          ? defaultValues.robot_type
+          : "",
       leader_status: defaultValues.leader_status,
       status: defaultStatus,
       last_heartbeat_at: defaultValues.last_heartbeat_at,
@@ -118,8 +124,17 @@ export function EditRobotForm({
       }
     }
 
+    const payload: RobotUpdate = {
+      ...data,
+      robot_type:
+        data.robot_type === ROBOT_TYPE.YUBI ||
+        data.robot_type === ROBOT_TYPE.YUBI_PORTABLE
+          ? data.robot_type
+          : undefined,
+    };
+
     mutate(
-      { robotId, data },
+      { robotId, data: payload },
       {
         onSuccess: () => {
           setRobotConfigError("");
@@ -208,10 +223,20 @@ export function EditRobotForm({
             <FormItem>
               <FormLabel>{t("robotForm.robotType")}</FormLabel>
               <FormControl>
-                <Input
-                  placeholder={t("robotForm.robotTypePlaceholder")}
-                  {...field}
-                  value={field.value || ""}
+                <SearchableSelect
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                  options={[
+                    {
+                      value: ROBOT_TYPE.YUBI,
+                      label: getRobotTypeLabel(ROBOT_TYPE.YUBI),
+                    },
+                    {
+                      value: ROBOT_TYPE.YUBI_PORTABLE,
+                      label: getRobotTypeLabel(ROBOT_TYPE.YUBI_PORTABLE),
+                    },
+                  ]}
+                  placeholder={t("robotForm.selectRobotType")}
                 />
               </FormControl>
               <FormMessage />

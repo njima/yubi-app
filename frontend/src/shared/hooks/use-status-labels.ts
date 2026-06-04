@@ -12,6 +12,8 @@ import {
   type EpisodeCollectionStatusValue,
   ROBOT_STATUS,
   type RobotStatusValue,
+  ROBOT_TYPE,
+  type RobotTypeValue,
   SUBTASK_STATUS,
   type SubTaskStatusValue,
   TASK_PRIORITY,
@@ -66,6 +68,24 @@ export function useRobotStatusLabel() {
         return t("status.ready");
       default:
         return t("status.unknown");
+    }
+  };
+}
+
+/**
+ * Hook to get robot type label
+ */
+export function useRobotTypeLabel() {
+  const { t } = useTranslation();
+
+  return (type: RobotTypeValue): string => {
+    switch (type) {
+      case ROBOT_TYPE.YUBI:
+        return t("robotForm.robotTypeYubi");
+      case ROBOT_TYPE.YUBI_PORTABLE:
+        return t("robotForm.robotTypeYubiPortable");
+      default:
+        return type;
     }
   };
 }

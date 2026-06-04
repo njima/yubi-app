@@ -199,6 +199,8 @@ const Robot = z
     id: z.string(),
     organization_id: z.string().optional(),
     organization_name: z.string().optional(),
+    site_id: z.string().optional(),
+    site_name: z.string().optional(),
     location_id: z.string().optional(),
     location_name: z.string().optional(),
     name: z.string(),
