@@ -9,7 +9,7 @@ RUN apk --no-cache add curl && \
 # ========================================
 # Build Stage
 # ========================================
-FROM --platform=$BUILDPLATFORM golang:1.25.10-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25.11-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates tzdata
