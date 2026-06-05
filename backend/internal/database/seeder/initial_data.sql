@@ -53,7 +53,7 @@ VALUES (
     '7bfbe942-5fd6-4525-ac13-0356147c202b',
     '91154897-df4b-4b39-8c4c-b48daf4a3b37',
     'Sample Robot',
-    'yubi',
+    'yubi-stationary',
     5,
     '{"host": "localhost", "port": 9090, "cameras": [{"namespace": "camera_0", "name": "Front Camera"}]}'::jsonb
 ) ON CONFLICT (id_natural) DO NOTHING;

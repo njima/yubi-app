@@ -39,7 +39,7 @@ export type RobotStatusValue = (typeof ROBOT_STATUS)[keyof typeof ROBOT_STATUS];
  * Identifies the robot model.
  */
 export const ROBOT_TYPE = {
-  YUBI: "yubi",
+  YUBI_STATIONARY: "yubi-stationary",
   YUBI_PORTABLE: "yubi-portable",
 } as const;
 

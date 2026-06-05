@@ -1,9 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
@@ -30,10 +31,18 @@ import {
 import { useUpdateRobotMutation } from "@/features/robots/hooks/use-update-robot-mutation";
 import { useSiteSearchOptions } from "@/features/sites";
 
-import type { z } from "zod";
-
 type Robot = z.infer<typeof schemas.Robot>;
-type RobotUpdate = z.infer<typeof schemas.RobotUpdate>;
+
+function buildUpdateRobotSchema(t: (key: string) => string) {
+  return schemas.RobotUpdate.extend({
+    robot_type: z.enum(
+      [ROBOT_TYPE.YUBI_STATIONARY, ROBOT_TYPE.YUBI_PORTABLE],
+      { errorMap: () => ({ message: t("robotForm.robotTypeRequired") }) }
+    ),
+  });
+}
+
+type RobotUpdateInput = z.infer<ReturnType<typeof buildUpdateRobotSchema>>;
 
 interface EditRobotFormProps {
   robotId: string;
@@ -89,17 +98,19 @@ export function EditRobotForm({
     return s;
   })();
 
-  const form = useForm<RobotUpdate>({
-    resolver: zodResolver(schemas.RobotUpdate),
+  const updateRobotSchema = useMemo(() => buildUpdateRobotSchema(t), [t]);
+
+  const form = useForm<RobotUpdateInput>({
+    resolver: zodResolver(updateRobotSchema),
     defaultValues: {
       name: defaultValues.name,
       organization_id: defaultValues.organization_id,
       location_id: defaultValues.location_id,
       robot_type:
-        defaultValues.robot_type === ROBOT_TYPE.YUBI ||
+        defaultValues.robot_type === ROBOT_TYPE.YUBI_STATIONARY ||
         defaultValues.robot_type === ROBOT_TYPE.YUBI_PORTABLE
           ? defaultValues.robot_type
-          : "",
+          : undefined,
       leader_status: defaultValues.leader_status,
       status: defaultStatus,
       last_heartbeat_at: defaultValues.last_heartbeat_at,
@@ -108,7 +119,7 @@ export function EditRobotForm({
     },
   });
 
-  const onSubmit = (data: RobotUpdate) => {
+  const onSubmit = (data: RobotUpdateInput) => {
     const robotConfigValue = form.getValues("robot_config") as unknown;
     if (typeof robotConfigValue === "string") {
       if (robotConfigValue === "") {
@@ -124,17 +135,8 @@ export function EditRobotForm({
       }
     }
 
-    const payload: RobotUpdate = {
-      ...data,
-      robot_type:
-        data.robot_type === ROBOT_TYPE.YUBI ||
-        data.robot_type === ROBOT_TYPE.YUBI_PORTABLE
-          ? data.robot_type
-          : undefined,
-    };
-
     mutate(
-      { robotId, data: payload },
+      { robotId, data },
       {
         onSuccess: () => {
           setRobotConfigError("");
@@ -228,8 +230,8 @@ export function EditRobotForm({
                   onValueChange={field.onChange}
                   options={[
                     {
-                      value: ROBOT_TYPE.YUBI,
-                      label: getRobotTypeLabel(ROBOT_TYPE.YUBI),
+                      value: ROBOT_TYPE.YUBI_STATIONARY,
+                      label: getRobotTypeLabel(ROBOT_TYPE.YUBI_STATIONARY),
                     },
                     {
                       value: ROBOT_TYPE.YUBI_PORTABLE,

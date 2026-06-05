@@ -80,8 +80,8 @@ export function useRobotTypeLabel() {
 
   return (type: RobotTypeValue): string => {
     switch (type) {
-      case ROBOT_TYPE.YUBI:
-        return t("robotForm.robotTypeYubi");
+      case ROBOT_TYPE.YUBI_STATIONARY:
+        return t("robotForm.robotTypeYubiStationary");
       case ROBOT_TYPE.YUBI_PORTABLE:
         return t("robotForm.robotTypeYubiPortable");
       default:

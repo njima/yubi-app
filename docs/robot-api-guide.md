@@ -131,7 +131,7 @@ curl -H "X-API-Key: ${API_KEY}" \
 {
   "id": "c2f8e62b-ea23-4a50-8660-d707e4d5c2bc",
   "name": "Sample Robot",
-  "robot_type": "yubi",
+  "robot_type": "yubi-stationary",
   "status": 0,
   "organization_id": "7bfbe942-5fd6-4525-ac13-0356147c202b",
   "organization_name": "Sample Organization",
@@ -393,7 +393,7 @@ curl -X PUT \
   -H "X-API-Key: ${API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
-    "robot_type": "yubi",
+    "robot_type": "yubi-stationary",
     "reported_at": "2026-01-01T10:00:00Z",
     "status": {
       "battery": {"pct": 85, "charging": false},
@@ -407,7 +407,7 @@ curl -X PUT \
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `robot_type` | Yes | Robot type identifier (`yubi` or `yubi-portable`) |
+| `robot_type` | Yes | Robot type identifier (`yubi-stationary` or `yubi-portable`) |
 | `reported_at` | Yes | Timestamp of the status report (RFC 3339) |
 | `status` | Yes | `RobotStatusDetail` object (see below) |
 
