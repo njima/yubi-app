@@ -35,6 +35,17 @@ export const ROBOT_STATUS = {
 export type RobotStatusValue = (typeof ROBOT_STATUS)[keyof typeof ROBOT_STATUS];
 
 /**
+ * Robot Type
+ * Identifies the robot model.
+ */
+export const ROBOT_TYPE = {
+  YUBI_STATIONARY: "yubi-stationary",
+  YUBI_PORTABLE: "yubi-portable",
+} as const;
+
+export type RobotTypeValue = (typeof ROBOT_TYPE)[keyof typeof ROBOT_TYPE];
+
+/**
  * Leader Status
  * Represents the operational state of a robot's leader component
  */

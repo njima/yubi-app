@@ -1,12 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
+import { useRobotTypeLabel } from "@/shared/hooks/use-status-labels";
+import { ROBOT_TYPE } from "@/shared/lib/status-constants";
 import { Button } from "@/shared/ui/button";
 import {
   Form,
@@ -26,9 +29,15 @@ import { useCreateRobotMutation } from "@/features/robots/hooks/use-create-robot
 import { useSiteSearchOptions } from "@/features/sites";
 import { useMeQuery } from "@/features/users";
 
-import type { z } from "zod";
+function buildCreateRobotSchema(t: (key: string) => string) {
+  return schemas.RobotCreate.extend({
+    robot_type: z.enum([ROBOT_TYPE.YUBI_STATIONARY, ROBOT_TYPE.YUBI_PORTABLE], {
+      errorMap: () => ({ message: t("robotForm.robotTypeRequired") }),
+    }),
+  });
+}
 
-type RobotCreate = z.infer<typeof schemas.RobotCreate>;
+type RobotCreateInput = z.infer<ReturnType<typeof buildCreateRobotSchema>>;
 
 interface CreateRobotFormProps {
   onSuccess?: () => void;
@@ -37,6 +46,7 @@ interface CreateRobotFormProps {
 
 export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
   const { t } = useTranslation();
+  const getRobotTypeLabel = useRobotTypeLabel();
   const { mutate, isPending } = useCreateRobotMutation();
 
   // Fetch sites and locations for dropdowns
@@ -59,13 +69,15 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
 
   const [robotConfigError, setRobotConfigError] = useState<string>("");
 
-  const form = useForm<RobotCreate>({
-    resolver: zodResolver(schemas.RobotCreate),
+  const createRobotSchema = useMemo(() => buildCreateRobotSchema(t), [t]);
+
+  const form = useForm<RobotCreateInput>({
+    resolver: zodResolver(createRobotSchema),
     defaultValues: {
       name: "",
       organization_id: meData?.organization_id ?? undefined,
       location_id: undefined,
-      robot_type: undefined,
+      robot_type: ROBOT_TYPE.YUBI_STATIONARY,
       robot_config: undefined,
     },
   });
@@ -76,7 +88,7 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
     }
   }, [meData?.organization_id, form]);
 
-  const onSubmit = (data: RobotCreate) => {
+  const onSubmit = (data: RobotCreateInput) => {
     const robotConfigValue = form.getValues("robot_config") as unknown;
     if (typeof robotConfigValue === "string") {
       if (robotConfigValue === "") {
@@ -179,10 +191,20 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
             <FormItem>
               <FormLabel>{t("robotForm.robotType")}</FormLabel>
               <FormControl>
-                <Input
-                  placeholder={t("robotForm.robotTypePlaceholder")}
-                  {...field}
-                  value={field.value || ""}
+                <SearchableSelect
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                  options={[
+                    {
+                      value: ROBOT_TYPE.YUBI_STATIONARY,
+                      label: getRobotTypeLabel(ROBOT_TYPE.YUBI_STATIONARY),
+                    },
+                    {
+                      value: ROBOT_TYPE.YUBI_PORTABLE,
+                      label: getRobotTypeLabel(ROBOT_TYPE.YUBI_PORTABLE),
+                    },
+                  ]}
+                  placeholder={t("robotForm.selectRobotType")}
                 />
               </FormControl>
               <FormMessage />
