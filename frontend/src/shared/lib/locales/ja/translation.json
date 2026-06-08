@@ -565,8 +565,10 @@
     "offlineReason": "オフライン理由",
     "offlineReasonPlaceholder": "ロボットがオフラインの場合は理由を入力",
     "offlineReasonDescription": "ロボットがオフラインである理由を説明してください",
-    "robotConfig": "ロボット設定（JSON）",
-    "robotConfigDescription": "カメラを含むロボット設定の有効なJSONを入力してください",
+    "host": "Host IP",
+    "hostDescription": "ロボットの IP アドレス / ホスト名",
+    "advancedSettings": "高度な設定（JSON）",
+    "advancedSettingsDescription": "追加のロボット設定（port、cameras 等）を有効な JSON で入力してください。",
     "invalidJson": "JSONの形式が無効です",
     "createRobot": "ロボットを作成",
     "updateRobot": "ロボットを更新"
@@ -909,7 +911,8 @@
   "validation": {
     "manualUrlRequired": "マニュアルURLは必須です",
     "manualUrlHttps": "マニュアルURLは https:// で始める必要があります",
-    "deadlineRequired": "期限は必須です"
+    "deadlineRequired": "期限は必須です",
+    "hostRequired": "Host IP は必須です"
   },
   "pagination": {
     "total": "合計: {{count}} {{label}}",

@@ -29,6 +29,10 @@ import {
   useLocationQuery,
 } from "@/features/locations";
 import { useUpdateRobotMutation } from "@/features/robots/hooks/use-update-robot-mutation";
+import {
+  mergeRobotConfigWithHost,
+  splitHostFromRobotConfig,
+} from "@/features/robots/lib/robot-config-utils";
 import { useSiteSearchOptions } from "@/features/sites";
 
 type Robot = z.infer<typeof schemas.Robot>;
@@ -38,6 +42,7 @@ function buildUpdateRobotSchema(t: (key: string) => string) {
     robot_type: z.enum([ROBOT_TYPE.YUBI_STATIONARY, ROBOT_TYPE.YUBI_PORTABLE], {
       errorMap: () => ({ message: t("robotForm.robotTypeRequired") }),
     }),
+    host: z.string().min(1, t("validation.hostRequired")),
   });
 }
 
@@ -99,6 +104,9 @@ export function EditRobotForm({
 
   const updateRobotSchema = useMemo(() => buildUpdateRobotSchema(t), [t]);
 
+  const { host: existingHost, advancedSettings: defaultRobotConfig } =
+    splitHostFromRobotConfig(defaultValues.robot_config);
+
   const form = useForm<RobotUpdateInput>({
     resolver: zodResolver(updateRobotSchema),
     defaultValues: {
@@ -114,30 +122,24 @@ export function EditRobotForm({
       status: defaultStatus,
       last_heartbeat_at: defaultValues.last_heartbeat_at,
       offline_reason: defaultValues.offline_reason,
-      robot_config: defaultValues.robot_config,
+      host: existingHost,
+      robot_config: defaultRobotConfig,
     },
   });
 
   const onSubmit = (data: RobotUpdateInput) => {
-    const robotConfigValue = form.getValues("robot_config") as unknown;
-    if (typeof robotConfigValue === "string") {
-      if (robotConfigValue === "") {
-        setRobotConfigError("");
-      } else {
-        try {
-          JSON.parse(robotConfigValue);
-          setRobotConfigError("");
-        } catch {
-          setRobotConfigError(t("robotForm.invalidJson"));
-          return;
-        }
-      }
+    const { host, robot_config, ...rest } = data;
+    const merged = mergeRobotConfigWithHost(robot_config, host);
+    if (!merged) {
+      setRobotConfigError(t("robotForm.invalidJson"));
+      return;
     }
 
     mutate(
-      { robotId, data },
+      { robotId, data: { ...rest, robot_config: merged } },
       {
         onSuccess: () => {
+          // Textarea isn't disabled during mutate; clear any stale "Invalid JSON" error.
           setRobotConfigError("");
           onSuccess?.();
         },
@@ -355,16 +357,34 @@ export function EditRobotForm({
           )}
         />
 
+        {/* Host */}
+        <FormField
+          control={form.control}
+          name="host"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("robotForm.host")}</FormLabel>
+              <FormControl>
+                <Input placeholder="192.168.1.101" {...field} />
+              </FormControl>
+              <FormDescription>
+                {t("robotForm.hostDescription")}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* Robot Config */}
         <FormField
           control={form.control}
           name="robot_config"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("robotForm.robotConfig")}</FormLabel>
+              <FormLabel>{t("robotForm.advancedSettings")}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder='{"host": "192.168.1.101", "port": 9090, "cameras": [{"namespace": "camera_0", "name": "Front"}]}'
+                  placeholder='{"port": 9090, "cameras": [{"namespace": "camera_0", "name": "Front"}]}'
                   className="font-mono text-sm"
                   rows={4}
                   {...field}
@@ -399,7 +419,7 @@ export function EditRobotForm({
                 </p>
               )}
               <FormDescription>
-                {t("robotForm.robotConfigDescription")}
+                {t("robotForm.advancedSettingsDescription")}
               </FormDescription>
               <FormMessage />
             </FormItem>

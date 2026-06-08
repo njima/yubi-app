@@ -26,6 +26,7 @@ import { Textarea } from "@/shared/ui/textarea";
 
 import { useLocationSearchOptions } from "@/features/locations";
 import { useCreateRobotMutation } from "@/features/robots/hooks/use-create-robot-mutation";
+import { mergeRobotConfigWithHost } from "@/features/robots/lib/robot-config-utils";
 import { useSiteSearchOptions } from "@/features/sites";
 import { useMeQuery } from "@/features/users";
 
@@ -34,6 +35,7 @@ function buildCreateRobotSchema(t: (key: string) => string) {
     robot_type: z.enum([ROBOT_TYPE.YUBI_STATIONARY, ROBOT_TYPE.YUBI_PORTABLE], {
       errorMap: () => ({ message: t("robotForm.robotTypeRequired") }),
     }),
+    host: z.string().min(1, t("validation.hostRequired")),
   });
 }
 
@@ -78,6 +80,7 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
       organization_id: meData?.organization_id ?? undefined,
       location_id: undefined,
       robot_type: ROBOT_TYPE.YUBI_STATIONARY,
+      host: "",
       robot_config: undefined,
     },
   });
@@ -89,28 +92,24 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
   }, [meData?.organization_id, form]);
 
   const onSubmit = (data: RobotCreateInput) => {
-    const robotConfigValue = form.getValues("robot_config") as unknown;
-    if (typeof robotConfigValue === "string") {
-      if (robotConfigValue === "") {
-        setRobotConfigError("");
-      } else {
-        try {
-          JSON.parse(robotConfigValue);
-          setRobotConfigError("");
-        } catch {
-          setRobotConfigError(t("robotForm.invalidJson"));
-          return;
-        }
-      }
+    const { host, robot_config, ...rest } = data;
+    const mergedRobotConfig = mergeRobotConfigWithHost(robot_config, host);
+    if (!mergedRobotConfig) {
+      setRobotConfigError(t("robotForm.invalidJson"));
+      return;
     }
 
-    mutate(data, {
-      onSuccess: () => {
-        form.reset();
-        setRobotConfigError("");
-        onSuccess?.();
-      },
-    });
+    mutate(
+      { ...rest, robot_config: mergedRobotConfig },
+      {
+        onSuccess: () => {
+          form.reset();
+          // Textarea isn't disabled during mutate; clear any stale "Invalid JSON" error.
+          setRobotConfigError("");
+          onSuccess?.();
+        },
+      }
+    );
   };
 
   return (
@@ -236,16 +235,34 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
           )}
         />
 
+        {/* Host */}
+        <FormField
+          control={form.control}
+          name="host"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("robotForm.host")}</FormLabel>
+              <FormControl>
+                <Input placeholder="192.168.1.101" {...field} />
+              </FormControl>
+              <FormDescription>
+                {t("robotForm.hostDescription")}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* Robot Config */}
         <FormField
           control={form.control}
           name="robot_config"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("robotForm.robotConfig")}</FormLabel>
+              <FormLabel>{t("robotForm.advancedSettings")}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder='{"host": "192.168.1.101", "port": 9090, "cameras": [{"namespace": "camera_0", "name": "Front"}]}'
+                  placeholder='{"port": 9090, "cameras": [{"namespace": "camera_0", "name": "Front"}]}'
                   className="font-mono text-sm"
                   rows={4}
                   {...field}
@@ -280,7 +297,7 @@ export function CreateRobotForm({ onSuccess, onCancel }: CreateRobotFormProps) {
                 </p>
               )}
               <FormDescription>
-                {t("robotForm.robotConfigDescription")}
+                {t("robotForm.advancedSettingsDescription")}
               </FormDescription>
               <FormMessage />
             </FormItem>

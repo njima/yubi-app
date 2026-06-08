@@ -565,8 +565,10 @@
     "offlineReason": "Offline Reason",
     "offlineReasonPlaceholder": "Enter reason if robot is offline",
     "offlineReasonDescription": "Explain why the robot is offline",
-    "robotConfig": "Robot Config (JSON)",
-    "robotConfigDescription": "Enter valid JSON configuration for robot settings including camera",
+    "host": "Host IP",
+    "hostDescription": "Robot's IP address or hostname",
+    "advancedSettings": "Advanced Settings (JSON)",
+    "advancedSettingsDescription": "Enter valid JSON configuration for additional robot settings (port, cameras, etc.).",
     "invalidJson": "Invalid JSON format",
     "createRobot": "Create Robot",
     "updateRobot": "Update Robot"
@@ -909,7 +911,8 @@
   "validation": {
     "manualUrlRequired": "Manual URL is required",
     "manualUrlHttps": "Manual URL must start with https://",
-    "deadlineRequired": "Deadline is required"
+    "deadlineRequired": "Deadline is required",
+    "hostRequired": "Host IP is required"
   },
   "pagination": {
     "total": "Total: {{count}} {{label}}",
