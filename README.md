@@ -1,5 +1,7 @@
 # Yubi App
 
+[日本語版 README](README.ja.md)
+
 A web platform for collecting, processing, and managing teleoperation data from robot fleets. Built with Go (backend) and Next.js (frontend).
 
 ## Project Structure

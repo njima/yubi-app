@@ -48,6 +48,9 @@ go.work.sum
 # Claude Code
 .claude/
 
+# Agent-local instructions
+AGENTS.md
+
 
 backend/tmp
 
