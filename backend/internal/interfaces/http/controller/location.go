@@ -16,8 +16,8 @@ func (c *controller) ListLocations(ctx context.Context, request openapi.ListLoca
 	filter := repository.LocationListFilter{
 		SiteID:    request.Params.SiteId,
 		Search:    request.Params.Search,
-		SortBy:    request.Params.SortBy,
-		SortOrder: request.Params.SortOrder,
+		SortBy:    locationSortBy(request.Params.SortBy),
+		SortOrder: sortOrder(request.Params.SortOrder),
 	}
 
 	locs, total, err := c.locationUsecase.List(ctx, filter, pg.Page, pg.Limit)

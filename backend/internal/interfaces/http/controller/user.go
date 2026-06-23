@@ -62,8 +62,8 @@ func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersReq
 
 	filter := repository.UserListFilter{
 		Search:    params.Search,
-		SortBy:    params.SortBy,
-		SortOrder: params.SortOrder,
+		SortBy:    userSortBy(params.SortBy),
+		SortOrder: sortOrder(params.SortOrder),
 	}
 	if params.LocationId != nil && *params.LocationId != "" {
 		filter.LocationID = params.LocationId

@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 type LocationListFilter struct {
 	SiteID    *string
 	Search    *string
-	SortBy    *openapi.ListLocationsParamsSortBy
-	SortOrder *openapi.ListLocationsParamsSortOrder
+	SortBy    *LocationSortBy
+	SortOrder *SortOrder
 }
 
 type Location interface {

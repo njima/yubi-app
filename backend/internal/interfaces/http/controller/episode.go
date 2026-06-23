@@ -221,8 +221,8 @@ func (c *controller) ListEpisodes(ctx context.Context, request openapi.ListEpiso
 		UserID:        request.Params.UserId,
 		StartedAtFrom: fromT,
 		StartedAtTo:   toT,
-		SortBy:        request.Params.SortBy,
-		SortOrder:     request.Params.SortOrder,
+		SortBy:        episodeSortBy(request.Params.SortBy),
+		SortOrder:     sortOrder(request.Params.SortOrder),
 	}
 	if request.Params.Status != nil {
 		filter.Statuses = *request.Params.Status
