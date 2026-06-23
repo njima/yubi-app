@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/airoa-org/yubi-app/backend/internal/gateway"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/storage"
 	"github.com/airoa-org/yubi-app/backend/internal/redis"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
@@ -52,24 +52,24 @@ func newRepositories(redisClient *redis.Client, s3Client *s3client.Client) repos
 
 func newDatabaseRepositories() databaseRepositories {
 	return databaseRepositories{
-		User:                    gateway.NewUser(),
-		UserLocation:            gateway.NewUserLocation(),
-		UserSite:                gateway.NewUserSite(),
-		Organization:            gateway.NewOrganization(),
-		Site:                    gateway.NewSite(),
-		Location:                gateway.NewLocation(),
-		Robot:                   gateway.NewRobot(),
-		Task:                    gateway.NewTask(),
-		TaskTag:                 gateway.NewTaskTag(),
-		TaskVersion:             gateway.NewTaskVersion(),
-		SubTask:                 gateway.NewSubTask(),
-		Episode:                 gateway.NewEpisode(),
-		EpisodeGrade:            gateway.NewEpisodeGrade(),
-		EpisodeSubTask:          gateway.NewEpisodeSubTask(),
-		EpisodeSubTaskExecution: gateway.NewEpisodeSubTaskExecution(),
-		APIKey:                  gateway.NewAPIKey(),
-		OperatorYield:           gateway.NewOperatorYield(),
-		Fleet:                   gateway.NewFleet(),
+		User:                    persistence.NewUser(),
+		UserLocation:            persistence.NewUserLocation(),
+		UserSite:                persistence.NewUserSite(),
+		Organization:            persistence.NewOrganization(),
+		Site:                    persistence.NewSite(),
+		Location:                persistence.NewLocation(),
+		Robot:                   persistence.NewRobot(),
+		Task:                    persistence.NewTask(),
+		TaskTag:                 persistence.NewTaskTag(),
+		TaskVersion:             persistence.NewTaskVersion(),
+		SubTask:                 persistence.NewSubTask(),
+		Episode:                 persistence.NewEpisode(),
+		EpisodeGrade:            persistence.NewEpisodeGrade(),
+		EpisodeSubTask:          persistence.NewEpisodeSubTask(),
+		EpisodeSubTaskExecution: persistence.NewEpisodeSubTaskExecution(),
+		APIKey:                  persistence.NewAPIKey(),
+		OperatorYield:           persistence.NewOperatorYield(),
+		Fleet:                   persistence.NewFleet(),
 	}
 }
 

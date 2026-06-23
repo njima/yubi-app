@@ -8,8 +8,8 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/database"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gateway"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
@@ -39,7 +39,7 @@ func TestAggregatePeriod_CreatesRecordsAndIsIdempotent(t *testing.T) {
 	db := openTestDB(t)
 	defer db.Close()
 
-	repo := gateway.NewEpisodeStats()
+	repo := persistence.NewEpisodeStats()
 
 	tests := []struct {
 		name   string
