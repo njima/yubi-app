@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/redis"
 )
 
 const (
@@ -15,10 +14,10 @@ const (
 )
 
 type robotUptimeDelta struct {
-	redisClient *redis.Client
+	redisClient *Client
 }
 
-func NewRobotUptimeDelta(redisClient *redis.Client) *robotUptimeDelta {
+func NewRobotUptimeDelta(redisClient *Client) *robotUptimeDelta {
 	return &robotUptimeDelta{redisClient: redisClient}
 }
 
@@ -56,7 +55,7 @@ func (r *robotUptimeDelta) Get(ctx context.Context, robotID string) (int64, time
 
 	periodStr, err := r.redisClient.Get(ctx, buildUptimePeriodKey(robotID))
 	if err != nil {
-		if redis.IsNotFound(err) {
+		if IsNotFound(err) {
 			return 0, time.Time{}, nil
 		}
 		return 0, time.Time{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeRedisError, "failed to get uptime period for robot %s", robotID))

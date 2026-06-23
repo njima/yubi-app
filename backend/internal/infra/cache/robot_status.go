@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/redis"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -18,10 +17,10 @@ const (
 )
 
 type robotStatus struct {
-	redisClient *redis.Client
+	redisClient *Client
 }
 
-func NewRobotStatus(redisClient *redis.Client) *robotStatus {
+func NewRobotStatus(redisClient *Client) *robotStatus {
 	return &robotStatus{
 		redisClient: redisClient,
 	}
@@ -46,7 +45,7 @@ func (r *robotStatus) GetByRobotID(ctx context.Context, robotID string) (*reposi
 
 	var status repository.RobotStatus
 	if err := r.redisClient.GetJSON(ctx, key, &status); err != nil {
-		if redis.IsNotFound(err) {
+		if IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeRedisError, "failed to get robot status"))

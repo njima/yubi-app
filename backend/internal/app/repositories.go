@@ -4,9 +4,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/storage"
-	"github.com/airoa-org/yubi-app/backend/internal/redis"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	s3client "github.com/airoa-org/yubi-app/backend/internal/s3"
 )
 
 type repositories struct {
@@ -42,7 +40,7 @@ type redisRepositories struct {
 	RobotOperator    repository.RobotOperatorRepository
 }
 
-func newRepositories(redisClient *redis.Client, s3Client *s3client.Client) repositories {
+func newRepositories(redisClient *cache.Client, s3Client *storage.Client) repositories {
 	return repositories{
 		databaseRepositories: newDatabaseRepositories(),
 		redisRepositories:    newRedisRepositories(redisClient),
@@ -73,7 +71,7 @@ func newDatabaseRepositories() databaseRepositories {
 	}
 }
 
-func newRedisRepositories(redisClient *redis.Client) redisRepositories {
+func newRedisRepositories(redisClient *cache.Client) redisRepositories {
 	return redisRepositories{
 		RobotStatus:      cache.NewRobotStatus(redisClient),
 		RobotUptimeDelta: cache.NewRobotUptimeDelta(redisClient),
@@ -85,7 +83,7 @@ type storageRepositories struct {
 	EpisodeRecording repository.EpisodeRecording
 }
 
-func newStorageRepositories(s3Client *s3client.Client) storageRepositories {
+func newStorageRepositories(s3Client *storage.Client) storageRepositories {
 	return storageRepositories{
 		EpisodeRecording: storage.NewEpisodeRecording(s3Client),
 	}

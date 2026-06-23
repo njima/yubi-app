@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/airoa-org/yubi-app/backend/internal/config"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
-	"github.com/airoa-org/yubi-app/backend/internal/redis"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 
 	"github.com/rs/zerolog"
@@ -15,7 +15,7 @@ type application struct {
 	logger zerolog.Logger
 
 	db          *bun.DB
-	redisClient *redis.Client
+	redisClient *cache.Client
 
 	datadogStarted bool
 	sentryStarted  bool

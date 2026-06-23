@@ -15,7 +15,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/log"
-	"github.com/airoa-org/yubi-app/backend/internal/redis"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -50,7 +49,7 @@ func run(ctx context.Context) error {
 		}
 	}
 
-	redisClient, err := redis.NewClient(
+	redisClient, err := cache.NewClient(
 		conf.Redis.Host,
 		conf.Redis.Port,
 		conf.Redis.Password,

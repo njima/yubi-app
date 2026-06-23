@@ -10,9 +10,9 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/config"
 	"github.com/airoa-org/yubi-app/backend/internal/database/ddtrace"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/storage"
 	"github.com/airoa-org/yubi-app/backend/internal/log"
-	"github.com/airoa-org/yubi-app/backend/internal/redis"
-	s3client "github.com/airoa-org/yubi-app/backend/internal/s3"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 
 	"github.com/getsentry/sentry-go"
@@ -66,7 +66,7 @@ func newApplication(ctx context.Context) (*application, error) {
 
 	logger.Info().Msg("starting application")
 
-	redisClient, err := redis.NewClient(
+	redisClient, err := cache.NewClient(
 		conf.Redis.Host,
 		conf.Redis.Port,
 		conf.Redis.Password,
@@ -82,7 +82,7 @@ func newApplication(ctx context.Context) (*application, error) {
 		redisClient.EnableDDTrace(redistrace.WithServiceName(conf.AppName + "-redis"))
 	}
 
-	s3Client, err := s3client.NewClient(ctx, conf.S3.Region, conf.S3.BucketName, conf.S3.PresignedURLExpirySec, conf.S3.Endpoint, conf.S3.PresignEndpoint, conf.S3.AccessKeyID, conf.S3.SecretAccessKey)
+	s3Client, err := storage.NewClient(ctx, conf.S3.Region, conf.S3.BucketName, conf.S3.PresignedURLExpirySec, conf.S3.Endpoint, conf.S3.PresignEndpoint, conf.S3.AccessKeyID, conf.S3.SecretAccessKey)
 	if err != nil {
 		app.Close()
 		return nil, fmt.Errorf("failed to initialize S3 client: %w", err)

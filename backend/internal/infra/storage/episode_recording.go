@@ -13,14 +13,13 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	s3client "github.com/airoa-org/yubi-app/backend/internal/s3"
 )
 
 type episodeRecording struct {
-	s3 *s3client.Client
+	s3 *Client
 }
 
-func NewEpisodeRecording(s3 *s3client.Client) *episodeRecording {
+func NewEpisodeRecording(s3 *Client) *episodeRecording {
 	return &episodeRecording{s3: s3}
 }
 
