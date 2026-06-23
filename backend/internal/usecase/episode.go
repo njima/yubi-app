@@ -95,8 +95,46 @@ type episode struct {
 	listBus  *event.Bus
 }
 
-func NewEpisode(repo repository.Episode, gradeRepo repository.EpisodeGrade, logger zerolog.Logger, tvRepo repository.TaskVersion, sr repository.SubTask, estr repository.EpisodeSubTask, execr repository.EpisodeSubTaskExecution, rr repository.Robot, robotStatusRepo repository.RobotStatusRepository, recRepo repository.EpisodeRecording, taskRepo repository.Task, locRepo repository.Location, siteRepo repository.Site, db *bun.DB, bus *event.Bus, robotBus *event.Bus, listBus *event.Bus) *episode {
-	return &episode{repo: repo, gradeRepo: gradeRepo, logger: logger, tvRepo: tvRepo, sr: sr, estr: estr, execr: execr, rr: rr, robotStatusRepo: robotStatusRepo, recRepo: recRepo, taskRepo: taskRepo, locRepo: locRepo, siteRepo: siteRepo, db: db, bus: bus, robotBus: robotBus, listBus: listBus}
+type EpisodeDependencies struct {
+	Repository               repository.Episode
+	GradeRepository          repository.EpisodeGrade
+	Logger                   zerolog.Logger
+	TaskVersionRepository    repository.TaskVersion
+	SubTaskRepository        repository.SubTask
+	EpisodeSubTaskRepository repository.EpisodeSubTask
+	ExecutionRepository      repository.EpisodeSubTaskExecution
+	RobotRepository          repository.Robot
+	RobotStatusRepository    repository.RobotStatusRepository
+	RecordingRepository      repository.EpisodeRecording
+	TaskRepository           repository.Task
+	LocationRepository       repository.Location
+	SiteRepository           repository.Site
+	DB                       *bun.DB
+	EventBus                 *event.Bus
+	RobotEventBus            *event.Bus
+	ListEventBus             *event.Bus
+}
+
+func NewEpisode(deps EpisodeDependencies) *episode {
+	return &episode{
+		repo:            deps.Repository,
+		gradeRepo:       deps.GradeRepository,
+		logger:          deps.Logger,
+		tvRepo:          deps.TaskVersionRepository,
+		sr:              deps.SubTaskRepository,
+		estr:            deps.EpisodeSubTaskRepository,
+		execr:           deps.ExecutionRepository,
+		rr:              deps.RobotRepository,
+		robotStatusRepo: deps.RobotStatusRepository,
+		recRepo:         deps.RecordingRepository,
+		taskRepo:        deps.TaskRepository,
+		locRepo:         deps.LocationRepository,
+		siteRepo:        deps.SiteRepository,
+		db:              deps.DB,
+		bus:             deps.EventBus,
+		robotBus:        deps.RobotEventBus,
+		listBus:         deps.ListEventBus,
+	}
 }
 
 func (e *episode) Create(ctx context.Context, input EpisodeCreateInput) (model.Episode, error) {
