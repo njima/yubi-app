@@ -2,99 +2,59 @@ package app
 
 import (
 	"context"
-	"net/http"
-	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/authz"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/controller"
-	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/handler"
-	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/middleware"
-
-	sentrygin "github.com/getsentry/sentry-go/gin"
-	"github.com/gin-contrib/cors"
+	httprouter "github.com/airoa-org/yubi-app/backend/internal/interfaces/http/router"
 	"github.com/gin-gonic/gin"
-	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 )
 
 func (a *application) newRouter(ctx context.Context) *gin.Engine {
-	ctrl := controller.NewController(controller.Dependencies{
-		Logger:                     a.logger,
-		UserUsecase:                a.userUsecase,
-		UserImportUsecase:          a.userImportUsecase,
-		OrganizationUsecase:        a.organizationUsecase,
-		SiteUsecase:                a.siteUsecase,
-		LocationUsecase:            a.locationUsecase,
-		RobotUsecase:               a.robotUsecase,
-		RobotDeviceUsecase:         a.robotDeviceUsecase,
-		TaskUsecase:                a.taskUsecase,
-		TaskVersionUsecase:         a.taskVersionUsecase,
-		TaskTagUsecase:             a.taskTagUsecase,
-		TaskImportUsecase:          a.taskImportUsecase,
-		TaskExportUsecase:          a.taskExportUsecase,
-		SubTaskUsecase:             a.subtaskUsecase,
-		EpisodeUsecase:             a.episodeUsecase,
-		EpisodeGradeUsecase:        a.episodeGradeUsecase,
-		EpisodeExportUsecase:       a.episodeExportUsecase,
-		EpisodeSubTaskUsecase:      a.episodeSubTaskUsecase,
-		EpisodeExecutionUsecase:    a.episodeExecutionUsecase,
-		FleetUsecase:               a.fleetUsecase,
-		RobotOperatorUsecase:       a.robotOperatorUsecase,
-		OperatorYieldExportUsecase: a.operatorYieldExportUsecase,
-		APIKeyUsecase:              a.apiKeyUsecase,
+	return httprouter.New(ctx, httprouter.Dependencies{
+		Config: httprouter.Config{
+			AppName:        a.conf.AppName,
+			DatadogEnabled: a.conf.Datadog.Enabled,
+			SentryEnabled:  a.conf.Sentry.DSN != "",
+		},
+		Logger: a.logger,
+		Controller: controller.Dependencies{
+			Logger:                     a.logger,
+			UserUsecase:                a.userUsecase,
+			UserImportUsecase:          a.userImportUsecase,
+			OrganizationUsecase:        a.organizationUsecase,
+			SiteUsecase:                a.siteUsecase,
+			LocationUsecase:            a.locationUsecase,
+			RobotUsecase:               a.robotUsecase,
+			RobotDeviceUsecase:         a.robotDeviceUsecase,
+			TaskUsecase:                a.taskUsecase,
+			TaskVersionUsecase:         a.taskVersionUsecase,
+			TaskTagUsecase:             a.taskTagUsecase,
+			TaskImportUsecase:          a.taskImportUsecase,
+			TaskExportUsecase:          a.taskExportUsecase,
+			SubTaskUsecase:             a.subtaskUsecase,
+			EpisodeUsecase:             a.episodeUsecase,
+			EpisodeGradeUsecase:        a.episodeGradeUsecase,
+			EpisodeExportUsecase:       a.episodeExportUsecase,
+			EpisodeSubTaskUsecase:      a.episodeSubTaskUsecase,
+			EpisodeExecutionUsecase:    a.episodeExecutionUsecase,
+			FleetUsecase:               a.fleetUsecase,
+			RobotOperatorUsecase:       a.robotOperatorUsecase,
+			OperatorYieldExportUsecase: a.operatorYieldExportUsecase,
+			APIKeyUsecase:              a.apiKeyUsecase,
+		},
+		Auth: httprouter.AuthDependencies{
+			UserUsecase:   a.userUsecase,
+			RobotUsecase:  a.robotUsecase,
+			APIKeyUsecase: a.apiKeyUsecase,
+		},
+		SSE: httprouter.SSEDependencies{
+			RobotDeviceUsecase:  a.robotDeviceUsecase,
+			EpisodeUsecase:      a.episodeUsecase,
+			TaskUsecase:         a.taskUsecase,
+			TaskVersionUsecase:  a.taskVersionUsecase,
+			EpisodeBus:          a.episodeBus,
+			RobotEpisodeBus:     a.robotEpisodeBus,
+			EpisodeListBus:      a.episodeListBus,
+			RobotStatusEventBus: a.robotStatusBus,
+		},
 	})
-
-	router := gin.Default()
-	router.ContextWithFallback = true
-
-	if a.conf.Datadog.Enabled {
-		router.Use(gintrace.Middleware(a.conf.AppName))
-	}
-
-	if a.conf.Sentry.DSN != "" {
-		router.Use(sentrygin.New(sentrygin.Options{
-			Repanic: true,
-		}))
-	}
-
-	router.Use(middleware.ErrorLogger(a.logger))
-
-	allowedOrigins := []string{"http://localhost:3000"}
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     allowedOrigins,
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-User-ID", "X-Robot-ID", "X-API-Key"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
-
-	router.GET("/health-check", func(c *gin.Context) {
-		c.String(http.StatusOK, "OK")
-	})
-
-	errorHandler := middleware.NewErrorHandler(a.logger)
-	strictMiddlewares := []openapi.StrictMiddlewareFunc{
-		authz.NewAuthzMiddleware(),
-		errorHandler.ConvertErrorResponseWithLogging(),
-	}
-	strictHandler := openapi.NewStrictHandler(ctrl, strictMiddlewares)
-	api := router.Group("/api")
-
-	api.Use(middleware.Auth(a.userUsecase, a.robotUsecase, a.apiKeyUsecase))
-
-	const apiBodyLimit = 6 * 1024 * 1024 // 6MB
-	api.Use(middleware.MaxBodySize(apiBodyLimit))
-
-	openapi.RegisterHandlers(api, strictHandler)
-
-	sseHandler := handler.NewSSEHandler(ctx, a.logger, a.robotDeviceUsecase, a.episodeUsecase, a.taskUsecase, a.taskVersionUsecase, a.episodeBus, a.robotEpisodeBus, a.episodeListBus, a.robotStatusBus)
-	api.GET("/robots/:robotId/status/stream", sseHandler.StreamRobotStatus)
-	api.GET("/robots/status/stream", sseHandler.StreamRobotStatusByIds)
-	api.GET("/episodes/stream", sseHandler.StreamEpisodeListUpdates)
-	api.GET("/episodes/:episodeId/stream", sseHandler.StreamEpisodeUpdates)
-	api.GET("/robots/:robotId/teleop/stream", sseHandler.StreamRobotTeleop)
-
-	return router
 }
