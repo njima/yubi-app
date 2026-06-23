@@ -7,7 +7,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/redis"
 )
 
 const (
@@ -16,10 +15,10 @@ const (
 )
 
 type robotOperator struct {
-	redisClient *redis.Client
+	redisClient *Client
 }
 
-func NewRobotOperator(redisClient *redis.Client) *robotOperator {
+func NewRobotOperator(redisClient *Client) *robotOperator {
 	return &robotOperator{
 		redisClient: redisClient,
 	}
@@ -55,7 +54,7 @@ func (r *robotOperator) GetByRobotID(ctx context.Context, robotID string) (*mode
 
 	var operator model.RobotOperator
 	if err := r.redisClient.GetJSON(ctx, key, &operator); err != nil {
-		if redis.IsNotFound(err) {
+		if IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeRedisError, "failed to get robot operator"))
