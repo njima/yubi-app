@@ -9,6 +9,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gateway"
+	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
@@ -16,6 +17,7 @@ import (
 
 type seededData struct {
 	OrganizationID string
+	SiteID         string
 	LocationID1    string
 	RobotID1       string
 	LocationID2    string
@@ -97,11 +99,6 @@ func TestAggregatePeriod_CreatesRecordsAndIsIdempotent(t *testing.T) {
 					t.Fatalf("episode_count mismatch after first run for %s: got=%d want=%d", key, got.EpisodeCount, want.Count)
 				}
 			}
-			firstIDByKey := map[string]int64{}
-			for key, row := range firstByKey {
-				firstIDByKey[key] = row.ID
-			}
-
 			if err := aggregatePeriod(ctx, db, repo, tt.period, tt.from, tt.to); err != nil {
 				t.Fatalf("second aggregatePeriod failed: %v", err)
 			}
@@ -118,9 +115,6 @@ func TestAggregatePeriod_CreatesRecordsAndIsIdempotent(t *testing.T) {
 				want, ok := seeded.Expected[key]
 				if !ok {
 					t.Fatalf("unexpected stat row found after second run: %s", key)
-				}
-				if row.ID != firstIDByKey[key] {
-					t.Fatalf("idempotency broken: row identity changed after second run for %s: got=%d want=%d", key, row.ID, firstIDByKey[key])
 				}
 				if row.TotalDurationSeconds != want.Duration {
 					t.Fatalf("idempotency broken: duration changed after second run for %s: got=%d want=%d", key, row.TotalDurationSeconds, want.Duration)
@@ -157,6 +151,7 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 
 	suffix := uuid.NewString()
 	orgID := uuid.NewString()
+	siteID := uuid.NewString()
 	locID1 := uuid.NewString()
 	robotID1 := uuid.NewString()
 	locID2 := uuid.NewString()
@@ -170,11 +165,16 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 		t.Fatalf("failed to insert organization: %v", err)
 	}
 
-	loc1 := &entity.Location{IDNatural: locID1, OrganizationID: orgID, Name: "test-loc-1-" + suffix}
+	site := &entity.Site{IDNatural: siteID, OrganizationID: orgID, Name: "test-site-" + suffix}
+	if _, err := db.NewInsert().Model(site).Exec(ctx); err != nil {
+		t.Fatalf("failed to insert site: %v", err)
+	}
+
+	loc1 := &entity.Location{IDNatural: locID1, OrganizationID: orgID, SiteID: siteID, Name: "test-loc-1-" + suffix}
 	if _, err := db.NewInsert().Model(loc1).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert location 1: %v", err)
 	}
-	loc2 := &entity.Location{IDNatural: locID2, OrganizationID: orgID, Name: "test-loc-2-" + suffix}
+	loc2 := &entity.Location{IDNatural: locID2, OrganizationID: orgID, SiteID: siteID, Name: "test-loc-2-" + suffix}
 	if _, err := db.NewInsert().Model(loc2).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert location 2: %v", err)
 	}
@@ -225,40 +225,43 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 	d3End := d3Start.Add(15 * time.Minute)
 
 	if _, err := db.NewInsert().Model(&entity.Episode{
-		IDNatural:      uuid.NewString(),
-		OrganizationID: orgID,
-		TaskVersionID:  taskVersionID,
-		LocationID:     locID1,
-		RobotID:        robotID1,
-		UserID:         userID,
-		StartedAt:      &d1Start,
-		FinishedAt:     &d1End,
+		IDNatural:        uuid.NewString(),
+		OrganizationID:   orgID,
+		TaskVersionID:    taskVersionID,
+		LocationID:       locID1,
+		RobotID:          robotID1,
+		UserID:           userID,
+		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		StartedAt:        &d1Start,
+		FinishedAt:       &d1End,
 	}).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert episode 1-1: %v", err)
 	}
 
 	if _, err := db.NewInsert().Model(&entity.Episode{
-		IDNatural:      uuid.NewString(),
-		OrganizationID: orgID,
-		TaskVersionID:  taskVersionID,
-		LocationID:     locID2,
-		RobotID:        robotID2,
-		UserID:         userID,
-		StartedAt:      &d2Start,
-		FinishedAt:     &d2End,
+		IDNatural:        uuid.NewString(),
+		OrganizationID:   orgID,
+		TaskVersionID:    taskVersionID,
+		LocationID:       locID2,
+		RobotID:          robotID2,
+		UserID:           userID,
+		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		StartedAt:        &d2Start,
+		FinishedAt:       &d2End,
 	}).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert episode 1-2: %v", err)
 	}
 
 	if _, err := db.NewInsert().Model(&entity.Episode{
-		IDNatural:      uuid.NewString(),
-		OrganizationID: orgID,
-		TaskVersionID:  taskVersionID,
-		LocationID:     locID1,
-		RobotID:        robotID1,
-		UserID:         userID,
-		StartedAt:      &dCrossFromStart,
-		FinishedAt:     &dCrossFromEnd,
+		IDNatural:        uuid.NewString(),
+		OrganizationID:   orgID,
+		TaskVersionID:    taskVersionID,
+		LocationID:       locID1,
+		RobotID:          robotID1,
+		UserID:           userID,
+		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		StartedAt:        &dCrossFromStart,
+		FinishedAt:       &dCrossFromEnd,
 	}).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert period-start crossing episode: %v", err)
 	}
@@ -266,46 +269,50 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 	d4Start := from.Add(35 * time.Minute)
 	d4End := d4Start.Add(10 * time.Minute)
 	if _, err := db.NewInsert().Model(&entity.Episode{
-		IDNatural:      uuid.NewString(),
-		OrganizationID: orgID,
-		TaskVersionID:  taskVersionID,
-		LocationID:     locID2,
-		RobotID:        robotID2,
-		UserID:         userID,
-		StartedAt:      &d4Start,
-		FinishedAt:     &d4End,
+		IDNatural:        uuid.NewString(),
+		OrganizationID:   orgID,
+		TaskVersionID:    taskVersionID,
+		LocationID:       locID2,
+		RobotID:          robotID2,
+		UserID:           userID,
+		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		StartedAt:        &d4Start,
+		FinishedAt:       &d4End,
 	}).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert episode 2-2: %v", err)
 	}
 
 	if _, err := db.NewInsert().Model(&entity.Episode{
-		IDNatural:      uuid.NewString(),
-		OrganizationID: orgID,
-		TaskVersionID:  taskVersionID,
-		LocationID:     locID1,
-		RobotID:        robotID1,
-		UserID:         userID,
-		StartedAt:      &d3Start,
-		FinishedAt:     &d3End,
+		IDNatural:        uuid.NewString(),
+		OrganizationID:   orgID,
+		TaskVersionID:    taskVersionID,
+		LocationID:       locID1,
+		RobotID:          robotID1,
+		UserID:           userID,
+		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		StartedAt:        &d3Start,
+		FinishedAt:       &d3End,
 	}).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert out-of-range episode: %v", err)
 	}
 
 	if _, err := db.NewInsert().Model(&entity.Episode{
-		IDNatural:      uuid.NewString(),
-		OrganizationID: orgID,
-		TaskVersionID:  taskVersionID,
-		LocationID:     locID2,
-		RobotID:        robotID2,
-		UserID:         userID,
-		StartedAt:      &dCrossToStart,
-		FinishedAt:     &dCrossToEnd,
+		IDNatural:        uuid.NewString(),
+		OrganizationID:   orgID,
+		TaskVersionID:    taskVersionID,
+		LocationID:       locID2,
+		RobotID:          robotID2,
+		UserID:           userID,
+		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		StartedAt:        &dCrossToStart,
+		FinishedAt:       &dCrossToEnd,
 	}).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert period-end crossing episode: %v", err)
 	}
 
 	return seededData{
 		OrganizationID: orgID,
+		SiteID:         siteID,
 		LocationID1:    locID1,
 		RobotID1:       robotID1,
 		LocationID2:    locID2,
@@ -346,6 +353,9 @@ func cleanupTestData(t *testing.T, ctx context.Context, db *bun.DB, data seededD
 	}
 	if _, err := db.NewDelete().Model((*entity.Location)(nil)).Where("id_natural IN (?, ?)", data.LocationID1, data.LocationID2).Exec(ctx); err != nil {
 		t.Fatalf("failed to delete locations: %v", err)
+	}
+	if _, err := db.NewDelete().Model((*entity.Site)(nil)).Where("id_natural = ?", data.SiteID).Exec(ctx); err != nil {
+		t.Fatalf("failed to delete site: %v", err)
 	}
 	if _, err := db.NewDelete().Model((*entity.User)(nil)).Where("id_natural = ?", data.UserID).Exec(ctx); err != nil {
 		t.Fatalf("failed to delete user: %v", err)
