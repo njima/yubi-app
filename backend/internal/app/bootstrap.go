@@ -144,7 +144,25 @@ func newApplication(ctx context.Context) (*application, error) {
 	app.episodeBus = event.NewBus()
 	app.robotEpisodeBus = event.NewBus()
 	app.episodeListBus = event.NewBus()
-	app.episodeUsecase = usecase.NewEpisode(episodeRepo, episodeGradeRepo, logger, taskVersionRepo, subtaskRepo, episodeSubTaskRepo, episodeSubTaskExecutionRepo, robotRepo, robotStatusRepo, episodeRecordingRepo, taskRepo, locRepo, siteRepo, db, app.episodeBus, app.robotEpisodeBus, app.episodeListBus)
+	app.episodeUsecase = usecase.NewEpisode(usecase.EpisodeDependencies{
+		Repository:               episodeRepo,
+		GradeRepository:          episodeGradeRepo,
+		Logger:                   logger,
+		TaskVersionRepository:    taskVersionRepo,
+		SubTaskRepository:        subtaskRepo,
+		EpisodeSubTaskRepository: episodeSubTaskRepo,
+		ExecutionRepository:      episodeSubTaskExecutionRepo,
+		RobotRepository:          robotRepo,
+		RobotStatusRepository:    robotStatusRepo,
+		RecordingRepository:      episodeRecordingRepo,
+		TaskRepository:           taskRepo,
+		LocationRepository:       locRepo,
+		SiteRepository:           siteRepo,
+		DB:                       db,
+		EventBus:                 app.episodeBus,
+		RobotEventBus:            app.robotEpisodeBus,
+		ListEventBus:             app.episodeListBus,
+	})
 	app.episodeGradeUsecase = usecase.NewEpisodeGrade(episodeGradeRepo, db)
 	app.episodeExportUsecase = usecase.NewEpisodeExport(episodeRepo, db)
 	operatorYieldRepo := gateway.NewOperatorYield()
