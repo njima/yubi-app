@@ -2,6 +2,8 @@ package app
 
 import (
 	"github.com/airoa-org/yubi-app/backend/internal/gateway"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/storage"
 	"github.com/airoa-org/yubi-app/backend/internal/redis"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	s3client "github.com/airoa-org/yubi-app/backend/internal/s3"
@@ -73,9 +75,9 @@ func newDatabaseRepositories() databaseRepositories {
 
 func newRedisRepositories(redisClient *redis.Client) redisRepositories {
 	return redisRepositories{
-		RobotStatus:      gateway.NewRobotStatus(redisClient),
-		RobotUptimeDelta: gateway.NewRobotUptimeDelta(redisClient),
-		RobotOperator:    gateway.NewRobotOperator(redisClient),
+		RobotStatus:      cache.NewRobotStatus(redisClient),
+		RobotUptimeDelta: cache.NewRobotUptimeDelta(redisClient),
+		RobotOperator:    cache.NewRobotOperator(redisClient),
 	}
 }
 
@@ -85,6 +87,6 @@ type storageRepositories struct {
 
 func newStorageRepositories(s3Client *s3client.Client) storageRepositories {
 	return storageRepositories{
-		EpisodeRecording: gateway.NewEpisodeRecording(s3Client),
+		EpisodeRecording: storage.NewEpisodeRecording(s3Client),
 	}
 }
