@@ -12,8 +12,8 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/config"
 	"github.com/airoa-org/yubi-app/backend/internal/database"
-	"github.com/airoa-org/yubi-app/backend/internal/gateway"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/log"
 	"github.com/airoa-org/yubi-app/backend/internal/redis"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
@@ -75,9 +75,9 @@ func run(ctx context.Context) error {
 	}
 	defer db.Close()
 
-	robotRepo := gateway.NewRobot()
+	robotRepo := persistence.NewRobot()
 	robotUptimeDeltaRepo := cache.NewRobotUptimeDelta(redisClient)
-	robotUptimeMetricsRepo := gateway.NewRobotUptimeMetrics()
+	robotUptimeMetricsRepo := persistence.NewRobotUptimeMetrics()
 
 	writer := usecase.NewRobotUptimeMetricsWriter(robotRepo, robotUptimeDeltaRepo, robotUptimeMetricsRepo, db, logger)
 

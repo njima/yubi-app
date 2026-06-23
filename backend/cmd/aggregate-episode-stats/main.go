@@ -11,7 +11,7 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/database"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gateway"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
 )
@@ -96,7 +96,7 @@ func run(ctx context.Context, cfg Config) error {
 	}
 	defer db.Close()
 
-	repo := gateway.NewEpisodeStats()
+	repo := persistence.NewEpisodeStats()
 
 	if cfg.Backfill {
 		return runBackfill(ctx, db, repo, period, cfg.From, cfg.To)
