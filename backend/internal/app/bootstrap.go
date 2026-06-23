@@ -106,11 +106,11 @@ func newApplication(ctx context.Context) (*application, error) {
 		db.AddQueryHook(ddtrace.NewBunHook(conf.AppName + "-db"))
 	}
 
-	buses := newEventBuses()
-	app.robotStatusBus = buses.RobotStatus
-	app.episodeBus = buses.Episode
-	app.robotEpisodeBus = buses.RobotEpisode
-	app.episodeListBus = buses.EpisodeList
+	eventBuses := newEventBuses()
+	app.robotStatusBus = eventBuses.RobotStatus
+	app.episodeBus = eventBuses.Episode
+	app.robotEpisodeBus = eventBuses.RobotEpisode
+	app.episodeListBus = eventBuses.EpisodeList
 
 	app.userUsecase = usecase.NewUser(repos.User, repos.UserLocation, repos.UserSite, db, logger)
 	app.userImportUsecase = usecase.NewUserImport(repos.User, db, logger)
