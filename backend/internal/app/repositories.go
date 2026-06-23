@@ -8,6 +8,12 @@ import (
 )
 
 type repositories struct {
+	databaseRepositories
+	redisRepositories
+	storageRepositories
+}
+
+type databaseRepositories struct {
 	User                    repository.User
 	UserLocation            repository.UserLocation
 	UserSite                repository.UserSite
@@ -24,16 +30,26 @@ type repositories struct {
 	EpisodeSubTask          repository.EpisodeSubTask
 	EpisodeSubTaskExecution repository.EpisodeSubTaskExecution
 	APIKey                  repository.APIKey
-	RobotStatus             repository.RobotStatusRepository
-	RobotUptimeDelta        repository.RobotUptimeDeltaRepository
-	EpisodeRecording        repository.EpisodeRecording
 	OperatorYield           repository.OperatorYield
 	Fleet                   repository.Fleet
-	RobotOperator           repository.RobotOperatorRepository
+}
+
+type redisRepositories struct {
+	RobotStatus      repository.RobotStatusRepository
+	RobotUptimeDelta repository.RobotUptimeDeltaRepository
+	RobotOperator    repository.RobotOperatorRepository
 }
 
 func newRepositories(redisClient *redis.Client, s3Client *s3client.Client) repositories {
 	return repositories{
+		databaseRepositories: newDatabaseRepositories(),
+		redisRepositories:    newRedisRepositories(redisClient),
+		storageRepositories:  newStorageRepositories(s3Client),
+	}
+}
+
+func newDatabaseRepositories() databaseRepositories {
+	return databaseRepositories{
 		User:                    gateway.NewUser(),
 		UserLocation:            gateway.NewUserLocation(),
 		UserSite:                gateway.NewUserSite(),
@@ -50,11 +66,25 @@ func newRepositories(redisClient *redis.Client, s3Client *s3client.Client) repos
 		EpisodeSubTask:          gateway.NewEpisodeSubTask(),
 		EpisodeSubTaskExecution: gateway.NewEpisodeSubTaskExecution(),
 		APIKey:                  gateway.NewAPIKey(),
-		RobotStatus:             gateway.NewRobotStatus(redisClient),
-		RobotUptimeDelta:        gateway.NewRobotUptimeDelta(redisClient),
-		EpisodeRecording:        gateway.NewEpisodeRecording(s3Client),
 		OperatorYield:           gateway.NewOperatorYield(),
 		Fleet:                   gateway.NewFleet(),
-		RobotOperator:           gateway.NewRobotOperator(redisClient),
+	}
+}
+
+func newRedisRepositories(redisClient *redis.Client) redisRepositories {
+	return redisRepositories{
+		RobotStatus:      gateway.NewRobotStatus(redisClient),
+		RobotUptimeDelta: gateway.NewRobotUptimeDelta(redisClient),
+		RobotOperator:    gateway.NewRobotOperator(redisClient),
+	}
+}
+
+type storageRepositories struct {
+	EpisodeRecording repository.EpisodeRecording
+}
+
+func newStorageRepositories(s3Client *s3client.Client) storageRepositories {
+	return storageRepositories{
+		EpisodeRecording: gateway.NewEpisodeRecording(s3Client),
 	}
 }
