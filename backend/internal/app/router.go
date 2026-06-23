@@ -18,31 +18,31 @@ import (
 )
 
 func (a *application) newRouter(ctx context.Context) *gin.Engine {
-	ctrl := controller.NewController(
-		a.logger,
-		a.userUsecase,
-		a.userImportUsecase,
-		a.organizationUsecase,
-		a.siteUsecase,
-		a.locationUsecase,
-		a.robotUsecase,
-		a.robotDeviceUsecase,
-		a.taskUsecase,
-		a.taskVersionUsecase,
-		a.taskTagUsecase,
-		a.taskImportUsecase,
-		a.taskExportUsecase,
-		a.subtaskUsecase,
-		a.episodeUsecase,
-		a.episodeGradeUsecase,
-		a.episodeExportUsecase,
-		a.episodeSubTaskUsecase,
-		a.episodeExecutionUsecase,
-		a.fleetUsecase,
-		a.robotOperatorUsecase,
-		a.operatorYieldExportUsecase,
-		a.apiKeyUsecase,
-	)
+	ctrl := controller.NewController(controller.Dependencies{
+		Logger:                     a.logger,
+		UserUsecase:                a.userUsecase,
+		UserImportUsecase:          a.userImportUsecase,
+		OrganizationUsecase:        a.organizationUsecase,
+		SiteUsecase:                a.siteUsecase,
+		LocationUsecase:            a.locationUsecase,
+		RobotUsecase:               a.robotUsecase,
+		RobotDeviceUsecase:         a.robotDeviceUsecase,
+		TaskUsecase:                a.taskUsecase,
+		TaskVersionUsecase:         a.taskVersionUsecase,
+		TaskTagUsecase:             a.taskTagUsecase,
+		TaskImportUsecase:          a.taskImportUsecase,
+		TaskExportUsecase:          a.taskExportUsecase,
+		SubTaskUsecase:             a.subtaskUsecase,
+		EpisodeUsecase:             a.episodeUsecase,
+		EpisodeGradeUsecase:        a.episodeGradeUsecase,
+		EpisodeExportUsecase:       a.episodeExportUsecase,
+		EpisodeSubTaskUsecase:      a.episodeSubTaskUsecase,
+		EpisodeExecutionUsecase:    a.episodeExecutionUsecase,
+		FleetUsecase:               a.fleetUsecase,
+		RobotOperatorUsecase:       a.robotOperatorUsecase,
+		OperatorYieldExportUsecase: a.operatorYieldExportUsecase,
+		APIKeyUsecase:              a.apiKeyUsecase,
+	})
 
 	router := gin.Default()
 	router.ContextWithFallback = true
