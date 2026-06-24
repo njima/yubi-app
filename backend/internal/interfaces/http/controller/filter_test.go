@@ -43,6 +43,29 @@ var episodeStatusMappingCases = []struct {
 	{name: "completed", api: openapi.EpisodeCollectionStatusCompleted, want: model.EpisodeStatusCompleted},
 }
 
+var subTaskCollectionStatusMappingCases = []struct {
+	name string
+	api  openapi.SubTaskCollectionStatus
+	want model.SubTaskCollectionStatus
+}{
+	{name: "ready", api: openapi.SubTaskCollectionStatusReady, want: model.SubTaskCollectionStatusReady},
+	{name: "in_progress", api: openapi.SubTaskCollectionStatusInProgress, want: model.SubTaskCollectionStatusInProgress},
+	{name: "completed", api: openapi.SubTaskCollectionStatusCompleted, want: model.SubTaskCollectionStatusCompleted},
+	{name: "skipped", api: openapi.SubTaskCollectionStatusSkipped, want: model.SubTaskCollectionStatusSkipped},
+	{name: "cancelled", api: openapi.SubTaskCollectionStatusCancelled, want: model.SubTaskCollectionStatusCancelled},
+}
+
+var executionStatusMappingCases = []struct {
+	name string
+	api  openapi.ExecutionStatus
+	want model.ExecutionStatus
+}{
+	{name: "ready", api: openapi.ExecutionStatusReady, want: model.ExecutionStatusReady},
+	{name: "started", api: openapi.ExecutionStatusStarted, want: model.ExecutionStatusStarted},
+	{name: "cancelled", api: openapi.ExecutionStatusCancelled, want: model.ExecutionStatusCancelled},
+	{name: "finished", api: openapi.ExecutionStatusFinished, want: model.ExecutionStatusFinished},
+}
+
 func TestRobotStatusModelMapping(t *testing.T) {
 	for _, tt := range robotStatusMappingCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -164,6 +187,50 @@ func TestEpisodeStatusRejectsUnknownValue(t *testing.T) {
 	}
 	if got != nil {
 		t.Fatalf("episodeStatusModel() = %v, want nil", *got)
+	}
+}
+
+func TestSubTaskCollectionStatusModelMapping(t *testing.T) {
+	for _, tt := range subTaskCollectionStatusMappingCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := subTaskCollectionStatusModel(tt.api)
+			if got != tt.want {
+				t.Fatalf("subTaskCollectionStatusModel() = %v, want %v", got, tt.want)
+			}
+			if roundTrip := openAPISubTaskCollectionStatus(got); roundTrip != tt.api {
+				t.Fatalf("openAPISubTaskCollectionStatus(subTaskCollectionStatusModel()) = %v, want %v", roundTrip, tt.api)
+			}
+		})
+	}
+}
+
+func TestSubTaskCollectionStatusMappingCoversOpenAPISchemaEnum(t *testing.T) {
+	want := openAPISchemaEnumCount(t, "SubTaskCollectionStatus")
+
+	if got := len(subTaskCollectionStatusMappingCases); got != want {
+		t.Fatalf("subtask collection status mapping count = %d, want OpenAPI enum count %d", got, want)
+	}
+}
+
+func TestExecutionStatusModelMapping(t *testing.T) {
+	for _, tt := range executionStatusMappingCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := executionStatusModel(tt.api)
+			if got != tt.want {
+				t.Fatalf("executionStatusModel() = %v, want %v", got, tt.want)
+			}
+			if roundTrip := openAPIExecutionStatus(got); roundTrip != tt.api {
+				t.Fatalf("openAPIExecutionStatus(executionStatusModel()) = %v, want %v", roundTrip, tt.api)
+			}
+		})
+	}
+}
+
+func TestExecutionStatusMappingCoversOpenAPISchemaEnum(t *testing.T) {
+	want := openAPISchemaEnumCount(t, "ExecutionStatus")
+
+	if got := len(executionStatusMappingCases); got != want {
+		t.Fatalf("execution status mapping count = %d, want OpenAPI enum count %d", got, want)
 	}
 }
 

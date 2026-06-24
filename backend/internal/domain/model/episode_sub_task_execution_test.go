@@ -3,8 +3,6 @@ package model
 import (
 	"testing"
 	"time"
-
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 func TestInitEpisodeSubTaskExecution(t *testing.T) {
@@ -63,8 +61,8 @@ func TestInitEpisodeSubTaskExecution(t *testing.T) {
 			if got.EpisodeSubTaskID != tt.episodeSubTaskID {
 				t.Errorf("InitEpisodeSubTaskExecution() EpisodeSubTaskID = %v, want %v", got.EpisodeSubTaskID, tt.episodeSubTaskID)
 			}
-			if got.ExecutionStatus != openapi.ExecutionStatusReady {
-				t.Errorf("InitEpisodeSubTaskExecution() ExecutionStatus = %v, want %v", got.ExecutionStatus, openapi.ExecutionStatusReady)
+			if got.ExecutionStatus != ExecutionStatusReady {
+				t.Errorf("InitEpisodeSubTaskExecution() ExecutionStatus = %v, want %v", got.ExecutionStatus, ExecutionStatusReady)
 			}
 			if got.CreatedAt.IsZero() {
 				t.Errorf("InitEpisodeSubTaskExecution() CreatedAt is zero")
@@ -85,7 +83,7 @@ func TestNewEpisodeSubTaskExecution(t *testing.T) {
 		idNatural        string
 		organizationID   string
 		episodeSubTaskID string
-		executionStatus  openapi.ExecutionStatus
+		executionStatus  ExecutionStatus
 		startedAt        *time.Time
 		finishedAt       *time.Time
 		createdAt        time.Time
@@ -97,7 +95,7 @@ func TestNewEpisodeSubTaskExecution(t *testing.T) {
 			idNatural:        "550e8400-e29b-41d4-a716-446655440000",
 			organizationID:   "550e8400-e29b-41d4-a716-446655440001",
 			episodeSubTaskID: "550e8400-e29b-41d4-a716-446655440002",
-			executionStatus:  openapi.ExecutionStatusFinished,
+			executionStatus:  ExecutionStatusFinished,
 			startedAt:        &startedAt,
 			finishedAt:       &finishedAt,
 			createdAt:        now,
@@ -109,7 +107,7 @@ func TestNewEpisodeSubTaskExecution(t *testing.T) {
 			idNatural:        "550e8400-e29b-41d4-a716-446655440003",
 			organizationID:   "550e8400-e29b-41d4-a716-446655440004",
 			episodeSubTaskID: "550e8400-e29b-41d4-a716-446655440005",
-			executionStatus:  openapi.ExecutionStatusReady,
+			executionStatus:  ExecutionStatusReady,
 			startedAt:        nil,
 			finishedAt:       nil,
 			createdAt:        now,
@@ -158,11 +156,11 @@ func newValidEpisodeSubTaskExecution() EpisodeSubTaskExecution {
 		IDNatural:        "550e8400-e29b-41d4-a716-446655440000",
 		OrganizationID:   "550e8400-e29b-41d4-a716-446655440001",
 		EpisodeSubTaskID: "550e8400-e29b-41d4-a716-446655440002",
-		ExecutionStatus:  openapi.ExecutionStatusReady,
+		ExecutionStatus:  ExecutionStatusReady,
 	}
 }
 
-func newExecutionWithStatus(status openapi.ExecutionStatus) EpisodeSubTaskExecution {
+func newExecutionWithStatus(status ExecutionStatus) EpisodeSubTaskExecution {
 	exe := newValidEpisodeSubTaskExecution()
 	exe.ExecutionStatus = status
 	return exe
@@ -173,33 +171,33 @@ func TestEpisodeSubTaskExecution_Start(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		initialStatus openapi.ExecutionStatus
+		initialStatus ExecutionStatus
 		occurredAt    time.Time
 		wantErr       bool
-		wantStatus    openapi.ExecutionStatus
+		wantStatus    ExecutionStatus
 	}{
 		{
 			name:          "success: Ready → Started",
-			initialStatus: openapi.ExecutionStatusReady,
+			initialStatus: ExecutionStatusReady,
 			occurredAt:    now,
 			wantErr:       false,
-			wantStatus:    openapi.ExecutionStatusStarted,
+			wantStatus:    ExecutionStatusStarted,
 		},
 		{
 			name:          "error: Started → cannot start again",
-			initialStatus: openapi.ExecutionStatusStarted,
+			initialStatus: ExecutionStatusStarted,
 			occurredAt:    now,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Finished → cannot start",
-			initialStatus: openapi.ExecutionStatusFinished,
+			initialStatus: ExecutionStatusFinished,
 			occurredAt:    now,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Cancelled → cannot start",
-			initialStatus: openapi.ExecutionStatusCancelled,
+			initialStatus: ExecutionStatusCancelled,
 			occurredAt:    now,
 			wantErr:       true,
 		},
@@ -237,33 +235,33 @@ func TestEpisodeSubTaskExecution_Finish(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		initialStatus openapi.ExecutionStatus
+		initialStatus ExecutionStatus
 		occurredAt    time.Time
 		wantErr       bool
-		wantStatus    openapi.ExecutionStatus
+		wantStatus    ExecutionStatus
 	}{
 		{
 			name:          "success: Started → Finished",
-			initialStatus: openapi.ExecutionStatusStarted,
+			initialStatus: ExecutionStatusStarted,
 			occurredAt:    now,
 			wantErr:       false,
-			wantStatus:    openapi.ExecutionStatusFinished,
+			wantStatus:    ExecutionStatusFinished,
 		},
 		{
 			name:          "error: Ready → cannot finish",
-			initialStatus: openapi.ExecutionStatusReady,
+			initialStatus: ExecutionStatusReady,
 			occurredAt:    now,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Finished → cannot finish again",
-			initialStatus: openapi.ExecutionStatusFinished,
+			initialStatus: ExecutionStatusFinished,
 			occurredAt:    now,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Cancelled → cannot finish",
-			initialStatus: openapi.ExecutionStatusCancelled,
+			initialStatus: ExecutionStatusCancelled,
 			occurredAt:    now,
 			wantErr:       true,
 		},
@@ -299,31 +297,31 @@ func TestEpisodeSubTaskExecution_Finish(t *testing.T) {
 func TestEpisodeSubTaskExecution_Cancel(t *testing.T) {
 	tests := []struct {
 		name          string
-		initialStatus openapi.ExecutionStatus
+		initialStatus ExecutionStatus
 		wantErr       bool
-		wantStatus    openapi.ExecutionStatus
+		wantStatus    ExecutionStatus
 	}{
 		{
 			name:          "success: Ready → Cancelled",
-			initialStatus: openapi.ExecutionStatusReady,
+			initialStatus: ExecutionStatusReady,
 			wantErr:       false,
-			wantStatus:    openapi.ExecutionStatusCancelled,
+			wantStatus:    ExecutionStatusCancelled,
 		},
 		{
 			name:          "success: Started → Cancelled",
-			initialStatus: openapi.ExecutionStatusStarted,
+			initialStatus: ExecutionStatusStarted,
 			wantErr:       false,
-			wantStatus:    openapi.ExecutionStatusCancelled,
+			wantStatus:    ExecutionStatusCancelled,
 		},
 		{
 			name:          "idempotent: Cancelled → Cancelled (no error)",
-			initialStatus: openapi.ExecutionStatusCancelled,
+			initialStatus: ExecutionStatusCancelled,
 			wantErr:       false,
-			wantStatus:    openapi.ExecutionStatusCancelled,
+			wantStatus:    ExecutionStatusCancelled,
 		},
 		{
 			name:          "error: Finished → cannot cancel",
-			initialStatus: openapi.ExecutionStatusFinished,
+			initialStatus: ExecutionStatusFinished,
 			wantErr:       true,
 		},
 	}

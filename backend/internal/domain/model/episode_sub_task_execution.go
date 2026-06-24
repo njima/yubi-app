@@ -4,8 +4,16 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+type ExecutionStatus int
+
+const (
+	ExecutionStatusReady     ExecutionStatus = 0
+	ExecutionStatusStarted   ExecutionStatus = 1
+	ExecutionStatusCancelled ExecutionStatus = 2
+	ExecutionStatusFinished  ExecutionStatus = 3
 )
 
 // EpisodeSubTaskExecution represents the database record for episode_sub_task_execution table
@@ -14,7 +22,7 @@ type EpisodeSubTaskExecution struct {
 	IDNatural        string
 	OrganizationID   string
 	EpisodeSubTaskID string
-	ExecutionStatus  openapi.ExecutionStatus
+	ExecutionStatus  ExecutionStatus
 	StartedAt        *time.Time
 	FinishedAt       *time.Time
 	CreatedAt        time.Time
@@ -33,7 +41,7 @@ func InitEpisodeSubTaskExecution(organizationID, episodeSubTaskID string) (Episo
 		IDNatural:        idNatural,
 		OrganizationID:   organizationID,
 		EpisodeSubTaskID: episodeSubTaskID,
-		ExecutionStatus:  openapi.ExecutionStatusReady,
+		ExecutionStatus:  ExecutionStatusReady,
 		CreatedAt:        time.Now(),
 	}
 
@@ -49,7 +57,7 @@ func NewEpisodeSubTaskExecution(
 	idNatural,
 	organizationID,
 	episodeSubTaskID string,
-	executionStatus openapi.ExecutionStatus,
+	executionStatus ExecutionStatus,
 	startedAt,
 	finishedAt *time.Time,
 	createdAt time.Time,
@@ -81,7 +89,7 @@ func (exe EpisodeSubTaskExecution) validate() error {
 
 // CanStart checks if the execution can be started
 func (exe *EpisodeSubTaskExecution) CanStart() error {
-	if exe.ExecutionStatus != openapi.ExecutionStatusReady {
+	if exe.ExecutionStatus != ExecutionStatusReady {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "execution status must be Ready to start, current: %v", exe.ExecutionStatus),
 		)
@@ -94,14 +102,14 @@ func (exe *EpisodeSubTaskExecution) Start(occurredAt time.Time) error {
 	if err := exe.CanStart(); err != nil {
 		return err
 	}
-	exe.ExecutionStatus = openapi.ExecutionStatusStarted
+	exe.ExecutionStatus = ExecutionStatusStarted
 	exe.StartedAt = &occurredAt
 	return nil
 }
 
 // CanFinish checks if the execution can be finished
 func (exe *EpisodeSubTaskExecution) CanFinish() error {
-	if exe.ExecutionStatus != openapi.ExecutionStatusStarted {
+	if exe.ExecutionStatus != ExecutionStatusStarted {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "execution status must be Started to finish, current: %v", exe.ExecutionStatus),
 		)
@@ -114,21 +122,21 @@ func (exe *EpisodeSubTaskExecution) Finish(occurredAt time.Time) error {
 	if err := exe.CanFinish(); err != nil {
 		return err
 	}
-	exe.ExecutionStatus = openapi.ExecutionStatusFinished
+	exe.ExecutionStatus = ExecutionStatusFinished
 	exe.FinishedAt = &occurredAt
 	return nil
 }
 
 // Cancel transitions the execution to Cancelled
 func (exe *EpisodeSubTaskExecution) Cancel() error {
-	if exe.ExecutionStatus == openapi.ExecutionStatusCancelled {
+	if exe.ExecutionStatus == ExecutionStatusCancelled {
 		return nil // Already cancelled
 	}
-	if exe.ExecutionStatus == openapi.ExecutionStatusFinished {
+	if exe.ExecutionStatus == ExecutionStatusFinished {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "cannot cancel finished execution"),
 		)
 	}
-	exe.ExecutionStatus = openapi.ExecutionStatusCancelled
+	exe.ExecutionStatus = ExecutionStatusCancelled
 	return nil
 }

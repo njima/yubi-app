@@ -43,6 +43,22 @@ func episodeStatusModel(value *openapi.EpisodeCollectionStatus) (*model.EpisodeS
 	return &status, nil
 }
 
+func openAPISubTaskCollectionStatus(value model.SubTaskCollectionStatus) openapi.SubTaskCollectionStatus {
+	return openapi.SubTaskCollectionStatus(value)
+}
+
+func subTaskCollectionStatusModel(value openapi.SubTaskCollectionStatus) model.SubTaskCollectionStatus {
+	return model.SubTaskCollectionStatus(value)
+}
+
+func openAPIExecutionStatus(value model.ExecutionStatus) openapi.ExecutionStatus {
+	return openapi.ExecutionStatus(value)
+}
+
+func executionStatusModel(value openapi.ExecutionStatus) model.ExecutionStatus {
+	return model.ExecutionStatus(value)
+}
+
 func robotStatus(value *openapi.RobotStatus) *repository.RobotFilterStatus {
 	if value == nil {
 		return nil
