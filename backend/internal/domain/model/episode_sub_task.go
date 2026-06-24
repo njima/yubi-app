@@ -4,8 +4,17 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+type SubTaskCollectionStatus int
+
+const (
+	SubTaskCollectionStatusReady      SubTaskCollectionStatus = 0
+	SubTaskCollectionStatusInProgress SubTaskCollectionStatus = 1
+	SubTaskCollectionStatusCompleted  SubTaskCollectionStatus = 2
+	SubTaskCollectionStatusSkipped    SubTaskCollectionStatus = 3
+	SubTaskCollectionStatusCancelled  SubTaskCollectionStatus = 4
 )
 
 type EpisodeSubTask struct {
@@ -14,7 +23,7 @@ type EpisodeSubTask struct {
 	OrganizationID   string
 	EpisodeID        string
 	SubTaskID        string
-	CollectionStatus openapi.SubTaskCollectionStatus
+	CollectionStatus SubTaskCollectionStatus
 	CreatedAt        time.Time
 	UpdatedAt        *time.Time
 }
@@ -32,7 +41,7 @@ func InitEpisodeSubTask(organizationID, episodeID, subtaskID string) (EpisodeSub
 		OrganizationID:   organizationID,
 		EpisodeID:        episodeID,
 		SubTaskID:        subtaskID,
-		CollectionStatus: openapi.SubTaskCollectionStatusReady,
+		CollectionStatus: SubTaskCollectionStatusReady,
 		CreatedAt:        time.Now(),
 	}
 
@@ -49,7 +58,7 @@ func NewEpisodeSubTask(
 	organizationID,
 	episodeID,
 	subtaskID string,
-	collectionStatus openapi.SubTaskCollectionStatus,
+	collectionStatus SubTaskCollectionStatus,
 	createdAt time.Time,
 	updatedAt *time.Time,
 ) EpisodeSubTask {
@@ -78,7 +87,7 @@ func (est EpisodeSubTask) validate() error {
 }
 
 func (est *EpisodeSubTask) CanStartProgress() error {
-	if est.CollectionStatus != openapi.SubTaskCollectionStatusReady {
+	if est.CollectionStatus != SubTaskCollectionStatusReady {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "subtask status must be Ready to start progress, current: %v", est.CollectionStatus),
 		)
@@ -87,53 +96,53 @@ func (est *EpisodeSubTask) CanStartProgress() error {
 }
 
 func (est *EpisodeSubTask) StartProgress() error {
-	if est.CollectionStatus == openapi.SubTaskCollectionStatusInProgress {
+	if est.CollectionStatus == SubTaskCollectionStatusInProgress {
 		return nil // Already in progress
 	}
 	if err := est.CanStartProgress(); err != nil {
 		return err
 	}
-	est.CollectionStatus = openapi.SubTaskCollectionStatusInProgress
+	est.CollectionStatus = SubTaskCollectionStatusInProgress
 	return nil
 }
 
 func (est *EpisodeSubTask) Complete() error {
-	if est.CollectionStatus == openapi.SubTaskCollectionStatusCompleted {
+	if est.CollectionStatus == SubTaskCollectionStatusCompleted {
 		return nil // Already completed
 	}
-	if est.CollectionStatus == openapi.SubTaskCollectionStatusCancelled ||
-		est.CollectionStatus == openapi.SubTaskCollectionStatusSkipped {
+	if est.CollectionStatus == SubTaskCollectionStatusCancelled ||
+		est.CollectionStatus == SubTaskCollectionStatusSkipped {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "cannot complete subtask with status: %v", est.CollectionStatus),
 		)
 	}
-	est.CollectionStatus = openapi.SubTaskCollectionStatusCompleted
+	est.CollectionStatus = SubTaskCollectionStatusCompleted
 	return nil
 }
 
 func (est *EpisodeSubTask) Skip() error {
-	if est.CollectionStatus == openapi.SubTaskCollectionStatusSkipped {
+	if est.CollectionStatus == SubTaskCollectionStatusSkipped {
 		return nil // Already skipped
 	}
-	if est.CollectionStatus == openapi.SubTaskCollectionStatusCancelled ||
-		est.CollectionStatus == openapi.SubTaskCollectionStatusCompleted {
+	if est.CollectionStatus == SubTaskCollectionStatusCancelled ||
+		est.CollectionStatus == SubTaskCollectionStatusCompleted {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "cannot skip subtask with status: %v", est.CollectionStatus),
 		)
 	}
-	est.CollectionStatus = openapi.SubTaskCollectionStatusSkipped
+	est.CollectionStatus = SubTaskCollectionStatusSkipped
 	return nil
 }
 
 func (est *EpisodeSubTask) Cancel() error {
-	if est.CollectionStatus == openapi.SubTaskCollectionStatusCancelled {
+	if est.CollectionStatus == SubTaskCollectionStatusCancelled {
 		return nil // Already cancelled
 	}
-	if est.CollectionStatus == openapi.SubTaskCollectionStatusCompleted {
+	if est.CollectionStatus == SubTaskCollectionStatusCompleted {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "cannot cancel completed subtask"),
 		)
 	}
-	est.CollectionStatus = openapi.SubTaskCollectionStatusCancelled
+	est.CollectionStatus = SubTaskCollectionStatusCancelled
 	return nil
 }

@@ -3,8 +3,6 @@ package model
 import (
 	"testing"
 	"time"
-
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 func TestInitEpisodeSubTask(t *testing.T) {
@@ -78,8 +76,8 @@ func TestInitEpisodeSubTask(t *testing.T) {
 			if got.SubTaskID != tt.subtaskID {
 				t.Errorf("InitEpisodeSubTask() SubTaskID = %v, want %v", got.SubTaskID, tt.subtaskID)
 			}
-			if got.CollectionStatus != openapi.SubTaskCollectionStatusReady {
-				t.Errorf("InitEpisodeSubTask() CollectionStatus = %v, want %v", got.CollectionStatus, openapi.SubTaskCollectionStatusReady)
+			if got.CollectionStatus != SubTaskCollectionStatusReady {
+				t.Errorf("InitEpisodeSubTask() CollectionStatus = %v, want %v", got.CollectionStatus, SubTaskCollectionStatusReady)
 			}
 			if got.CreatedAt.IsZero() {
 				t.Errorf("InitEpisodeSubTask() CreatedAt is zero")
@@ -99,7 +97,7 @@ func TestNewEpisodeSubTask(t *testing.T) {
 		organizationID   string
 		episodeID        string
 		subtaskID        string
-		collectionStatus openapi.SubTaskCollectionStatus
+		collectionStatus SubTaskCollectionStatus
 		createdAt        time.Time
 		updatedAt        *time.Time
 	}{
@@ -110,7 +108,7 @@ func TestNewEpisodeSubTask(t *testing.T) {
 			organizationID:   "550e8400-e29b-41d4-a716-446655440001",
 			episodeID:        "550e8400-e29b-41d4-a716-446655440002",
 			subtaskID:        "550e8400-e29b-41d4-a716-446655440003",
-			collectionStatus: openapi.SubTaskCollectionStatusCompleted,
+			collectionStatus: SubTaskCollectionStatusCompleted,
 			createdAt:        now,
 			updatedAt:        &updatedAt,
 		},
@@ -121,7 +119,7 @@ func TestNewEpisodeSubTask(t *testing.T) {
 			organizationID:   "550e8400-e29b-41d4-a716-446655440005",
 			episodeID:        "550e8400-e29b-41d4-a716-446655440006",
 			subtaskID:        "550e8400-e29b-41d4-a716-446655440007",
-			collectionStatus: openapi.SubTaskCollectionStatusReady,
+			collectionStatus: SubTaskCollectionStatusReady,
 			createdAt:        now,
 			updatedAt:        nil,
 		},
@@ -171,11 +169,11 @@ func newValidEpisodeSubTask() EpisodeSubTask {
 		OrganizationID:   "550e8400-e29b-41d4-a716-446655440001",
 		EpisodeID:        "550e8400-e29b-41d4-a716-446655440002",
 		SubTaskID:        "550e8400-e29b-41d4-a716-446655440003",
-		CollectionStatus: openapi.SubTaskCollectionStatusReady,
+		CollectionStatus: SubTaskCollectionStatusReady,
 	}
 }
 
-func newEpisodeSubTaskWithStatus(status openapi.SubTaskCollectionStatus) EpisodeSubTask {
+func newEpisodeSubTaskWithStatus(status SubTaskCollectionStatus) EpisodeSubTask {
 	est := newValidEpisodeSubTask()
 	est.CollectionStatus = status
 	return est
@@ -184,35 +182,35 @@ func newEpisodeSubTaskWithStatus(status openapi.SubTaskCollectionStatus) Episode
 func TestEpisodeSubTask_StartProgress(t *testing.T) {
 	tests := []struct {
 		name          string
-		initialStatus openapi.SubTaskCollectionStatus
+		initialStatus SubTaskCollectionStatus
 		wantErr       bool
-		wantStatus    openapi.SubTaskCollectionStatus
+		wantStatus    SubTaskCollectionStatus
 	}{
 		{
 			name:          "success: Ready → InProgress",
-			initialStatus: openapi.SubTaskCollectionStatusReady,
+			initialStatus: SubTaskCollectionStatusReady,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusInProgress,
+			wantStatus:    SubTaskCollectionStatusInProgress,
 		},
 		{
 			name:          "idempotent: InProgress → InProgress (no error)",
-			initialStatus: openapi.SubTaskCollectionStatusInProgress,
+			initialStatus: SubTaskCollectionStatusInProgress,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusInProgress,
+			wantStatus:    SubTaskCollectionStatusInProgress,
 		},
 		{
 			name:          "error: Completed → cannot start progress",
-			initialStatus: openapi.SubTaskCollectionStatusCompleted,
+			initialStatus: SubTaskCollectionStatusCompleted,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Cancelled → cannot start progress",
-			initialStatus: openapi.SubTaskCollectionStatusCancelled,
+			initialStatus: SubTaskCollectionStatusCancelled,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Skipped → cannot start progress",
-			initialStatus: openapi.SubTaskCollectionStatusSkipped,
+			initialStatus: SubTaskCollectionStatusSkipped,
 			wantErr:       true,
 		},
 	}
@@ -242,36 +240,36 @@ func TestEpisodeSubTask_StartProgress(t *testing.T) {
 func TestEpisodeSubTask_Complete(t *testing.T) {
 	tests := []struct {
 		name          string
-		initialStatus openapi.SubTaskCollectionStatus
+		initialStatus SubTaskCollectionStatus
 		wantErr       bool
-		wantStatus    openapi.SubTaskCollectionStatus
+		wantStatus    SubTaskCollectionStatus
 	}{
 		{
 			name:          "success: Ready → Completed",
-			initialStatus: openapi.SubTaskCollectionStatusReady,
+			initialStatus: SubTaskCollectionStatusReady,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusCompleted,
+			wantStatus:    SubTaskCollectionStatusCompleted,
 		},
 		{
 			name:          "success: InProgress → Completed",
-			initialStatus: openapi.SubTaskCollectionStatusInProgress,
+			initialStatus: SubTaskCollectionStatusInProgress,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusCompleted,
+			wantStatus:    SubTaskCollectionStatusCompleted,
 		},
 		{
 			name:          "idempotent: Completed → Completed (no error)",
-			initialStatus: openapi.SubTaskCollectionStatusCompleted,
+			initialStatus: SubTaskCollectionStatusCompleted,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusCompleted,
+			wantStatus:    SubTaskCollectionStatusCompleted,
 		},
 		{
 			name:          "error: Cancelled → cannot complete",
-			initialStatus: openapi.SubTaskCollectionStatusCancelled,
+			initialStatus: SubTaskCollectionStatusCancelled,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Skipped → cannot complete",
-			initialStatus: openapi.SubTaskCollectionStatusSkipped,
+			initialStatus: SubTaskCollectionStatusSkipped,
 			wantErr:       true,
 		},
 	}
@@ -301,36 +299,36 @@ func TestEpisodeSubTask_Complete(t *testing.T) {
 func TestEpisodeSubTask_Skip(t *testing.T) {
 	tests := []struct {
 		name          string
-		initialStatus openapi.SubTaskCollectionStatus
+		initialStatus SubTaskCollectionStatus
 		wantErr       bool
-		wantStatus    openapi.SubTaskCollectionStatus
+		wantStatus    SubTaskCollectionStatus
 	}{
 		{
 			name:          "success: Ready → Skipped",
-			initialStatus: openapi.SubTaskCollectionStatusReady,
+			initialStatus: SubTaskCollectionStatusReady,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusSkipped,
+			wantStatus:    SubTaskCollectionStatusSkipped,
 		},
 		{
 			name:          "success: InProgress → Skipped",
-			initialStatus: openapi.SubTaskCollectionStatusInProgress,
+			initialStatus: SubTaskCollectionStatusInProgress,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusSkipped,
+			wantStatus:    SubTaskCollectionStatusSkipped,
 		},
 		{
 			name:          "idempotent: Skipped → Skipped (no error)",
-			initialStatus: openapi.SubTaskCollectionStatusSkipped,
+			initialStatus: SubTaskCollectionStatusSkipped,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusSkipped,
+			wantStatus:    SubTaskCollectionStatusSkipped,
 		},
 		{
 			name:          "error: Cancelled → cannot skip",
-			initialStatus: openapi.SubTaskCollectionStatusCancelled,
+			initialStatus: SubTaskCollectionStatusCancelled,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Completed → cannot skip",
-			initialStatus: openapi.SubTaskCollectionStatusCompleted,
+			initialStatus: SubTaskCollectionStatusCompleted,
 			wantErr:       true,
 		},
 	}
@@ -360,37 +358,37 @@ func TestEpisodeSubTask_Skip(t *testing.T) {
 func TestEpisodeSubTask_Cancel(t *testing.T) {
 	tests := []struct {
 		name          string
-		initialStatus openapi.SubTaskCollectionStatus
+		initialStatus SubTaskCollectionStatus
 		wantErr       bool
-		wantStatus    openapi.SubTaskCollectionStatus
+		wantStatus    SubTaskCollectionStatus
 	}{
 		{
 			name:          "success: Ready → Cancelled",
-			initialStatus: openapi.SubTaskCollectionStatusReady,
+			initialStatus: SubTaskCollectionStatusReady,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusCancelled,
+			wantStatus:    SubTaskCollectionStatusCancelled,
 		},
 		{
 			name:          "success: InProgress → Cancelled",
-			initialStatus: openapi.SubTaskCollectionStatusInProgress,
+			initialStatus: SubTaskCollectionStatusInProgress,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusCancelled,
+			wantStatus:    SubTaskCollectionStatusCancelled,
 		},
 		{
 			name:          "success: Skipped → Cancelled",
-			initialStatus: openapi.SubTaskCollectionStatusSkipped,
+			initialStatus: SubTaskCollectionStatusSkipped,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusCancelled,
+			wantStatus:    SubTaskCollectionStatusCancelled,
 		},
 		{
 			name:          "idempotent: Cancelled → Cancelled (no error)",
-			initialStatus: openapi.SubTaskCollectionStatusCancelled,
+			initialStatus: SubTaskCollectionStatusCancelled,
 			wantErr:       false,
-			wantStatus:    openapi.SubTaskCollectionStatusCancelled,
+			wantStatus:    SubTaskCollectionStatusCancelled,
 		},
 		{
 			name:          "error: Completed → cannot cancel",
-			initialStatus: openapi.SubTaskCollectionStatusCompleted,
+			initialStatus: SubTaskCollectionStatusCompleted,
 			wantErr:       true,
 		},
 	}

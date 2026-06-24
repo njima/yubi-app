@@ -154,14 +154,14 @@ func BuildEpisodeSubTasks(subtaskMasters model.SubTasks, records model.EpisodeSu
 		}
 		if record, ok := recordMap[st.IDNatural]; ok {
 			apiSubtask.Id = record.IDNatural
-			apiSubtask.Status = record.CollectionStatus
+			apiSubtask.Status = openAPISubTaskCollectionStatus(record.CollectionStatus)
 
 			if execs, ok := executionsMap[record.IDNatural]; ok {
 				apiExecs := make([]openapi.EpisodeSubTaskExecution, 0, len(execs))
 				for _, exec := range execs {
 					apiExecs = append(apiExecs, openapi.EpisodeSubTaskExecution{
 						Id:         exec.IDNatural,
-						Status:     exec.ExecutionStatus,
+						Status:     openAPIExecutionStatus(exec.ExecutionStatus),
 						StartedAt:  exec.StartedAt,
 						FinishedAt: exec.FinishedAt,
 					})

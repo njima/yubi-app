@@ -6,7 +6,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
 )
@@ -128,7 +127,7 @@ func (e *episodeSubTaskExecution) CountStartedBySubTaskID(ctx context.Context, c
 	count, err := conn.NewSelect().
 		Model((*entity.EpisodeSubTaskExecution)(nil)).
 		Where("episode_sub_task_id = ?", episodeSubTaskID).
-		Where("execution_status = ?", openapi.ExecutionStatusStarted).
+		Where("execution_status = ?", model.ExecutionStatusStarted).
 		Count(ctx)
 
 	if err != nil {
@@ -142,7 +141,7 @@ func (e *episodeSubTaskExecution) BulkCancelByEpisodeID(ctx context.Context, con
 	// Cancel all executions that belong to subtasks of the given episode
 	if _, err := conn.NewUpdate().
 		Model((*entity.EpisodeSubTaskExecution)(nil)).
-		Set("execution_status = ?", openapi.ExecutionStatusCancelled).
+		Set("execution_status = ?", model.ExecutionStatusCancelled).
 		Where("episode_sub_task_id IN (SELECT id_natural FROM episode_sub_task WHERE episode_id = ?)", episodeID).
 		Exec(ctx); err != nil {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to bulk cancel executions: %v", err))

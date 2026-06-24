@@ -6,7 +6,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -112,7 +111,7 @@ func (e *episodeSubTask) Update(ctx context.Context, conn repository.DBConn, sub
 func (e *episodeSubTask) BulkCancelByEpisodeID(ctx context.Context, conn repository.DBConn, episodeID string) error {
 	if _, err := conn.NewUpdate().
 		Model((*entity.EpisodeSubTask)(nil)).
-		Set("collection_status = ?", openapi.SubTaskCollectionStatusCancelled).
+		Set("collection_status = ?", model.SubTaskCollectionStatusCancelled).
 		Where("episode_id = ?", episodeID).
 		Exec(ctx); err != nil {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to bulk cancel episode subtasks: %v", err))
