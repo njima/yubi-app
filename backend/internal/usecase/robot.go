@@ -98,7 +98,7 @@ func (r *robot) List(ctx context.Context, filter repository.RobotListFilter, pag
 
 	dbFilter := filter
 	if filter.Status != nil &&
-		(*filter.Status == openapi.RobotStatusOnline || *filter.Status == openapi.RobotStatusOffline) {
+		(*filter.Status == repository.RobotFilterStatusOnline || *filter.Status == repository.RobotFilterStatusOffline) {
 		dbFilter.Status = nil
 
 		onlineIDs, err := r.robotStatusRepo.GetAllOnlineRobotIDs(ctx)
@@ -106,7 +106,7 @@ func (r *robot) List(ctx context.Context, filter repository.RobotListFilter, pag
 			return nil, 0, err
 		}
 
-		if *filter.Status == openapi.RobotStatusOnline {
+		if *filter.Status == repository.RobotFilterStatusOnline {
 			if len(onlineIDs) == 0 {
 				return model.Robots{}, 0, nil
 			}
@@ -235,7 +235,7 @@ func (r *robot) update(ctx context.Context, robot model.Robot, input RobotUpdate
 
 func (r *robot) ListTypes(ctx context.Context, filter repository.RobotTypeFilter) ([]string, error) {
 	if filter.Status != nil &&
-		(*filter.Status == openapi.RobotStatusOnline || *filter.Status == openapi.RobotStatusOffline) {
+		(*filter.Status == repository.RobotFilterStatusOnline || *filter.Status == repository.RobotFilterStatusOffline) {
 		requestedStatus := *filter.Status
 		filter.Status = nil
 
@@ -244,7 +244,7 @@ func (r *robot) ListTypes(ctx context.Context, filter repository.RobotTypeFilter
 			return nil, err
 		}
 
-		if requestedStatus == openapi.RobotStatusOnline {
+		if requestedStatus == repository.RobotFilterStatusOnline {
 			if len(onlineIDs) == 0 {
 				return []string{}, nil
 			}

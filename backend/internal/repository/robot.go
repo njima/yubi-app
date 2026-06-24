@@ -4,13 +4,12 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 type RobotListFilter struct {
 	SiteID         *string
 	LocationID     *string
-	Status         *openapi.RobotStatus
+	Status         *RobotFilterStatus
 	RobotType      *string
 	Search         *string
 	OnlineRobotIDs *[]string
@@ -22,7 +21,7 @@ type RobotListFilter struct {
 type RobotTypeFilter struct {
 	SiteID         *string
 	LocationID     *string
-	Status         *openapi.RobotStatus
+	Status         *RobotFilterStatus
 	OnlineRobotIDs *[]string
 	ExcludeOnline  bool
 }
