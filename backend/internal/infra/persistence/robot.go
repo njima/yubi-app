@@ -17,15 +17,15 @@ type robot struct{}
 
 func NewRobot() *robot { return &robot{} }
 
-func leaderStatusToModel(ls *uint) *openapi.LeaderStatus {
+func leaderStatusToModel(ls *uint) *model.LeaderStatus {
 	if ls == nil {
 		return nil
 	}
-	v := openapi.LeaderStatus(*ls)
+	v := model.LeaderStatus(*ls)
 	return &v
 }
 
-func leaderStatusToEntity(ls *openapi.LeaderStatus) *uint {
+func leaderStatusToEntity(ls *model.LeaderStatus) *uint {
 	if ls == nil {
 		return nil
 	}
@@ -101,7 +101,7 @@ func (r *robot) GetByID(ctx context.Context, conn repository.DBConn, id string) 
 		SiteName:             siteName,
 		Name:                 dbRob.Name,
 		RobotType:            &dbRob.RobotType,
-		Status:               openapi.RobotStatus(dbRob.Status),
+		Status:               model.RobotStatus(dbRob.Status),
 		LeaderStatus:         leaderStatusToModel(dbRob.LeaderStatus),
 		LeaderFaultStartedAt: dbRob.LeaderFaultStartedAt,
 		FaultStartedAt:       dbRob.FaultStartedAt,
@@ -238,7 +238,7 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 			SiteName:             siteName,
 			Name:                 dr.Name,
 			RobotType:            &dr.RobotType,
-			Status:               openapi.RobotStatus(dr.Status),
+			Status:               model.RobotStatus(dr.Status),
 			LeaderStatus:         leaderStatusToModel(dr.LeaderStatus),
 			LeaderFaultStartedAt: dr.LeaderFaultStartedAt,
 			FaultStartedAt:       dr.FaultStartedAt,

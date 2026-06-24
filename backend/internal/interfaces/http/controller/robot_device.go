@@ -21,6 +21,7 @@ func (c *controller) GetRobotMe(ctx context.Context, request openapi.GetRobotMeR
 		return nil, err
 	}
 
+	status := openAPIRobotStatus(rob.Status)
 	resp := openapi.GetRobotMe200JSONResponse{
 		Id:               rob.IDNatural,
 		OrganizationId:   &rob.OrganizationID,
@@ -31,7 +32,7 @@ func (c *controller) GetRobotMe(ctx context.Context, request openapi.GetRobotMeR
 		LocationName:     &rob.LocationName,
 		Name:             rob.Name,
 		RobotType:        rob.RobotType,
-		Status:           &rob.Status,
+		Status:           &status,
 		LastHeartbeatAt:  rob.LastHeartbeatAt,
 		OfflineReason:    rob.OfflineReason,
 		RobotConfig:      mapPtrFromRawMessagePtr(rob.RobotConfig),

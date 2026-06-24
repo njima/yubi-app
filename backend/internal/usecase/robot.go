@@ -7,7 +7,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
@@ -27,7 +26,7 @@ type RobotCreateInput struct {
 	LocationID     string
 	Name           string
 	RobotType      *string
-	LeaderStatus   *openapi.LeaderStatus
+	LeaderStatus   *model.LeaderStatus
 	RobotConfig    *json.RawMessage
 }
 
@@ -37,8 +36,8 @@ type RobotUpdateInput struct {
 	LocationID      string
 	Name            *string
 	RobotType       *string
-	Status          *openapi.RobotStatus
-	LeaderStatus    *openapi.LeaderStatus
+	Status          *model.RobotStatus
+	LeaderStatus    *model.LeaderStatus
 	HasLeaderStatus bool // true when leader_status is explicitly provided (including null)
 	LastHeartbeatAt *time.Time
 	OfflineReason   *string
@@ -171,36 +170,36 @@ func (r *robot) update(ctx context.Context, robot model.Robot, input RobotUpdate
 		}
 	}
 	if input.Status != nil {
-		wasFaulted := robot.Status == openapi.RobotStatusFaulted
+		wasFaulted := robot.Status == model.RobotStatusFaulted
 
 		// Only Ready(5), Faulted(3), Maintenance(4) can be manually set
 		switch *input.Status {
-		case openapi.RobotStatusReady, openapi.RobotStatusFaulted, openapi.RobotStatusMaintenance:
+		case model.RobotStatusReady, model.RobotStatusFaulted, model.RobotStatusMaintenance:
 			// allowed
 		default:
 			return model.Robot{}, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "status must be Ready, Faulted, or Maintenance"))
 		}
 		// Validate status transition based on current DB status
 		switch robot.Status {
-		case openapi.RobotStatusBusy:
+		case model.RobotStatusBusy:
 			return model.Robot{}, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "cannot manually change status while robot is Busy"))
-		case openapi.RobotStatusFaulted:
-			if *input.Status != openapi.RobotStatusReady && *input.Status != openapi.RobotStatusMaintenance {
+		case model.RobotStatusFaulted:
+			if *input.Status != model.RobotStatusReady && *input.Status != model.RobotStatusMaintenance {
 				return model.Robot{}, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "Faulted robot can only be set to Ready or Maintenance"))
 			}
-		case openapi.RobotStatusMaintenance:
-			if *input.Status != openapi.RobotStatusReady && *input.Status != openapi.RobotStatusFaulted {
+		case model.RobotStatusMaintenance:
+			if *input.Status != model.RobotStatusReady && *input.Status != model.RobotStatusFaulted {
 				return model.Robot{}, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "Maintenance robot can only be set to Ready or Faulted"))
 			}
 		}
 		if err := robot.SetStatus(*input.Status); err != nil {
 			return model.Robot{}, err
 		}
-		if *input.Status == openapi.RobotStatusFaulted {
+		if *input.Status == model.RobotStatusFaulted {
 			now := time.Now()
 			robot.SetFaultStartedAt(&now)
 		}
-		if wasFaulted && *input.Status != openapi.RobotStatusFaulted {
+		if wasFaulted && *input.Status != model.RobotStatusFaulted {
 			robot.SetFaultStartedAt(nil)
 		}
 	}
@@ -220,12 +219,12 @@ func (r *robot) update(ctx context.Context, robot model.Robot, input RobotUpdate
 		}
 	}
 	if input.HasLeaderStatus {
-		wasLeaderFaulted := robot.LeaderStatus != nil && *robot.LeaderStatus == openapi.LeaderFaulted
+		wasLeaderFaulted := robot.LeaderStatus != nil && *robot.LeaderStatus == model.LeaderStatusFaulted
 		robot.SetLeaderStatus(input.LeaderStatus)
-		if !wasLeaderFaulted && input.LeaderStatus != nil && *input.LeaderStatus == openapi.LeaderFaulted {
+		if !wasLeaderFaulted && input.LeaderStatus != nil && *input.LeaderStatus == model.LeaderStatusFaulted {
 			now := time.Now()
 			robot.SetLeaderFaultStartedAt(&now)
-		} else if wasLeaderFaulted && (input.LeaderStatus == nil || *input.LeaderStatus != openapi.LeaderFaulted) {
+		} else if wasLeaderFaulted && (input.LeaderStatus == nil || *input.LeaderStatus != model.LeaderStatusFaulted) {
 			robot.SetLeaderFaultStartedAt(nil)
 		}
 	}
@@ -262,7 +261,7 @@ func (r *robot) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	if rob.Status == openapi.RobotStatusBusy {
+	if rob.Status == model.RobotStatusBusy {
 		return apperror.NewError(apperror.NewMessage(apperror.CodeConflict, "cannot delete robot while it is Busy"))
 	}
 	if err := r.repo.Delete(ctx, r.db, id); err != nil {

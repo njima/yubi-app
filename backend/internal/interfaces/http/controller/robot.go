@@ -5,11 +5,16 @@ import (
 	"encoding/json"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
+
+func robotResponseFields(r *model.Robot) (openapi.RobotStatus, *openapi.LeaderStatus) {
+	return openAPIRobotStatus(r.Status), openAPILeaderStatus(r.LeaderStatus)
+}
 
 func (c *controller) ListRobots(ctx context.Context, request openapi.ListRobotsRequestObject) (openapi.ListRobotsResponseObject, error) {
 	pg := pagination.Parse(request.Params.Page, request.Params.Limit)
@@ -31,6 +36,7 @@ func (c *controller) ListRobots(ctx context.Context, request openapi.ListRobotsR
 
 	robots := make([]openapi.Robot, 0, len(robs))
 	for _, r := range robs {
+		status, leaderStatus := robotResponseFields(r)
 		robot := openapi.Robot{
 			Id:                         r.IDNatural,
 			OrganizationId:             &r.OrganizationID,
@@ -41,8 +47,8 @@ func (c *controller) ListRobots(ctx context.Context, request openapi.ListRobotsR
 			LocationName:               &r.LocationName,
 			Name:                       r.Name,
 			RobotType:                  r.RobotType,
-			Status:                     &r.Status,
-			LeaderStatus:               r.LeaderStatus,
+			Status:                     &status,
+			LeaderStatus:               leaderStatus,
 			ConsecutiveFaultDays:       r.ConsecutiveFaultDays(),
 			LeaderConsecutiveFaultDays: r.LeaderConsecutiveFaultDays(),
 			LeaderFaultStartedAt:       r.LeaderFaultStartedAt,
@@ -104,15 +110,20 @@ func (c *controller) CreateRobot(ctx context.Context, request openapi.CreateRobo
 		LocationID:     request.Body.LocationId,
 		Name:           request.Body.Name,
 		RobotType:      request.Body.RobotType,
-		LeaderStatus:   request.Body.LeaderStatus,
 		RobotConfig:    &cam,
 	}
+	mappedLeaderStatus, err := leaderStatus(request.Body.LeaderStatus)
+	if err != nil {
+		return nil, err
+	}
+	input.LeaderStatus = mappedLeaderStatus
 
 	rob, err := c.robotUsecase.Create(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 
+	status, leaderStatus := robotResponseFields(&rob)
 	return openapi.CreateRobot201JSONResponse{
 		Id:                         rob.IDNatural,
 		OrganizationId:             &rob.OrganizationID,
@@ -123,8 +134,8 @@ func (c *controller) CreateRobot(ctx context.Context, request openapi.CreateRobo
 		LocationName:               &rob.LocationName,
 		Name:                       rob.Name,
 		RobotType:                  rob.RobotType,
-		Status:                     &rob.Status,
-		LeaderStatus:               rob.LeaderStatus,
+		Status:                     &status,
+		LeaderStatus:               leaderStatus,
 		ConsecutiveFaultDays:       rob.ConsecutiveFaultDays(),
 		LeaderConsecutiveFaultDays: rob.LeaderConsecutiveFaultDays(),
 		LeaderFaultStartedAt:       rob.LeaderFaultStartedAt,
@@ -148,6 +159,7 @@ func (c *controller) GetRobotById(ctx context.Context, request openapi.GetRobotB
 		return nil, err
 	}
 
+	status, leaderStatus := robotResponseFields(&rob)
 	response := openapi.GetRobotById200JSONResponse{
 		Id:                         rob.IDNatural,
 		OrganizationId:             &rob.OrganizationID,
@@ -158,8 +170,8 @@ func (c *controller) GetRobotById(ctx context.Context, request openapi.GetRobotB
 		LocationName:               &rob.LocationName,
 		Name:                       rob.Name,
 		RobotType:                  rob.RobotType,
-		Status:                     &rob.Status,
-		LeaderStatus:               rob.LeaderStatus,
+		Status:                     &status,
+		LeaderStatus:               leaderStatus,
 		ConsecutiveFaultDays:       rob.ConsecutiveFaultDays(),
 		LeaderConsecutiveFaultDays: rob.LeaderConsecutiveFaultDays(),
 		LeaderFaultStartedAt:       rob.LeaderFaultStartedAt,
@@ -195,7 +207,11 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 	if request.Body.RobotType != nil {
 		input.RobotType = request.Body.RobotType
 	}
-	input.Status = request.Body.Status
+	status, err := robotStatusModel(request.Body.Status)
+	if err != nil {
+		return nil, err
+	}
+	input.Status = status
 	if request.Body.LastHeartbeatAt != nil {
 		input.LastHeartbeatAt = request.Body.LastHeartbeatAt
 	}
@@ -211,7 +227,10 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 		input.RobotConfig = &rawMsg
 	}
 	if request.Body.LeaderStatus != nil {
-		input.LeaderStatus = request.Body.LeaderStatus
+		input.LeaderStatus, err = leaderStatus(request.Body.LeaderStatus)
+		if err != nil {
+			return nil, err
+		}
 		input.HasLeaderStatus = true
 	}
 
@@ -220,6 +239,7 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 		return nil, err
 	}
 
+	responseStatus, leaderStatus := robotResponseFields(&rob)
 	return openapi.UpdateRobotById200JSONResponse{
 		Id:                         rob.IDNatural,
 		OrganizationId:             &rob.OrganizationID,
@@ -230,8 +250,8 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 		LocationName:               &rob.LocationName,
 		Name:                       rob.Name,
 		RobotType:                  rob.RobotType,
-		Status:                     &rob.Status,
-		LeaderStatus:               rob.LeaderStatus,
+		Status:                     &responseStatus,
+		LeaderStatus:               leaderStatus,
 		ConsecutiveFaultDays:       rob.ConsecutiveFaultDays(),
 		LeaderConsecutiveFaultDays: rob.LeaderConsecutiveFaultDays(),
 		LeaderFaultStartedAt:       rob.LeaderFaultStartedAt,

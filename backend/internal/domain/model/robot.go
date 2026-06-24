@@ -5,8 +5,26 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+type RobotStatus int
+
+const (
+	RobotStatusOnline      RobotStatus = 0
+	RobotStatusBusy        RobotStatus = 1
+	RobotStatusOffline     RobotStatus = 2
+	RobotStatusFaulted     RobotStatus = 3
+	RobotStatusMaintenance RobotStatus = 4
+	RobotStatusReady       RobotStatus = 5
+)
+
+type LeaderStatus int
+
+const (
+	LeaderStatusReady       LeaderStatus = 0
+	LeaderStatusFaulted     LeaderStatus = 1
+	LeaderStatusMaintenance LeaderStatus = 2
 )
 
 type Robot struct {
@@ -20,8 +38,8 @@ type Robot struct {
 	LocationName         string
 	Name                 string
 	RobotType            *string
-	Status               openapi.RobotStatus
-	LeaderStatus         *openapi.LeaderStatus
+	Status               RobotStatus
+	LeaderStatus         *LeaderStatus
 	LeaderFaultStartedAt *time.Time
 	FaultStartedAt       *time.Time
 	LastHeartbeatAt      *time.Time
@@ -63,7 +81,7 @@ func InitRobot(
 		LocationID:     locationID,
 		Name:           name,
 		RobotType:      robotType,
-		Status:         openapi.RobotStatusReady,
+		Status:         RobotStatusReady,
 		RobotConfig:    robotConfig,
 		CreatedAt:      time.Now(),
 	}
@@ -112,7 +130,7 @@ func (r *Robot) SetRobotType(robotType string) error {
 	return r.validate()
 }
 
-func (r *Robot) SetStatus(status openapi.RobotStatus) error {
+func (r *Robot) SetStatus(status RobotStatus) error {
 	r.Status = status
 	return r.validate()
 }
@@ -127,7 +145,7 @@ func (r *Robot) SetOfflineReason(offlineReason string) error {
 	return r.validate()
 }
 
-func (r *Robot) SetLeaderStatus(leaderStatus *openapi.LeaderStatus) {
+func (r *Robot) SetLeaderStatus(leaderStatus *LeaderStatus) {
 	r.LeaderStatus = leaderStatus
 }
 
@@ -147,7 +165,7 @@ func (r *Robot) SetRobotConfig(robotConfig json.RawMessage) error {
 // CanStartTeleoperation checks if the robot can start teleoperation.
 // The caller must resolve the robot's status via ResolvedStatus before calling this.
 func (r *Robot) CanStartTeleoperation() error {
-	if r.Status != openapi.RobotStatusOnline {
+	if r.Status != RobotStatusOnline {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "robot must be online to start teleoperation, current status: %d", r.Status),
 		)
@@ -160,7 +178,7 @@ func (r *Robot) StartTeleoperation(episodeID, userID string) error {
 	if err := r.CanStartTeleoperation(); err != nil {
 		return err
 	}
-	r.Status = openapi.RobotStatusBusy
+	r.Status = RobotStatusBusy
 	r.ActiveEpisodeID = &episodeID
 	r.ActiveUserID = &userID
 	return nil
@@ -168,7 +186,7 @@ func (r *Robot) StartTeleoperation(episodeID, userID string) error {
 
 // CanEndTeleoperation checks if the robot can end teleoperation
 func (r *Robot) CanEndTeleoperation() error {
-	if r.Status != openapi.RobotStatusBusy {
+	if r.Status != RobotStatusBusy {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "robot status must be Busy to end teleoperation, current: %d", r.Status),
 		)
@@ -181,7 +199,7 @@ func (r *Robot) EndTeleoperation() error {
 	if err := r.CanEndTeleoperation(); err != nil {
 		return err
 	}
-	r.Status = openapi.RobotStatusReady
+	r.Status = RobotStatusReady
 	r.ActiveEpisodeID = nil
 	r.ActiveUserID = nil
 	return nil
@@ -192,17 +210,17 @@ func (r *Robot) EndTeleoperation() error {
 // Ready or Online + heartbeat absent → Offline
 // Busy / Faulted / Maintenance → unchanged
 func (r *Robot) ResolvedStatus(heartbeatAlive bool) {
-	if r.Status == openapi.RobotStatusReady || r.Status == openapi.RobotStatusOnline {
+	if r.Status == RobotStatusReady || r.Status == RobotStatusOnline {
 		if heartbeatAlive {
-			r.Status = openapi.RobotStatusOnline
+			r.Status = RobotStatusOnline
 		} else {
-			r.Status = openapi.RobotStatusOffline
+			r.Status = RobotStatusOffline
 		}
 	}
 }
 
 func (r Robot) ConsecutiveFaultDays() *int {
-	if r.Status != openapi.RobotStatusFaulted || r.FaultStartedAt == nil {
+	if r.Status != RobotStatusFaulted || r.FaultStartedAt == nil {
 		return nil
 	}
 	days := int(time.Since(*r.FaultStartedAt).Hours() / 24)
@@ -210,7 +228,7 @@ func (r Robot) ConsecutiveFaultDays() *int {
 }
 
 func (r Robot) LeaderConsecutiveFaultDays() *int {
-	if r.LeaderStatus == nil || *r.LeaderStatus != openapi.LeaderFaulted || r.LeaderFaultStartedAt == nil {
+	if r.LeaderStatus == nil || *r.LeaderStatus != LeaderStatusFaulted || r.LeaderFaultStartedAt == nil {
 		return nil
 	}
 	days := int(time.Since(*r.LeaderFaultStartedAt).Hours() / 24)

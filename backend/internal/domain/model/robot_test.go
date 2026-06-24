@@ -5,8 +5,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 func TestInitRobot(t *testing.T) {
@@ -117,8 +115,8 @@ func TestInitRobot(t *testing.T) {
 			if got.Name != tt.robotName {
 				t.Errorf("InitRobot() Name = %v, want %v", got.Name, tt.robotName)
 			}
-			if got.Status != openapi.RobotStatusReady {
-				t.Errorf("InitRobot() Status = %v, want %v", got.Status, openapi.RobotStatusReady)
+			if got.Status != RobotStatusReady {
+				t.Errorf("InitRobot() Status = %v, want %v", got.Status, RobotStatusReady)
 			}
 			if got.CreatedAt.IsZero() {
 				t.Errorf("InitRobot() CreatedAt is zero")
@@ -354,22 +352,22 @@ func TestRobot_SetRobotType(t *testing.T) {
 func TestRobot_SetStatus(t *testing.T) {
 	tests := []struct {
 		name    string
-		status  openapi.RobotStatus
+		status  RobotStatus
 		wantErr bool
 	}{
 		{
 			name:    "success with offline status",
-			status:  openapi.RobotStatusOffline,
+			status:  RobotStatusOffline,
 			wantErr: false,
 		},
 		{
 			name:    "success with ready status",
-			status:  openapi.RobotStatusReady,
+			status:  RobotStatusReady,
 			wantErr: false,
 		},
 		{
 			name:    "success with busy status",
-			status:  openapi.RobotStatusBusy,
+			status:  RobotStatusBusy,
 			wantErr: false,
 		},
 	}
@@ -518,7 +516,7 @@ func TestRobot_SetRobotConfig(t *testing.T) {
 	}
 }
 
-func newRobotWithStatus(status openapi.RobotStatus) Robot {
+func newRobotWithStatus(status RobotStatus) Robot {
 	r := newValidRobot()
 	r.Status = status
 	return r
@@ -530,30 +528,30 @@ func TestRobot_StartTeleoperation(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		initialStatus openapi.RobotStatus
+		initialStatus RobotStatus
 		episodeID     string
 		userID        string
 		wantErr       bool
-		wantStatus    openapi.RobotStatus
+		wantStatus    RobotStatus
 	}{
 		{
 			name:          "success: Online → Busy",
-			initialStatus: openapi.RobotStatusOnline,
+			initialStatus: RobotStatusOnline,
 			episodeID:     episodeID,
 			userID:        userID,
 			wantErr:       false,
-			wantStatus:    openapi.RobotStatusBusy,
+			wantStatus:    RobotStatusBusy,
 		},
 		{
 			name:          "error: Offline → cannot start teleoperation",
-			initialStatus: openapi.RobotStatusOffline,
+			initialStatus: RobotStatusOffline,
 			episodeID:     episodeID,
 			userID:        userID,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Busy → cannot start teleoperation",
-			initialStatus: openapi.RobotStatusBusy,
+			initialStatus: RobotStatusBusy,
 			episodeID:     episodeID,
 			userID:        userID,
 			wantErr:       true,
@@ -591,24 +589,24 @@ func TestRobot_StartTeleoperation(t *testing.T) {
 func TestRobot_EndTeleoperation(t *testing.T) {
 	tests := []struct {
 		name          string
-		initialStatus openapi.RobotStatus
+		initialStatus RobotStatus
 		wantErr       bool
-		wantStatus    openapi.RobotStatus
+		wantStatus    RobotStatus
 	}{
 		{
 			name:          "success: Busy → Ready",
-			initialStatus: openapi.RobotStatusBusy,
+			initialStatus: RobotStatusBusy,
 			wantErr:       false,
-			wantStatus:    openapi.RobotStatusReady,
+			wantStatus:    RobotStatusReady,
 		},
 		{
 			name:          "error: Ready → cannot end teleoperation",
-			initialStatus: openapi.RobotStatusReady,
+			initialStatus: RobotStatusReady,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Offline → cannot end teleoperation",
-			initialStatus: openapi.RobotStatusOffline,
+			initialStatus: RobotStatusOffline,
 			wantErr:       true,
 		},
 	}
@@ -618,7 +616,7 @@ func TestRobot_EndTeleoperation(t *testing.T) {
 			r := newRobotWithStatus(tt.initialStatus)
 			episodeID := "550e8400-e29b-41d4-a716-446655440010"
 			userID := "550e8400-e29b-41d4-a716-446655440011"
-			if tt.initialStatus == openapi.RobotStatusBusy {
+			if tt.initialStatus == RobotStatusBusy {
 				r.ActiveEpisodeID = &episodeID
 				r.ActiveUserID = &userID
 			}
@@ -650,26 +648,26 @@ func TestRobot_EndTeleoperation(t *testing.T) {
 func TestRobot_ConsecutiveFaultDays(t *testing.T) {
 	tests := []struct {
 		name      string
-		status    openapi.RobotStatus
+		status    RobotStatus
 		startedAt *time.Time
 		wantNil   bool
 		wantDays  int
 	}{
 		{
 			name:      "returns nil when status is not faulted",
-			status:    openapi.RobotStatusReady,
+			status:    RobotStatusReady,
 			startedAt: nil,
 			wantNil:   true,
 		},
 		{
 			name:      "returns nil when faulted but start time is nil",
-			status:    openapi.RobotStatusFaulted,
+			status:    RobotStatusFaulted,
 			startedAt: nil,
 			wantNil:   true,
 		},
 		{
 			name:      "returns floored elapsed days when faulted",
-			status:    openapi.RobotStatusFaulted,
+			status:    RobotStatusFaulted,
 			startedAt: ptrTime(time.Now().Add(-49 * time.Hour)),
 			wantNil:   false,
 			wantDays:  2,
@@ -702,12 +700,12 @@ func TestRobot_ConsecutiveFaultDays(t *testing.T) {
 }
 
 func TestRobot_LeaderConsecutiveFaultDays(t *testing.T) {
-	faulted := openapi.LeaderFaulted
-	ready := openapi.LeaderReady
+	faulted := LeaderStatusFaulted
+	ready := LeaderStatusReady
 
 	tests := []struct {
 		name      string
-		status    *openapi.LeaderStatus
+		status    *LeaderStatus
 		startedAt *time.Time
 		wantNil   bool
 		wantDays  int
