@@ -48,6 +48,9 @@ go.work.sum
 # Claude Code
 .claude/
 
+# Codex local workspace
+.codex/
+
 # Agent-local instructions
 AGENTS.md
 
