@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -30,7 +29,7 @@ type APIKey struct {
 	OrganizationID string
 	UserID         string
 	UserName       string
-	UserRole       openapi.UserRole
+	UserRole       UserRole
 	RobotID        *string
 	RobotName      *string
 	Name           string
@@ -97,7 +96,7 @@ func APIKeyHint(raw string) string {
 // and never persisted).
 func InitAPIKey(
 	organizationID, userID string,
-	userRole openapi.UserRole,
+	userRole UserRole,
 	robotID *string,
 	name string,
 	expiresAt *time.Time,

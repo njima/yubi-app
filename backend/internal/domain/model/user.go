@@ -4,9 +4,18 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+)
+
+type UserRole int
+
+const (
+	UserRoleAdmin        UserRole = 0
+	UserRoleDataEngineer UserRole = 1
+	UserRoleManager      UserRole = 2
+	UserRoleOperator     UserRole = 3
+	UserRoleViewer       UserRole = 4
 )
 
 type LocationSummary struct {
@@ -26,7 +35,7 @@ type User struct {
 	OrganizationName string
 	Name             string
 	Email            string
-	Role             openapi.UserRole
+	Role             UserRole
 	CreatedAt        time.Time
 	UpdatedAt        *time.Time
 	Locations        []LocationSummary
@@ -39,7 +48,7 @@ func InitUser(
 	organizationID,
 	name,
 	email string,
-	role openapi.UserRole,
+	role UserRole,
 ) (User, error) {
 	ID, err := InitID()
 	if err != nil {
@@ -68,7 +77,7 @@ func NewUser(
 	organizationID,
 	name,
 	email string,
-	role openapi.UserRole,
+	role UserRole,
 	createdAt time.Time,
 	updatedAt *time.Time,
 ) User {
@@ -115,7 +124,7 @@ func (u *User) SetEmail(email string) error {
 	return u.validate()
 }
 
-func (u *User) SetRole(role openapi.UserRole) error {
+func (u *User) SetRole(role UserRole) error {
 	u.Role = role
 	return u.validate()
 }

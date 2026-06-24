@@ -3,77 +3,77 @@ package authz
 import (
 	"testing"
 
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 )
 
 func TestHasPermission(t *testing.T) {
 	tests := []struct {
 		name   string
-		role   openapi.UserRole
+		role   model.UserRole
 		action string
 		want   bool
 	}{
 		// Admin: full access
-		{name: "Admin can create location", role: openapi.Admin, action: "location:create", want: true},
-		{name: "Admin can delete location", role: openapi.Admin, action: "location:delete", want: true},
-		{name: "Admin can create user", role: openapi.Admin, action: "user:create", want: true},
-		{name: "Admin can update role", role: openapi.Admin, action: "user:update_role", want: true},
-		{name: "Admin can grant permission", role: openapi.Admin, action: "user:grant_permission", want: true},
-		{name: "Admin can create robot", role: openapi.Admin, action: "robot:create", want: true},
-		{name: "Admin can delete robot", role: openapi.Admin, action: "robot:delete", want: true},
-		{name: "Admin can create episode", role: openapi.Admin, action: "episode:create", want: true},
+		{name: "Admin can create location", role: model.UserRoleAdmin, action: "location:create", want: true},
+		{name: "Admin can delete location", role: model.UserRoleAdmin, action: "location:delete", want: true},
+		{name: "Admin can create user", role: model.UserRoleAdmin, action: "user:create", want: true},
+		{name: "Admin can update role", role: model.UserRoleAdmin, action: "user:update_role", want: true},
+		{name: "Admin can grant permission", role: model.UserRoleAdmin, action: "user:grant_permission", want: true},
+		{name: "Admin can create robot", role: model.UserRoleAdmin, action: "robot:create", want: true},
+		{name: "Admin can delete robot", role: model.UserRoleAdmin, action: "robot:delete", want: true},
+		{name: "Admin can create episode", role: model.UserRoleAdmin, action: "episode:create", want: true},
 
 		// DataEngineer: no location create/delete, no user create/delete/update_role
-		{name: "DataEngineer can list location", role: openapi.DataEngineer, action: "location:list", want: true},
-		{name: "DataEngineer cannot create location", role: openapi.DataEngineer, action: "location:create", want: false},
-		{name: "DataEngineer cannot delete location", role: openapi.DataEngineer, action: "location:delete", want: false},
-		{name: "DataEngineer can create task", role: openapi.DataEngineer, action: "task:create", want: true},
-		{name: "DataEngineer cannot create user", role: openapi.DataEngineer, action: "user:create", want: false},
-		{name: "DataEngineer cannot update role", role: openapi.DataEngineer, action: "user:update_role", want: false},
-		{name: "DataEngineer can create robot", role: openapi.DataEngineer, action: "robot:create", want: true},
-		{name: "DataEngineer can create episode", role: openapi.DataEngineer, action: "episode:create", want: true},
+		{name: "DataEngineer can list location", role: model.UserRoleDataEngineer, action: "location:list", want: true},
+		{name: "DataEngineer cannot create location", role: model.UserRoleDataEngineer, action: "location:create", want: false},
+		{name: "DataEngineer cannot delete location", role: model.UserRoleDataEngineer, action: "location:delete", want: false},
+		{name: "DataEngineer can create task", role: model.UserRoleDataEngineer, action: "task:create", want: true},
+		{name: "DataEngineer cannot create user", role: model.UserRoleDataEngineer, action: "user:create", want: false},
+		{name: "DataEngineer cannot update role", role: model.UserRoleDataEngineer, action: "user:update_role", want: false},
+		{name: "DataEngineer can create robot", role: model.UserRoleDataEngineer, action: "robot:create", want: true},
+		{name: "DataEngineer can create episode", role: model.UserRoleDataEngineer, action: "episode:create", want: true},
 
 		// Manager: same as DataEngineer
-		{name: "Manager can list location", role: openapi.Manager, action: "location:list", want: true},
-		{name: "Manager cannot create location", role: openapi.Manager, action: "location:create", want: false},
-		{name: "Manager can create task", role: openapi.Manager, action: "task:create", want: true},
-		{name: "Manager cannot create user", role: openapi.Manager, action: "user:create", want: false},
-		{name: "Manager can create robot", role: openapi.Manager, action: "robot:create", want: true},
+		{name: "Manager can list location", role: model.UserRoleManager, action: "location:list", want: true},
+		{name: "Manager cannot create location", role: model.UserRoleManager, action: "location:create", want: false},
+		{name: "Manager can create task", role: model.UserRoleManager, action: "task:create", want: true},
+		{name: "Manager cannot create user", role: model.UserRoleManager, action: "user:create", want: false},
+		{name: "Manager can create robot", role: model.UserRoleManager, action: "robot:create", want: true},
 
 		// Operator: read-only for location/task/subtask/robot, can create/update episode
-		{name: "Operator can list location", role: openapi.Operator, action: "location:list", want: true},
-		{name: "Operator cannot create location", role: openapi.Operator, action: "location:create", want: false},
-		{name: "Operator can list task", role: openapi.Operator, action: "task:list", want: true},
-		{name: "Operator cannot create task", role: openapi.Operator, action: "task:create", want: false},
-		{name: "Operator can list robot", role: openapi.Operator, action: "robot:list", want: true},
-		{name: "Operator cannot create robot", role: openapi.Operator, action: "robot:create", want: false},
-		{name: "Operator can create episode", role: openapi.Operator, action: "episode:create", want: true},
-		{name: "Operator can update episode", role: openapi.Operator, action: "episode:update", want: true},
-		{name: "Operator can access robot_device", role: openapi.Operator, action: "robot_device:me", want: true},
+		{name: "Operator can list location", role: model.UserRoleOperator, action: "location:list", want: true},
+		{name: "Operator cannot create location", role: model.UserRoleOperator, action: "location:create", want: false},
+		{name: "Operator can list task", role: model.UserRoleOperator, action: "task:list", want: true},
+		{name: "Operator cannot create task", role: model.UserRoleOperator, action: "task:create", want: false},
+		{name: "Operator can list robot", role: model.UserRoleOperator, action: "robot:list", want: true},
+		{name: "Operator cannot create robot", role: model.UserRoleOperator, action: "robot:create", want: false},
+		{name: "Operator can create episode", role: model.UserRoleOperator, action: "episode:create", want: true},
+		{name: "Operator can update episode", role: model.UserRoleOperator, action: "episode:update", want: true},
+		{name: "Operator can access robot_device", role: model.UserRoleOperator, action: "robot_device:me", want: true},
 
 		// Viewer: read-only access, no episode create
-		{name: "Viewer can list location", role: openapi.Viewer, action: "location:list", want: true},
-		{name: "Viewer cannot create location", role: openapi.Viewer, action: "location:create", want: false},
-		{name: "Viewer can list episode", role: openapi.Viewer, action: "episode:list", want: true},
-		{name: "Viewer cannot create episode", role: openapi.Viewer, action: "episode:create", want: false},
-		{name: "Viewer can list robot", role: openapi.Viewer, action: "robot:list", want: true},
-		{name: "Viewer cannot create robot", role: openapi.Viewer, action: "robot:create", want: false},
-		{name: "Viewer cannot access robot_device me", role: openapi.Viewer, action: "robot_device:me", want: false},
+		{name: "Viewer can list location", role: model.UserRoleViewer, action: "location:list", want: true},
+		{name: "Viewer cannot create location", role: model.UserRoleViewer, action: "location:create", want: false},
+		{name: "Viewer can list episode", role: model.UserRoleViewer, action: "episode:list", want: true},
+		{name: "Viewer cannot create episode", role: model.UserRoleViewer, action: "episode:create", want: false},
+		{name: "Viewer can list robot", role: model.UserRoleViewer, action: "robot:list", want: true},
+		{name: "Viewer cannot create robot", role: model.UserRoleViewer, action: "robot:create", want: false},
+		{name: "Viewer cannot access robot_device me", role: model.UserRoleViewer, action: "robot_device:me", want: false},
 
 		// Self-profile update is allowed for every role
-		{name: "Admin can update self", role: openapi.Admin, action: "user:update_self", want: true},
-		{name: "DataEngineer can update self", role: openapi.DataEngineer, action: "user:update_self", want: true},
-		{name: "Manager can update self", role: openapi.Manager, action: "user:update_self", want: true},
-		{name: "Operator can update self", role: openapi.Operator, action: "user:update_self", want: true},
-		{name: "Viewer can update self", role: openapi.Viewer, action: "user:update_self", want: true},
+		{name: "Admin can update self", role: model.UserRoleAdmin, action: "user:update_self", want: true},
+		{name: "DataEngineer can update self", role: model.UserRoleDataEngineer, action: "user:update_self", want: true},
+		{name: "Manager can update self", role: model.UserRoleManager, action: "user:update_self", want: true},
+		{name: "Operator can update self", role: model.UserRoleOperator, action: "user:update_self", want: true},
+		{name: "Viewer can update self", role: model.UserRoleViewer, action: "user:update_self", want: true},
 		// Viewer still cannot update arbitrary users
-		{name: "Viewer cannot update other user", role: openapi.Viewer, action: "user:update", want: false},
+		{name: "Viewer cannot update other user", role: model.UserRoleViewer, action: "user:update", want: false},
 
 		// Unknown role (use an integer value that doesn't map to any defined role)
-		{name: "Unknown role returns false", role: openapi.UserRole(9999), action: "location:list", want: false},
+		{name: "Unknown role returns false", role: model.UserRole(9999), action: "location:list", want: false},
 
 		// Non-existent action
-		{name: "Admin with non-existent action returns false", role: openapi.Admin, action: "nonexistent:action", want: false},
+		{name: "Admin with non-existent action returns false", role: model.UserRoleAdmin, action: "nonexistent:action", want: false},
 	}
 
 	for _, tt := range tests {

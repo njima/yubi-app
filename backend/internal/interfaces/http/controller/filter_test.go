@@ -75,6 +75,18 @@ var approvalStatusMappingCases = []struct {
 	{name: "approved", api: openapi.Approved, want: model.ApprovalStatusApproved},
 }
 
+var userRoleMappingCases = []struct {
+	name string
+	api  openapi.UserRole
+	want model.UserRole
+}{
+	{name: "admin", api: openapi.Admin, want: model.UserRoleAdmin},
+	{name: "data_engineer", api: openapi.DataEngineer, want: model.UserRoleDataEngineer},
+	{name: "manager", api: openapi.Manager, want: model.UserRoleManager},
+	{name: "operator", api: openapi.Operator, want: model.UserRoleOperator},
+	{name: "viewer", api: openapi.Viewer, want: model.UserRoleViewer},
+}
+
 func TestRobotStatusModelMapping(t *testing.T) {
 	for _, tt := range robotStatusMappingCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -262,6 +274,41 @@ func TestApprovalStatusMappingCoversOpenAPISchemaEnum(t *testing.T) {
 
 	if got := len(approvalStatusMappingCases); got != want {
 		t.Fatalf("approval status mapping count = %d, want OpenAPI enum count %d", got, want)
+	}
+}
+
+func TestUserRoleModelMapping(t *testing.T) {
+	for _, tt := range userRoleMappingCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := userRoleModel(tt.api)
+			if err != nil {
+				t.Fatalf("userRoleModel() error = %v", err)
+			}
+			if got != tt.want {
+				t.Fatalf("userRoleModel() = %v, want %v", got, tt.want)
+			}
+			if roundTrip := openAPIUserRole(got); roundTrip != tt.api {
+				t.Fatalf("openAPIUserRole(userRoleModel()) = %v, want %v", roundTrip, tt.api)
+			}
+		})
+	}
+}
+
+func TestUserRoleMappingCoversOpenAPISchemaEnum(t *testing.T) {
+	want := openAPISchemaEnumCount(t, "UserRole")
+
+	if got := len(userRoleMappingCases); got != want {
+		t.Fatalf("user role mapping count = %d, want OpenAPI enum count %d", got, want)
+	}
+}
+
+func TestUserRoleRejectsUnknownValue(t *testing.T) {
+	got, err := userRoleModel(openapi.UserRole(999))
+	if err == nil {
+		t.Fatalf("userRoleModel() error = nil")
+	}
+	if got != 0 {
+		t.Fatalf("userRoleModel() = %v, want zero value", got)
 	}
 }
 

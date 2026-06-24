@@ -16,7 +16,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -27,23 +26,23 @@ const (
 
 var userImportHeaders = []string{"email", "display_name", "role"}
 
-var userRoleMap = map[string]openapi.UserRole{
-	"admin":         openapi.Admin,
-	"data_engineer": openapi.DataEngineer,
-	"manager":       openapi.Manager,
-	"operator":      openapi.Operator,
-	"viewer":        openapi.Viewer,
+var userRoleMap = map[string]model.UserRole{
+	"admin":         model.UserRoleAdmin,
+	"data_engineer": model.UserRoleDataEngineer,
+	"manager":       model.UserRoleManager,
+	"operator":      model.UserRoleOperator,
+	"viewer":        model.UserRoleViewer,
 }
 
-var userRoleStringMap = func() map[openapi.UserRole]string {
-	m := make(map[openapi.UserRole]string, len(userRoleMap))
+var userRoleStringMap = func() map[model.UserRole]string {
+	m := make(map[model.UserRole]string, len(userRoleMap))
 	for k, v := range userRoleMap {
 		m[v] = k
 	}
 	return m
 }()
 
-func UserRoleString(role openapi.UserRole) string {
+func UserRoleString(role model.UserRole) string {
 	if s, ok := userRoleStringMap[role]; ok {
 		return s
 	}
@@ -72,7 +71,7 @@ type UserImportValidRow struct {
 	RowNumber   int
 	Email       string
 	DisplayName string
-	Role        openapi.UserRole
+	Role        model.UserRole
 }
 
 type UserImportRowError struct {
@@ -226,7 +225,7 @@ type userImportRow struct {
 	rowNumber   int
 	email       string
 	displayName string
-	role        openapi.UserRole
+	role        model.UserRole
 }
 
 func (u *userImport) parseCSV(csvContent string) ([]userImportRow, []UserImportRowError, error) {
@@ -288,7 +287,7 @@ func (u *userImport) parseCSV(csvContent string) ([]userImportRow, []UserImportR
 		}
 
 		roleStr := strings.ToLower(strings.TrimSpace(record[2]))
-		role := openapi.Viewer
+		role := model.UserRoleViewer
 		if roleStr != "" {
 			if r, ok := userRoleMap[roleStr]; ok {
 				role = r

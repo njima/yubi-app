@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog"
 	"github.com/uptrace/bun"
@@ -23,7 +22,7 @@ type APIKeyAuthResult struct {
 	APIKeyID       int64
 	APIKeyIDNat    string
 	UserID         string
-	UserRole       openapi.UserRole
+	UserRole       model.UserRole
 	RobotID        string
 	OrganizationID string
 }
