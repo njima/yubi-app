@@ -9,7 +9,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog"
@@ -63,7 +62,7 @@ type EpisodeUpdateInput struct {
 	ID           string
 	StartedAt    *time.Time
 	FinishedAt   *time.Time
-	Status       *openapi.EpisodeCollectionStatus
+	Status       *model.EpisodeStatus
 	ErrorDetails *string
 	RecordedByID *string
 }

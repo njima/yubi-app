@@ -9,7 +9,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -77,15 +77,15 @@ func (u *episodeExport) Export(ctx context.Context, filter repository.EpisodeExp
 	return buf.Bytes(), nil
 }
 
-func episodeStatusLabel(status openapi.EpisodeCollectionStatus) string {
+func episodeStatusLabel(status model.EpisodeStatus) string {
 	switch status {
-	case openapi.EpisodeCollectionStatusReady:
+	case model.EpisodeStatusReady:
 		return "Ready"
-	case openapi.EpisodeCollectionStatusRecording:
+	case model.EpisodeStatusRecording:
 		return "Recording"
-	case openapi.EpisodeCollectionStatusCancel:
+	case model.EpisodeStatusCancel:
 		return "Cancel"
-	case openapi.EpisodeCollectionStatusCompleted:
+	case model.EpisodeStatusCompleted:
 		return "Completed"
 	default:
 		return "Unknown"

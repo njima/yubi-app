@@ -7,7 +7,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
@@ -273,7 +272,7 @@ func (e *episodeStats) AggregateEpisodesForPeriod(ctx context.Context, conn repo
 		ColumnExpr("COUNT(*) AS episode_count").
 		Where("e.finished_at IS NOT NULL").
 		Where("e.started_at IS NOT NULL").
-		Where("e.collection_status = ?", openapi.EpisodeCollectionStatusCompleted).
+		Where("e.collection_status = ?", model.EpisodeStatusCompleted).
 		Where("e.started_at < ?", to).
 		Where("e.finished_at > ?", from).
 		Group("e.organization_id", "e.location_id", "e.robot_id").
@@ -315,7 +314,7 @@ func (e *episodeStats) AggregateByTaskVersion(ctx context.Context, conn reposito
 		ColumnExpr("COUNT(*) AS episode_count").
 		Where("e.finished_at IS NOT NULL").
 		Where("e.started_at IS NOT NULL").
-		Where("e.collection_status = ?", openapi.EpisodeCollectionStatusCompleted).
+		Where("e.collection_status = ?", model.EpisodeStatusCompleted).
 		Group("e.task_version_id").
 		Scan(ctx, &results)
 

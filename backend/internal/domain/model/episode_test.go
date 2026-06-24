@@ -3,8 +3,6 @@ package model
 import (
 	"testing"
 	"time"
-
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 func TestInitEpisode(t *testing.T) {
@@ -118,8 +116,8 @@ func TestInitEpisode(t *testing.T) {
 			if got.UserID != tt.userID {
 				t.Errorf("InitEpisode() UserID = %v, want %v", got.UserID, tt.userID)
 			}
-			if got.Status != openapi.EpisodeCollectionStatusReady {
-				t.Errorf("InitEpisode() Status = %v, want %v", got.Status, openapi.EpisodeCollectionStatusReady)
+			if got.Status != EpisodeStatusReady {
+				t.Errorf("InitEpisode() Status = %v, want %v", got.Status, EpisodeStatusReady)
 			}
 			if got.CreatedAt.IsZero() {
 				t.Errorf("InitEpisode() CreatedAt is zero")
@@ -149,7 +147,7 @@ func TestNewEpisode(t *testing.T) {
 		errorDetails  *string
 		startedAt     *time.Time
 		finishedAt    *time.Time
-		status        openapi.EpisodeCollectionStatus
+		status        EpisodeStatus
 		createdAt     time.Time
 		updatedAt     *time.Time
 		recordedByID  *string
@@ -166,7 +164,7 @@ func TestNewEpisode(t *testing.T) {
 			errorDetails:  &errorDetails,
 			startedAt:     &startedAt,
 			finishedAt:    &finishedAt,
-			status:        openapi.EpisodeCollectionStatusCompleted,
+			status:        EpisodeStatusCompleted,
 			createdAt:     now,
 			updatedAt:     &updatedAt,
 			recordedByID:  &recordedByID,
@@ -183,7 +181,7 @@ func TestNewEpisode(t *testing.T) {
 			errorDetails:  nil,
 			startedAt:     nil,
 			finishedAt:    nil,
-			status:        openapi.EpisodeCollectionStatusReady,
+			status:        EpisodeStatusReady,
 			createdAt:     now,
 			updatedAt:     nil,
 			recordedByID:  nil,
@@ -509,22 +507,22 @@ func TestEpisode_SetFinishedAt(t *testing.T) {
 func TestEpisode_SetStatus(t *testing.T) {
 	tests := []struct {
 		name    string
-		status  openapi.EpisodeCollectionStatus
+		status  EpisodeStatus
 		wantErr bool
 	}{
 		{
 			name:    "success with completed status",
-			status:  openapi.EpisodeCollectionStatusCompleted,
+			status:  EpisodeStatusCompleted,
 			wantErr: false,
 		},
 		{
 			name:    "success with ready status",
-			status:  openapi.EpisodeCollectionStatusReady,
+			status:  EpisodeStatusReady,
 			wantErr: false,
 		},
 		{
 			name:    "success with recording status",
-			status:  openapi.EpisodeCollectionStatusRecording,
+			status:  EpisodeStatusRecording,
 			wantErr: false,
 		},
 	}
@@ -637,7 +635,7 @@ func TestEpisode_SetRecordedByID(t *testing.T) {
 	}
 }
 
-func newEpisodeWithStatus(status openapi.EpisodeCollectionStatus) Episode {
+func newEpisodeWithStatus(status EpisodeStatus) Episode {
 	e := newValidEpisode()
 	e.Status = status
 	return e
@@ -648,33 +646,33 @@ func TestEpisode_Start(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		initialStatus openapi.EpisodeCollectionStatus
+		initialStatus EpisodeStatus
 		occurredAt    time.Time
 		wantErr       bool
-		wantStatus    openapi.EpisodeCollectionStatus
+		wantStatus    EpisodeStatus
 	}{
 		{
 			name:          "success: Ready → Recording",
-			initialStatus: openapi.EpisodeCollectionStatusReady,
+			initialStatus: EpisodeStatusReady,
 			occurredAt:    now,
 			wantErr:       false,
-			wantStatus:    openapi.EpisodeCollectionStatusRecording,
+			wantStatus:    EpisodeStatusRecording,
 		},
 		{
 			name:          "error: Recording → cannot start",
-			initialStatus: openapi.EpisodeCollectionStatusRecording,
+			initialStatus: EpisodeStatusRecording,
 			occurredAt:    now,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Completed → cannot start",
-			initialStatus: openapi.EpisodeCollectionStatusCompleted,
+			initialStatus: EpisodeStatusCompleted,
 			occurredAt:    now,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Cancel → cannot start",
-			initialStatus: openapi.EpisodeCollectionStatusCancel,
+			initialStatus: EpisodeStatusCancel,
 			occurredAt:    now,
 			wantErr:       true,
 		},
@@ -712,33 +710,33 @@ func TestEpisode_Finish(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		initialStatus openapi.EpisodeCollectionStatus
+		initialStatus EpisodeStatus
 		occurredAt    time.Time
 		wantErr       bool
-		wantStatus    openapi.EpisodeCollectionStatus
+		wantStatus    EpisodeStatus
 	}{
 		{
 			name:          "success: Recording → Completed",
-			initialStatus: openapi.EpisodeCollectionStatusRecording,
+			initialStatus: EpisodeStatusRecording,
 			occurredAt:    now,
 			wantErr:       false,
-			wantStatus:    openapi.EpisodeCollectionStatusCompleted,
+			wantStatus:    EpisodeStatusCompleted,
 		},
 		{
 			name:          "error: Ready → cannot finish",
-			initialStatus: openapi.EpisodeCollectionStatusReady,
+			initialStatus: EpisodeStatusReady,
 			occurredAt:    now,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Completed → cannot finish",
-			initialStatus: openapi.EpisodeCollectionStatusCompleted,
+			initialStatus: EpisodeStatusCompleted,
 			occurredAt:    now,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Cancel → cannot finish",
-			initialStatus: openapi.EpisodeCollectionStatusCancel,
+			initialStatus: EpisodeStatusCancel,
 			occurredAt:    now,
 			wantErr:       true,
 		},
@@ -774,29 +772,29 @@ func TestEpisode_Finish(t *testing.T) {
 func TestEpisode_Cancel(t *testing.T) {
 	tests := []struct {
 		name          string
-		initialStatus openapi.EpisodeCollectionStatus
+		initialStatus EpisodeStatus
 		wantErr       bool
-		wantStatus    openapi.EpisodeCollectionStatus
+		wantStatus    EpisodeStatus
 	}{
 		{
 			name:          "success: Recording → Cancel",
-			initialStatus: openapi.EpisodeCollectionStatusRecording,
+			initialStatus: EpisodeStatusRecording,
 			wantErr:       false,
-			wantStatus:    openapi.EpisodeCollectionStatusCancel,
+			wantStatus:    EpisodeStatusCancel,
 		},
 		{
 			name:          "error: Ready → cannot cancel",
-			initialStatus: openapi.EpisodeCollectionStatusReady,
+			initialStatus: EpisodeStatusReady,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Completed → cannot cancel",
-			initialStatus: openapi.EpisodeCollectionStatusCompleted,
+			initialStatus: EpisodeStatusCompleted,
 			wantErr:       true,
 		},
 		{
 			name:          "error: Cancel → cannot cancel again",
-			initialStatus: openapi.EpisodeCollectionStatusCancel,
+			initialStatus: EpisodeStatusCancel,
 			wantErr:       true,
 		},
 	}

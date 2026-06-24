@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/database"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/google/uuid"
@@ -231,7 +230,7 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 		LocationID:       locID1,
 		RobotID:          robotID1,
 		UserID:           userID,
-		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		CollectionStatus: model.EpisodeStatusCompleted,
 		StartedAt:        &d1Start,
 		FinishedAt:       &d1End,
 	}).Exec(ctx); err != nil {
@@ -245,7 +244,7 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 		LocationID:       locID2,
 		RobotID:          robotID2,
 		UserID:           userID,
-		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		CollectionStatus: model.EpisodeStatusCompleted,
 		StartedAt:        &d2Start,
 		FinishedAt:       &d2End,
 	}).Exec(ctx); err != nil {
@@ -259,7 +258,7 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 		LocationID:       locID1,
 		RobotID:          robotID1,
 		UserID:           userID,
-		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		CollectionStatus: model.EpisodeStatusCompleted,
 		StartedAt:        &dCrossFromStart,
 		FinishedAt:       &dCrossFromEnd,
 	}).Exec(ctx); err != nil {
@@ -275,7 +274,7 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 		LocationID:       locID2,
 		RobotID:          robotID2,
 		UserID:           userID,
-		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		CollectionStatus: model.EpisodeStatusCompleted,
 		StartedAt:        &d4Start,
 		FinishedAt:       &d4End,
 	}).Exec(ctx); err != nil {
@@ -289,7 +288,7 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 		LocationID:       locID1,
 		RobotID:          robotID1,
 		UserID:           userID,
-		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		CollectionStatus: model.EpisodeStatusCompleted,
 		StartedAt:        &d3Start,
 		FinishedAt:       &d3End,
 	}).Exec(ctx); err != nil {
@@ -303,7 +302,7 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 		LocationID:       locID2,
 		RobotID:          robotID2,
 		UserID:           userID,
-		CollectionStatus: openapi.EpisodeCollectionStatusCompleted,
+		CollectionStatus: model.EpisodeStatusCompleted,
 		StartedAt:        &dCrossToStart,
 		FinishedAt:       &dCrossToEnd,
 	}).Exec(ctx); err != nil {

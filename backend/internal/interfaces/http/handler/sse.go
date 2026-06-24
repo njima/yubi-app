@@ -531,7 +531,7 @@ func (h *SSEHandler) writeEpisodeSSE(ctx context.Context, c *gin.Context, ep *mo
 		LocationId:      ep.LocationID,
 		UserId:          ep.UserID,
 		RobotId:         ep.RobotID,
-		Status:          ep.Status,
+		Status:          openapi.EpisodeCollectionStatus(ep.Status),
 		TaskId:          ep.TaskID,
 		TaskName:        taskName,
 		TaskDescription: taskDescription,

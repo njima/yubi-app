@@ -6,7 +6,7 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -120,8 +120,8 @@ LIMIT ?row_limit
 
 	args := namedSQLArgs{
 		"org_id":           orgID,
-		"status_completed": int(openapi.EpisodeCollectionStatusCompleted),
-		"status_cancel":    int(openapi.EpisodeCollectionStatusCancel),
+		"status_completed": int(model.EpisodeStatusCompleted),
+		"status_cancel":    int(model.EpisodeStatusCancel),
 		"from_utc":         fromUTC,
 		"to_utc_exclusive": toExclusive,
 		"location_id":      filter.LocationID,

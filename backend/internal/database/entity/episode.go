@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/uptrace/bun"
 )
 
@@ -15,19 +15,19 @@ type Episode struct {
 	OrgScoped
 
 	// columns
-	ID               int64                           `bun:"id,pk,autoincrement"`
-	IDNatural        string                          `bun:"id_natural,unique,type:varchar(36),notnull"` // episode_id (UUID)
-	OrganizationID   string                          `bun:"organization_id,type:varchar(36),notnull"`   // Organization ID (stores organization's id_natural)
-	TaskVersionID    string                          `bun:"task_version_id,type:varchar(36),notnull"`   // FK to task_version
-	LocationID       string                          `bun:"location_id,type:varchar(36),notnull"`       // FK to location
-	RobotID          string                          `bun:"robot_id,type:varchar(36),notnull"`
-	UserID           string                          `bun:"user_id,type:varchar(36),notnull"` // user or automation
-	RecordedByID     *string                         `bun:"recorded_by,type:varchar(36)"`
-	StartedAt        *time.Time                      `bun:"started_at,type:timestamptz"`
-	FinishedAt       *time.Time                      `bun:"finished_at,type:timestamptz"`
-	CollectionStatus openapi.EpisodeCollectionStatus `bun:"collection_status,type:smallint,notnull,default:0"` // 0: ready, 1: recording, 2: cancel, 3: completed
-	ErrorDetails     *string                         `bun:"error_details,type:jsonb"`
-	ParameterValues  json.RawMessage                 `bun:"parameter_values,type:jsonb"` // JSON map of resolved parameter values
+	ID               int64               `bun:"id,pk,autoincrement"`
+	IDNatural        string              `bun:"id_natural,unique,type:varchar(36),notnull"` // episode_id (UUID)
+	OrganizationID   string              `bun:"organization_id,type:varchar(36),notnull"`   // Organization ID (stores organization's id_natural)
+	TaskVersionID    string              `bun:"task_version_id,type:varchar(36),notnull"`   // FK to task_version
+	LocationID       string              `bun:"location_id,type:varchar(36),notnull"`       // FK to location
+	RobotID          string              `bun:"robot_id,type:varchar(36),notnull"`
+	UserID           string              `bun:"user_id,type:varchar(36),notnull"` // user or automation
+	RecordedByID     *string             `bun:"recorded_by,type:varchar(36)"`
+	StartedAt        *time.Time          `bun:"started_at,type:timestamptz"`
+	FinishedAt       *time.Time          `bun:"finished_at,type:timestamptz"`
+	CollectionStatus model.EpisodeStatus `bun:"collection_status,type:smallint,notnull,default:0"` // 0: ready, 1: recording, 2: cancel, 3: completed
+	ErrorDetails     *string             `bun:"error_details,type:jsonb"`
+	ParameterValues  json.RawMessage     `bun:"parameter_values,type:jsonb"` // JSON map of resolved parameter values
 
 	// relations
 	Organization *Organization `bun:"rel:belongs-to,join:organization_id=id_natural"`

@@ -94,15 +94,15 @@ func (e *episode) GetByID(ctx context.Context, conn repository.DBConn, id string
 // up to four indexed lookups and only fires on idle robots.
 func (e *episode) GetCurrentRobotEpisode(ctx context.Context, conn repository.DBConn, robotID string) (*model.Episode, error) {
 	type candidate struct {
-		status    openapi.EpisodeCollectionStatus
+		status    model.EpisodeStatus
 		orderExpr string
 		terminal  bool // require finished_at IS NOT NULL
 	}
 	candidates := []candidate{
-		{openapi.EpisodeCollectionStatusRecording, "e.created_at ASC", false},
-		{openapi.EpisodeCollectionStatusReady, "e.created_at ASC", false},
-		{openapi.EpisodeCollectionStatusCompleted, "e.finished_at DESC", true},
-		{openapi.EpisodeCollectionStatusCancel, "e.finished_at DESC", true},
+		{model.EpisodeStatusRecording, "e.created_at ASC", false},
+		{model.EpisodeStatusReady, "e.created_at ASC", false},
+		{model.EpisodeStatusCompleted, "e.finished_at DESC", true},
+		{model.EpisodeStatusCancel, "e.finished_at DESC", true},
 	}
 	for _, c := range candidates {
 		var d entity.Episode
@@ -349,17 +349,17 @@ func (e *episode) Delete(ctx context.Context, conn repository.DBConn, id string)
 
 func (e *episode) Export(ctx context.Context, conn repository.DBConn, filter repository.EpisodeExportFilter) ([]repository.EpisodeExportRow, error) {
 	type exportRow struct {
-		IDNatural     string                          `bun:"id_natural"`
-		TaskID        string                          `bun:"task_id"`
-		TaskVersionID string                          `bun:"task_version_id"`
-		RobotID       string                          `bun:"robot_id"`
-		LocationID    string                          `bun:"location_id"`
-		UserID        string                          `bun:"user_id"`
-		RecordedByID  *string                         `bun:"recorded_by"`
-		Status        openapi.EpisodeCollectionStatus `bun:"collection_status"`
-		StartedAt     *time.Time                      `bun:"started_at"`
-		FinishedAt    *time.Time                      `bun:"finished_at"`
-		CreatedAt     time.Time                       `bun:"created_at"`
+		IDNatural     string              `bun:"id_natural"`
+		TaskID        string              `bun:"task_id"`
+		TaskVersionID string              `bun:"task_version_id"`
+		RobotID       string              `bun:"robot_id"`
+		LocationID    string              `bun:"location_id"`
+		UserID        string              `bun:"user_id"`
+		RecordedByID  *string             `bun:"recorded_by"`
+		Status        model.EpisodeStatus `bun:"collection_status"`
+		StartedAt     *time.Time          `bun:"started_at"`
+		FinishedAt    *time.Time          `bun:"finished_at"`
+		CreatedAt     time.Time           `bun:"created_at"`
 	}
 
 	var rows []exportRow
@@ -433,7 +433,7 @@ func (e *episode) SumDurationByTaskID(ctx context.Context, conn repository.DBCon
 		Where("e.organization_id = ?", orgID).
 		Where("tv.task_id = ?", taskID).
 		Where("tv.approval_status = ?", openapi.Approved).
-		Where("e.collection_status = ?", openapi.EpisodeCollectionStatusCompleted).
+		Where("e.collection_status = ?", model.EpisodeStatusCompleted).
 		Where("e.finished_at IS NOT NULL").
 		Where("e.started_at IS NOT NULL").
 		Scan(ctx, &total)

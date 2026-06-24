@@ -7,12 +7,40 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
-func episodeStatuses(values []openapi.EpisodeCollectionStatus) []repository.EpisodeStatus {
+func episodeStatuses(values []openapi.EpisodeCollectionStatus) ([]repository.EpisodeStatus, error) {
 	statuses := make([]repository.EpisodeStatus, 0, len(values))
 	for _, value := range values {
-		statuses = append(statuses, repository.EpisodeStatus(value))
+		status, err := episodeStatusModel(&value)
+		if err != nil {
+			return nil, err
+		}
+		statuses = append(statuses, *status)
 	}
-	return statuses
+	return statuses, nil
+}
+
+func openAPIEpisodeStatus(value model.EpisodeStatus) openapi.EpisodeCollectionStatus {
+	return openapi.EpisodeCollectionStatus(value)
+}
+
+func episodeStatusModel(value *openapi.EpisodeCollectionStatus) (*model.EpisodeStatus, error) {
+	if value == nil {
+		return nil, nil
+	}
+	var status model.EpisodeStatus
+	switch *value {
+	case openapi.EpisodeCollectionStatusReady:
+		status = model.EpisodeStatusReady
+	case openapi.EpisodeCollectionStatusRecording:
+		status = model.EpisodeStatusRecording
+	case openapi.EpisodeCollectionStatusCancel:
+		status = model.EpisodeStatusCancel
+	case openapi.EpisodeCollectionStatusCompleted:
+		status = model.EpisodeStatusCompleted
+	default:
+		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "unknown episode status: %d", *value))
+	}
+	return &status, nil
 }
 
 func robotStatus(value *openapi.RobotStatus) *repository.RobotFilterStatus {

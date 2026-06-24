@@ -117,7 +117,7 @@ func episodeToResponse(ep model.Episode) openapi.Episode {
 		LocationId:    ep.LocationID,
 		UserId:        ep.UserID,
 		RobotId:       ep.RobotID,
-		Status:        ep.Status,
+		Status:        openAPIEpisodeStatus(ep.Status),
 		TaskId:        ep.TaskID,
 		TaskVersionId: ep.TaskVersionID,
 		StartedAt:     ep.StartedAt,
@@ -189,7 +189,11 @@ func (c *controller) ExportEpisodes(ctx context.Context, request openapi.ExportE
 		StartedAtTo:   toT,
 	}
 	if request.Params.Status != nil {
-		listFilter.Statuses = episodeStatuses(*request.Params.Status)
+		statuses, err := episodeStatuses(*request.Params.Status)
+		if err != nil {
+			return nil, err
+		}
+		listFilter.Statuses = statuses
 	}
 
 	filter := repository.EpisodeExportFilter{EpisodeListFilter: listFilter}
@@ -225,7 +229,11 @@ func (c *controller) ListEpisodes(ctx context.Context, request openapi.ListEpiso
 		SortOrder:     sortOrder(request.Params.SortOrder),
 	}
 	if request.Params.Status != nil {
-		filter.Statuses = episodeStatuses(*request.Params.Status)
+		statuses, err := episodeStatuses(*request.Params.Status)
+		if err != nil {
+			return nil, err
+		}
+		filter.Statuses = statuses
 	}
 
 	eps, total, err := c.episodeUsecase.List(ctx, filter, pg.Page, pg.Limit)
@@ -375,12 +383,16 @@ func (c *controller) UpdateEpisodeById(ctx context.Context, request openapi.Upda
 	}
 
 	body := *request.Body
+	status, err := episodeStatusModel(body.Status)
+	if err != nil {
+		return nil, err
+	}
 
 	input := usecase.EpisodeUpdateInput{
 		ID:           request.EpisodeId,
 		StartedAt:    body.StartTime,
 		FinishedAt:   body.EndTime,
-		Status:       body.Status,
+		Status:       status,
 		ErrorDetails: body.ErrorDetails,
 		RecordedByID: body.RecordedBy,
 	}
