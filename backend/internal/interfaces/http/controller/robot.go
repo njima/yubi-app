@@ -110,9 +110,13 @@ func (c *controller) CreateRobot(ctx context.Context, request openapi.CreateRobo
 		LocationID:     request.Body.LocationId,
 		Name:           request.Body.Name,
 		RobotType:      request.Body.RobotType,
-		LeaderStatus:   leaderStatus(request.Body.LeaderStatus),
 		RobotConfig:    &cam,
 	}
+	mappedLeaderStatus, err := leaderStatus(request.Body.LeaderStatus)
+	if err != nil {
+		return nil, err
+	}
+	input.LeaderStatus = mappedLeaderStatus
 
 	rob, err := c.robotUsecase.Create(ctx, input)
 	if err != nil {
@@ -203,7 +207,11 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 	if request.Body.RobotType != nil {
 		input.RobotType = request.Body.RobotType
 	}
-	input.Status = robotStatusModel(request.Body.Status)
+	status, err := robotStatusModel(request.Body.Status)
+	if err != nil {
+		return nil, err
+	}
+	input.Status = status
 	if request.Body.LastHeartbeatAt != nil {
 		input.LastHeartbeatAt = request.Body.LastHeartbeatAt
 	}
@@ -219,7 +227,10 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 		input.RobotConfig = &rawMsg
 	}
 	if request.Body.LeaderStatus != nil {
-		input.LeaderStatus = leaderStatus(request.Body.LeaderStatus)
+		input.LeaderStatus, err = leaderStatus(request.Body.LeaderStatus)
+		if err != nil {
+			return nil, err
+		}
 		input.HasLeaderStatus = true
 	}
 
@@ -228,7 +239,7 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 		return nil, err
 	}
 
-	status, leaderStatus := robotResponseFields(&rob)
+	responseStatus, leaderStatus := robotResponseFields(&rob)
 	return openapi.UpdateRobotById200JSONResponse{
 		Id:                         rob.IDNatural,
 		OrganizationId:             &rob.OrganizationID,
@@ -239,7 +250,7 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 		LocationName:               &rob.LocationName,
 		Name:                       rob.Name,
 		RobotType:                  rob.RobotType,
-		Status:                     &status,
+		Status:                     &responseStatus,
 		LeaderStatus:               leaderStatus,
 		ConsecutiveFaultDays:       rob.ConsecutiveFaultDays(),
 		LeaderConsecutiveFaultDays: rob.LeaderConsecutiveFaultDays(),
