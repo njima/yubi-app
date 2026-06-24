@@ -19,8 +19,8 @@ type EpisodeListFilter struct {
 	Statuses      []openapi.EpisodeCollectionStatus
 	StartedAtFrom *time.Time
 	StartedAtTo   *time.Time
-	SortBy        *openapi.ListEpisodesParamsSortBy
-	SortOrder     *openapi.ListEpisodesParamsSortOrder
+	SortBy        *EpisodeSortBy
+	SortOrder     *SortOrder
 }
 
 // EpisodeExportFilter is a thin wrapper around EpisodeListFilter, reserved for

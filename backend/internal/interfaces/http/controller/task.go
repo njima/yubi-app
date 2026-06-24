@@ -75,8 +75,8 @@ func (c *controller) ListTasks(ctx context.Context, request openapi.ListTasksReq
 
 	filter := repository.TaskListFilter{
 		HasApprovedVersion: request.Params.HasApprovedVersion,
-		SortBy:             request.Params.SortBy,
-		SortOrder:          request.Params.SortOrder,
+		SortBy:             taskSortBy(request.Params.SortBy),
+		SortOrder:          sortOrder(request.Params.SortOrder),
 		RobotType:          request.Params.RobotType,
 		Search:             request.Params.Search,
 	}

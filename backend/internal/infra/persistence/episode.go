@@ -150,7 +150,7 @@ var nullableEpisodeSortColumns = map[string]bool{
 	"ended_at":    true,
 }
 
-func applyEpisodeSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListEpisodesParamsSortBy, sortOrder *openapi.ListEpisodesParamsSortOrder) *bun.SelectQuery {
+func applyEpisodeSortOrder(sel *bun.SelectQuery, sortBy *repository.EpisodeSortBy, sortOrder *repository.SortOrder) *bun.SelectQuery {
 	if sortBy == nil {
 		return sel.OrderExpr("e.created_at DESC")
 	}
@@ -161,7 +161,7 @@ func applyEpisodeSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListEpisodesPar
 	}
 
 	order := "ASC"
-	if sortOrder != nil && *sortOrder == openapi.EpisodeSortOrderDesc {
+	if sortOrder != nil && *sortOrder == repository.SortOrderDesc {
 		order = "DESC"
 	}
 

@@ -13,8 +13,8 @@ const MaxTaskBatchSize = 5000
 
 type TaskListFilter struct {
 	HasApprovedVersion *bool
-	SortBy             *openapi.ListTasksParamsSortBy
-	SortOrder          *openapi.ListTasksParamsSortOrder
+	SortBy             *TaskSortBy
+	SortOrder          *SortOrder
 	Statuses           []openapi.TaskStatus
 	Priorities         []openapi.TaskPriority
 	Difficulties       []openapi.TaskDifficulty

@@ -20,8 +20,8 @@ func (c *controller) ListRobots(ctx context.Context, request openapi.ListRobotsR
 		Status:     request.Params.Status,
 		RobotType:  request.Params.RobotType,
 		Search:     request.Params.Search,
-		SortBy:     request.Params.SortBy,
-		SortOrder:  request.Params.SortOrder,
+		SortBy:     robotSortBy(request.Params.SortBy),
+		SortOrder:  sortOrder(request.Params.SortOrder),
 	}
 
 	robs, total, err := c.robotUsecase.List(ctx, filter, pg.Page, pg.Limit)

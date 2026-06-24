@@ -11,8 +11,8 @@ type UserListFilter struct {
 	LocationID *string
 	SiteID     *string
 	Search     *string
-	SortBy     *openapi.ListUsersParamsSortBy
-	SortOrder  *openapi.ListUsersParamsSortOrder
+	SortBy     *UserSortBy
+	SortOrder  *SortOrder
 }
 
 type User interface {

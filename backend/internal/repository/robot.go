@@ -15,8 +15,8 @@ type RobotListFilter struct {
 	Search         *string
 	OnlineRobotIDs *[]string
 	ExcludeOnline  bool
-	SortBy         *openapi.ListRobotsParamsSortBy
-	SortOrder      *openapi.ListRobotsParamsSortOrder
+	SortBy         *RobotSortBy
+	SortOrder      *SortOrder
 }
 
 type RobotTypeFilter struct {

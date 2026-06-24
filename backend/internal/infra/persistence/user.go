@@ -283,7 +283,7 @@ var nullableUserSortColumns = map[string]bool{
 	"location": true,
 }
 
-func applyUserSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListUsersParamsSortBy, sortOrder *openapi.ListUsersParamsSortOrder) *bun.SelectQuery {
+func applyUserSortOrder(sel *bun.SelectQuery, sortBy *repository.UserSortBy, sortOrder *repository.SortOrder) *bun.SelectQuery {
 	if sortBy == nil {
 		return sel.OrderExpr("u.created_at DESC")
 	}
@@ -294,7 +294,7 @@ func applyUserSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListUsersParamsSor
 	}
 
 	order := "ASC"
-	if sortOrder != nil && *sortOrder == openapi.UserSortOrderDesc {
+	if sortOrder != nil && *sortOrder == repository.SortOrderDesc {
 		order = "DESC"
 	}
 

@@ -374,7 +374,7 @@ var nullableRobotSortColumns = map[string]bool{
 	"active_user_id":    true,
 }
 
-func applyRobotSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListRobotsParamsSortBy, sortOrder *openapi.ListRobotsParamsSortOrder) *bun.SelectQuery {
+func applyRobotSortOrder(sel *bun.SelectQuery, sortBy *repository.RobotSortBy, sortOrder *repository.SortOrder) *bun.SelectQuery {
 	if sortBy == nil {
 		return sel.OrderExpr("r.created_at DESC, r.id DESC")
 	}
@@ -385,7 +385,7 @@ func applyRobotSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListRobotsParamsS
 	}
 
 	order := "ASC"
-	if sortOrder != nil && *sortOrder == openapi.RobotSortOrderDesc {
+	if sortOrder != nil && *sortOrder == repository.SortOrderDesc {
 		order = "DESC"
 	}
 

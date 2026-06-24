@@ -538,12 +538,12 @@ var nullableSortColumns = map[string]bool{
 	"target_duration_seconds": true,
 }
 
-func applyTaskSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListTasksParamsSortBy, sortOrder *openapi.ListTasksParamsSortOrder) *bun.SelectQuery {
+func applyTaskSortOrder(sel *bun.SelectQuery, sortBy *repository.TaskSortBy, sortOrder *repository.SortOrder) *bun.SelectQuery {
 	if sortBy == nil {
 		return sel.OrderExpr("t.created_at DESC")
 	}
 
-	if *sortBy == openapi.TaskSortByRecommended {
+	if *sortBy == repository.TaskSortByRecommended {
 		return sel.OrderExpr("t.priority DESC, t.deadline ASC NULLS LAST")
 	}
 
@@ -553,7 +553,7 @@ func applyTaskSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListTasksParamsSor
 	}
 
 	order := "ASC"
-	if sortOrder != nil && *sortOrder == openapi.TaskSortOrderDesc {
+	if sortOrder != nil && *sortOrder == repository.SortOrderDesc {
 		order = "DESC"
 	}
 

@@ -9,7 +9,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog/log"
 	"github.com/uptrace/bun"
@@ -216,7 +215,7 @@ var allowedLocationSortColumns = map[string]string{
 	"name": "l.name",
 }
 
-func applyLocationSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListLocationsParamsSortBy, sortOrder *openapi.ListLocationsParamsSortOrder) *bun.SelectQuery {
+func applyLocationSortOrder(sel *bun.SelectQuery, sortBy *repository.LocationSortBy, sortOrder *repository.SortOrder) *bun.SelectQuery {
 	if sortBy == nil {
 		return sel.OrderExpr("l.created_at DESC, l.id DESC")
 	}
@@ -227,7 +226,7 @@ func applyLocationSortOrder(sel *bun.SelectQuery, sortBy *openapi.ListLocationsP
 	}
 
 	order := "ASC"
-	if sortOrder != nil && *sortOrder == openapi.LocationSortOrderDesc {
+	if sortOrder != nil && *sortOrder == repository.SortOrderDesc {
 		order = "DESC"
 	}
 
