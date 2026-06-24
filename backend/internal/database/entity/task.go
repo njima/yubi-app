@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/uptrace/bun"
 )
 
@@ -14,17 +14,17 @@ type Task struct {
 	OrgScoped
 
 	// columns
-	ID             int64                  `bun:"id,pk,autoincrement"`
-	IDNatural      string                 `bun:"id_natural,unique,type:varchar(36),notnull"` // task_id (UUID)
-	OrganizationID string                 `bun:"organization_id,type:varchar(36),notnull"`   // Organization ID (stores organization's id_natural)
-	Name           string                 `bun:"name,type:varchar(255),notnull"`             // task_name
-	Description    *string                `bun:"description,type:text"`
-	ManualURL      *string                `bun:"manual_url,type:text"`
-	Priority       openapi.TaskPriority   `bun:"priority,type:smallint,notnull"`
-	Difficulty     openapi.TaskDifficulty `bun:"difficulty,type:smallint,notnull"`
-	Status         openapi.TaskStatus     `bun:"status,type:smallint,notnull,default:0"`
-	Deadline       time.Time              `bun:"deadline,type:timestamptz,notnull"`
-	RobotType      *string                `bun:"robot_type,type:varchar(255)"`
+	ID             int64                `bun:"id,pk,autoincrement"`
+	IDNatural      string               `bun:"id_natural,unique,type:varchar(36),notnull"` // task_id (UUID)
+	OrganizationID string               `bun:"organization_id,type:varchar(36),notnull"`   // Organization ID (stores organization's id_natural)
+	Name           string               `bun:"name,type:varchar(255),notnull"`             // task_name
+	Description    *string              `bun:"description,type:text"`
+	ManualURL      *string              `bun:"manual_url,type:text"`
+	Priority       model.TaskPriority   `bun:"priority,type:smallint,notnull"`
+	Difficulty     model.TaskDifficulty `bun:"difficulty,type:smallint,notnull"`
+	Status         model.TaskStatus     `bun:"status,type:smallint,notnull,default:0"`
+	Deadline       time.Time            `bun:"deadline,type:timestamptz,notnull"`
+	RobotType      *string              `bun:"robot_type,type:varchar(255)"`
 
 	// relations
 	Organization *Organization  `bun:"rel:belongs-to,join:organization_id=id_natural"`

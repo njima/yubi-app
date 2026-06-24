@@ -11,7 +11,6 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -82,8 +81,8 @@ func (u *taskExport) Export(ctx context.Context, filter repository.TaskListFilte
 			strings.Join(row.SubtaskNames, ";"),
 			derefStringExport(row.Description),
 			row.ManualURL,
-			reverseLookup(priorityMap, model.TaskPriority(row.Priority), "Normal"),
-			reverseLookup(difficultyMap, model.TaskDifficulty(row.Difficulty), "B"),
+			reverseLookup(priorityMap, row.Priority, "Normal"),
+			reverseLookup(difficultyMap, row.Difficulty, "B"),
 			statusLabel(int(row.Status)),
 			deadlineToString(row.Deadline),
 			derefStringExport(row.RobotType),

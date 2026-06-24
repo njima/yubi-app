@@ -22,29 +22,29 @@ const (
 	RobotFilterStatusReady       RobotFilterStatus = 5
 )
 
-type TaskStatus int
+type TaskStatus = model.TaskStatus
 
 const (
-	TaskStatusPlanning  TaskStatus = 0
-	TaskStatusDoing     TaskStatus = 1
-	TaskStatusCompleted TaskStatus = 2
-	TaskStatusCanceled  TaskStatus = 3
+	TaskStatusPlanning  = model.TaskStatusPlanning
+	TaskStatusDoing     = model.TaskStatusDoing
+	TaskStatusCompleted = model.TaskStatusCompleted
+	TaskStatusCanceled  = model.TaskStatusCanceled
 )
 
-type TaskPriority int
+type TaskPriority = model.TaskPriority
 
 const (
-	TaskPriorityLow    TaskPriority = 0
-	TaskPriorityNormal TaskPriority = 1
-	TaskPriorityHigh   TaskPriority = 2
-	TaskPriorityUrgent TaskPriority = 3
+	TaskPriorityLow    = model.TaskPriorityLow
+	TaskPriorityNormal = model.TaskPriorityNormal
+	TaskPriorityHigh   = model.TaskPriorityHigh
+	TaskPriorityUrgent = model.TaskPriorityUrgent
 )
 
-type TaskDifficulty int
+type TaskDifficulty = model.TaskDifficulty
 
 const (
-	TaskDifficultyS TaskDifficulty = 0
-	TaskDifficultyA TaskDifficulty = 1
-	TaskDifficultyB TaskDifficulty = 2
-	TaskDifficultyC TaskDifficulty = 3
+	TaskDifficultyS = model.TaskDifficultyS
+	TaskDifficultyA = model.TaskDifficultyA
+	TaskDifficultyB = model.TaskDifficultyB
+	TaskDifficultyC = model.TaskDifficultyC
 )
