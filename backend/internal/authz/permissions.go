@@ -1,8 +1,6 @@
 package authz
 
-import (
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-)
+import "github.com/airoa-org/yubi-app/backend/internal/domain/model"
 
 // rolePermissions defines the set of actions each role is allowed to perform.
 // Actions follow the "resource:operation" format (e.g. "episode:create", "robot:delete").
@@ -12,9 +10,9 @@ import (
 //   - Manager: same as DataEngineer
 //   - Operator: Location/Task/SubTask/Robot read-only; User read+update; Episode create/update; RobotDevice full
 //   - Viewer: read-only access to all resources
-var rolePermissions = map[openapi.UserRole]map[string]bool{
+var rolePermissions = map[model.UserRole]map[string]bool{
 	// Admin: full access
-	openapi.Admin: {
+	model.UserRoleAdmin: {
 		// Fleet
 		"fleet:read": true,
 		// Site
@@ -61,7 +59,7 @@ var rolePermissions = map[openapi.UserRole]map[string]bool{
 		"api_key:revoke": true,
 	},
 	// DataEngineer: Location read-only, User read + update, full access to Task/SubTask/Robot/Episode/RobotDevice
-	openapi.DataEngineer: {
+	model.UserRoleDataEngineer: {
 		// Fleet
 		"fleet:read": true,
 		// Site
@@ -99,7 +97,7 @@ var rolePermissions = map[openapi.UserRole]map[string]bool{
 		"robot_device:repeat_last_episode": true,
 	},
 	// Manager: same as DataEngineer
-	openapi.Manager: {
+	model.UserRoleManager: {
 		// Fleet
 		"fleet:read": true,
 		// Site
@@ -137,7 +135,7 @@ var rolePermissions = map[openapi.UserRole]map[string]bool{
 		"robot_device:repeat_last_episode": true,
 	},
 	// Operator: Location/Robot/Task/SubTask read-only, User read + update, Episode create/update, RobotDevice full
-	openapi.Operator: {
+	model.UserRoleOperator: {
 		// Fleet
 		"fleet:read": true,
 		// Site
@@ -172,7 +170,7 @@ var rolePermissions = map[openapi.UserRole]map[string]bool{
 		"robot_device:repeat_last_episode": true,
 	},
 	// Viewer: read-only access
-	openapi.Viewer: {
+	model.UserRoleViewer: {
 		// Fleet
 		"fleet:read": true,
 		// Site
@@ -328,7 +326,7 @@ var authzBypassOperations = map[string]bool{
 // HasPermission reports whether the given role is allowed to perform action.
 // action must follow the "resource:operation" format (e.g. "episode:create", "robot:delete").
 // Returns false for unknown roles or unregistered actions.
-func HasPermission(role openapi.UserRole, action string) bool {
+func HasPermission(role model.UserRole, action string) bool {
 	perms, ok := rolePermissions[role]
 	if !ok {
 		return false

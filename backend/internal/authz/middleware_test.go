@@ -7,7 +7,7 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,7 +33,7 @@ func TestNewAuthzMiddleware(t *testing.T) {
 			name:        "unmapped operation returns forbidden",
 			operationID: "UnknownOperation",
 			setupCtx: func(c *gin.Context) {
-				ctx := ccontext.SetUserRole(c.Request.Context(), openapi.Admin)
+				ctx := ccontext.SetUserRole(c.Request.Context(), model.UserRoleAdmin)
 				c.Request = c.Request.WithContext(ctx)
 			},
 			wantCalled: false,
@@ -50,7 +50,7 @@ func TestNewAuthzMiddleware(t *testing.T) {
 			name:        "insufficient permission returns forbidden",
 			operationID: "CreateEpisode",
 			setupCtx: func(c *gin.Context) {
-				ctx := ccontext.SetUserRole(c.Request.Context(), openapi.Viewer)
+				ctx := ccontext.SetUserRole(c.Request.Context(), model.UserRoleViewer)
 				c.Request = c.Request.WithContext(ctx)
 			},
 			wantCalled: false,
@@ -60,7 +60,7 @@ func TestNewAuthzMiddleware(t *testing.T) {
 			name:        "sufficient permission passes to handler",
 			operationID: "CreateEpisode",
 			setupCtx: func(c *gin.Context) {
-				ctx := ccontext.SetUserRole(c.Request.Context(), openapi.Admin)
+				ctx := ccontext.SetUserRole(c.Request.Context(), model.UserRoleAdmin)
 				c.Request = c.Request.WithContext(ctx)
 			},
 			wantCalled: true,

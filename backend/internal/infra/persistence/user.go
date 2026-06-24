@@ -9,7 +9,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
 )
@@ -44,7 +43,7 @@ func (u *user) Create(ctx context.Context, conn repository.DBConn, user model.Us
 		OrganizationID: created.OrganizationID,
 		Name:           created.Name,
 		Email:          created.Email,
-		Role:           openapi.UserRole(created.Role),
+		Role:           model.UserRole(created.Role),
 		CreatedAt:      created.CreatedAt,
 		UpdatedAt:      &created.UpdatedAt,
 	}, nil
@@ -81,13 +80,13 @@ func (u *user) Update(ctx context.Context, conn repository.DBConn, user model.Us
 		OrganizationID: updated.OrganizationID,
 		Name:           updated.Name,
 		Email:          updated.Email,
-		Role:           openapi.UserRole(updated.Role),
+		Role:           model.UserRole(updated.Role),
 		CreatedAt:      updated.CreatedAt,
 		UpdatedAt:      &updated.UpdatedAt,
 	}, nil
 }
 
-func (u *user) UpdateRole(ctx context.Context, conn repository.DBConn, idNatural string, role openapi.UserRole) (model.User, error) {
+func (u *user) UpdateRole(ctx context.Context, conn repository.DBConn, idNatural string, role model.UserRole) (model.User, error) {
 	var updated entity.User
 	if err := conn.NewUpdate().
 		Model((*entity.User)(nil)).
@@ -108,7 +107,7 @@ func (u *user) UpdateRole(ctx context.Context, conn repository.DBConn, idNatural
 		OrganizationID: updated.OrganizationID,
 		Name:           updated.Name,
 		Email:          updated.Email,
-		Role:           openapi.UserRole(updated.Role),
+		Role:           model.UserRole(updated.Role),
 		CreatedAt:      updated.CreatedAt,
 		UpdatedAt:      &updated.UpdatedAt,
 	}, nil
@@ -162,7 +161,7 @@ func (u *user) GetByNaturalID(ctx context.Context, conn repository.DBConn, IDNat
 		OrganizationName: orgName,
 		Name:             dbUser.Name,
 		Email:            dbUser.Email,
-		Role:             openapi.UserRole(dbUser.Role),
+		Role:             model.UserRole(dbUser.Role),
 		CreatedAt:        dbUser.CreatedAt,
 		UpdatedAt:        &dbUser.UpdatedAt,
 		Locations:        locs,
@@ -256,7 +255,7 @@ func (u *user) List(ctx context.Context, conn repository.DBConn, filter reposito
 			OrganizationName: orgName,
 			Name:             du.Name,
 			Email:            du.Email,
-			Role:             openapi.UserRole(du.Role),
+			Role:             model.UserRole(du.Role),
 			CreatedAt:        du.CreatedAt,
 			Locations:        locs,
 			Sites:            sites,

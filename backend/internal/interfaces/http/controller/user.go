@@ -30,12 +30,16 @@ func (c *controller) CreateUser(ctx context.Context, request openapi.CreateUserR
 	if request.Body.SiteIds != nil {
 		siteIDs = *request.Body.SiteIds
 	}
+	role, err := userRoleModel(request.Body.Role)
+	if err != nil {
+		return nil, err
+	}
 
 	user, err := c.userUsecase.Create(ctx, usecase.CreateInput{
 		OrganizationID: orgID,
 		Email:          string(request.Body.Email),
 		Name:           request.Body.DisplayName,
-		Role:           request.Body.Role,
+		Role:           role,
 		LocationIDs:    locationIDs,
 		SiteIDs:        siteIDs,
 	})
@@ -47,7 +51,7 @@ func (c *controller) CreateUser(ctx context.Context, request openapi.CreateUserR
 		CreatedAt:      user.CreatedAt,
 		DisplayName:    user.Name,
 		Email:          user.Email,
-		Role:           &user.Role,
+		Role:           openAPIUserRolePtr(user.Role),
 		OrganizationId: user.OrganizationID,
 		UpdatedAt:      user.UpdatedAt,
 		UserId:         user.IDNatural,
@@ -83,7 +87,7 @@ func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersReq
 			UserId:           u.IDNatural,
 			Email:            u.Email,
 			DisplayName:      u.Name,
-			Role:             &u.Role,
+			Role:             openAPIUserRolePtr(u.Role),
 			OrganizationId:   u.OrganizationID,
 			OrganizationName: u.OrganizationName,
 			CreatedAt:        u.CreatedAt,
@@ -122,7 +126,7 @@ func (c *controller) GetUserById(ctx context.Context, request openapi.GetUserByI
 		UserId:           user.IDNatural,
 		Email:            user.Email,
 		DisplayName:      user.Name,
-		Role:             &user.Role,
+		Role:             openAPIUserRolePtr(user.Role),
 		OrganizationId:   user.OrganizationID,
 		OrganizationName: user.OrganizationName,
 		CreatedAt:        user.CreatedAt,
@@ -147,7 +151,7 @@ func (c *controller) GetMe(ctx context.Context, request openapi.GetMeRequestObje
 		UserId:           user.IDNatural,
 		Email:            user.Email,
 		DisplayName:      user.Name,
-		Role:             &user.Role,
+		Role:             openAPIUserRolePtr(user.Role),
 		OrganizationId:   user.OrganizationID,
 		OrganizationName: user.OrganizationName,
 		CreatedAt:        user.CreatedAt,
@@ -183,7 +187,7 @@ func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeReque
 		UserId:           user.IDNatural,
 		Email:            user.Email,
 		DisplayName:      user.Name,
-		Role:             &user.Role,
+		Role:             openAPIUserRolePtr(user.Role),
 		OrganizationId:   user.OrganizationID,
 		OrganizationName: user.OrganizationName,
 		CreatedAt:        user.CreatedAt,
@@ -216,7 +220,7 @@ func (c *controller) UpdateUserById(ctx context.Context, request openapi.UpdateU
 		UserId:         user.IDNatural,
 		Email:          user.Email,
 		DisplayName:    user.Name,
-		Role:           &user.Role,
+		Role:           openAPIUserRolePtr(user.Role),
 		OrganizationId: user.OrganizationID,
 		CreatedAt:      user.CreatedAt,
 		UpdatedAt:      user.UpdatedAt,
@@ -229,10 +233,14 @@ func (c *controller) UpdateUserRole(ctx context.Context, request openapi.UpdateU
 	if request.Body == nil {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
+	role, err := userRoleModel(request.Body.Role)
+	if err != nil {
+		return nil, err
+	}
 
 	user, err := c.userUsecase.UpdateRole(ctx, usecase.UserRoleUpdateInput{
 		UserID: request.UserId,
-		Role:   request.Body.Role,
+		Role:   role,
 	})
 	if err != nil {
 		return nil, err
@@ -242,7 +250,7 @@ func (c *controller) UpdateUserRole(ctx context.Context, request openapi.UpdateU
 		UserId:         user.IDNatural,
 		Email:          user.Email,
 		DisplayName:    user.Name,
-		Role:           &user.Role,
+		Role:           openAPIUserRolePtr(user.Role),
 		OrganizationId: user.OrganizationID,
 		CreatedAt:      user.CreatedAt,
 		UpdatedAt:      user.UpdatedAt,
@@ -284,7 +292,7 @@ func (c *controller) UpdateUserLocations(ctx context.Context, request openapi.Up
 		UserId:         user.IDNatural,
 		Email:          user.Email,
 		DisplayName:    user.Name,
-		Role:           &user.Role,
+		Role:           openAPIUserRolePtr(user.Role),
 		OrganizationId: user.OrganizationID,
 		CreatedAt:      user.CreatedAt,
 		UpdatedAt:      user.UpdatedAt,
@@ -318,7 +326,7 @@ func (c *controller) UpdateUserSites(ctx context.Context, request openapi.Update
 		UserId:         user.IDNatural,
 		Email:          user.Email,
 		DisplayName:    user.Name,
-		Role:           &user.Role,
+		Role:           openAPIUserRolePtr(user.Role),
 		OrganizationId: user.OrganizationID,
 		CreatedAt:      user.CreatedAt,
 		UpdatedAt:      user.UpdatedAt,

@@ -67,6 +67,32 @@ func approvalStatusModel(value openapi.ApprovalStatus) model.ApprovalStatus {
 	return model.ApprovalStatus(value)
 }
 
+func openAPIUserRole(value model.UserRole) openapi.UserRole {
+	return openapi.UserRole(value)
+}
+
+func openAPIUserRolePtr(value model.UserRole) *openapi.UserRole {
+	role := openAPIUserRole(value)
+	return &role
+}
+
+func userRoleModel(value openapi.UserRole) (model.UserRole, error) {
+	switch value {
+	case openapi.Admin:
+		return model.UserRoleAdmin, nil
+	case openapi.DataEngineer:
+		return model.UserRoleDataEngineer, nil
+	case openapi.Manager:
+		return model.UserRoleManager, nil
+	case openapi.Operator:
+		return model.UserRoleOperator, nil
+	case openapi.Viewer:
+		return model.UserRoleViewer, nil
+	default:
+		return 0, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "unknown user role: %d", value))
+	}
+}
+
 func robotStatus(value *openapi.RobotStatus) *repository.RobotFilterStatus {
 	if value == nil {
 		return nil

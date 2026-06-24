@@ -5,7 +5,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog"
@@ -27,7 +26,7 @@ type CreateInput struct {
 	OrganizationID string
 	Email          string
 	Name           string
-	Role           openapi.UserRole
+	Role           model.UserRole
 	LocationIDs    []string
 	SiteIDs        []string
 }
@@ -41,7 +40,7 @@ type UserUpdateInput struct {
 
 type UserRoleUpdateInput struct {
 	UserID string
-	Role   openapi.UserRole
+	Role   model.UserRole
 }
 
 type user struct {

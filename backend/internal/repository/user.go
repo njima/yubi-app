@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 type UserListFilter struct {
@@ -18,7 +17,7 @@ type UserListFilter struct {
 type User interface {
 	Create(ctx context.Context, conn DBConn, user model.User) (model.User, error)
 	Update(ctx context.Context, conn DBConn, user model.User) (model.User, error)
-	UpdateRole(ctx context.Context, conn DBConn, idNatural string, role openapi.UserRole) (model.User, error)
+	UpdateRole(ctx context.Context, conn DBConn, idNatural string, role model.UserRole) (model.User, error)
 	GetByNaturalID(ctx context.Context, conn DBConn, IDNatural string) (model.User, error)
 	ExistsByEmail(ctx context.Context, conn DBConn, email string) (bool, error)
 	ExistsByEmails(ctx context.Context, conn DBConn, emails []string) (map[string]bool, error)

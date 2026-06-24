@@ -4,8 +4,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 func TestInitUser(t *testing.T) {
@@ -14,7 +12,7 @@ func TestInitUser(t *testing.T) {
 		organizationID string
 		userName       string
 		email          string
-		role           openapi.UserRole
+		role           UserRole
 		wantErr        bool
 	}{
 		{
@@ -22,7 +20,7 @@ func TestInitUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440001",
 			userName:       "Test User",
 			email:          "test@example.com",
-			role:           openapi.Admin,
+			role:           UserRoleAdmin,
 			wantErr:        false,
 		},
 		{
@@ -30,7 +28,7 @@ func TestInitUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440001",
 			userName:       "Operator User",
 			email:          "operator@example.com",
-			role:           openapi.Operator,
+			role:           UserRoleOperator,
 			wantErr:        false,
 		},
 		{
@@ -38,7 +36,7 @@ func TestInitUser(t *testing.T) {
 			organizationID: "",
 			userName:       "Test User",
 			email:          "test@example.com",
-			role:           openapi.Admin,
+			role:           UserRoleAdmin,
 			wantErr:        true,
 		},
 		{
@@ -46,7 +44,7 @@ func TestInitUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440001",
 			userName:       "",
 			email:          "test@example.com",
-			role:           openapi.Admin,
+			role:           UserRoleAdmin,
 			wantErr:        true,
 		},
 		{
@@ -54,7 +52,7 @@ func TestInitUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440001",
 			userName:       strings.Repeat("a", 61),
 			email:          "test@example.com",
-			role:           openapi.Admin,
+			role:           UserRoleAdmin,
 			wantErr:        true,
 		},
 		{
@@ -62,7 +60,7 @@ func TestInitUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440001",
 			userName:       strings.Repeat("a", 60),
 			email:          "test@example.com",
-			role:           openapi.Admin,
+			role:           UserRoleAdmin,
 			wantErr:        false,
 		},
 		{
@@ -70,7 +68,7 @@ func TestInitUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440001",
 			userName:       "Test User",
 			email:          "",
-			role:           openapi.Admin,
+			role:           UserRoleAdmin,
 			wantErr:        true,
 		},
 		{
@@ -78,7 +76,7 @@ func TestInitUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440001",
 			userName:       "Test User",
 			email:          "invalid-email",
-			role:           openapi.Admin,
+			role:           UserRoleAdmin,
 			wantErr:        true,
 		},
 	}
@@ -134,7 +132,7 @@ func TestNewUser(t *testing.T) {
 		organizationID string
 		userName       string
 		email          string
-		role           openapi.UserRole
+		role           UserRole
 		createdAt      time.Time
 		updatedAt      *time.Time
 	}{
@@ -145,7 +143,7 @@ func TestNewUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440001",
 			userName:       "Test User",
 			email:          "test@example.com",
-			role:           openapi.Admin,
+			role:           UserRoleAdmin,
 			createdAt:      now,
 			updatedAt:      &updatedAt,
 		},
@@ -156,7 +154,7 @@ func TestNewUser(t *testing.T) {
 			organizationID: "550e8400-e29b-41d4-a716-446655440003",
 			userName:       "Another User",
 			email:          "another@example.com",
-			role:           openapi.Operator,
+			role:           UserRoleOperator,
 			createdAt:      now,
 			updatedAt:      nil,
 		},
@@ -197,7 +195,7 @@ func newValidUser() User {
 		OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
 		Name:           "Test User",
 		Email:          "test@example.com",
-		Role:           openapi.Admin,
+		Role:           UserRoleAdmin,
 	}
 }
 
@@ -219,7 +217,7 @@ func TestUser_validate(t *testing.T) {
 				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
 				Name:           "Test User",
 				Email:          "test@example.com",
-				Role:           openapi.Admin,
+				Role:           UserRoleAdmin,
 			},
 			wantErr: true,
 		},
@@ -230,7 +228,7 @@ func TestUser_validate(t *testing.T) {
 				OrganizationID: "",
 				Name:           "Test User",
 				Email:          "test@example.com",
-				Role:           openapi.Admin,
+				Role:           UserRoleAdmin,
 			},
 			wantErr: true,
 		},
@@ -241,7 +239,7 @@ func TestUser_validate(t *testing.T) {
 				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
 				Name:           "",
 				Email:          "test@example.com",
-				Role:           openapi.Admin,
+				Role:           UserRoleAdmin,
 			},
 			wantErr: true,
 		},
@@ -252,7 +250,7 @@ func TestUser_validate(t *testing.T) {
 				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
 				Name:           strings.Repeat("a", 61),
 				Email:          "test@example.com",
-				Role:           openapi.Admin,
+				Role:           UserRoleAdmin,
 			},
 			wantErr: true,
 		},
@@ -263,7 +261,7 @@ func TestUser_validate(t *testing.T) {
 				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
 				Name:           "Test User",
 				Email:          "",
-				Role:           openapi.Admin,
+				Role:           UserRoleAdmin,
 			},
 			wantErr: true,
 		},
@@ -274,7 +272,7 @@ func TestUser_validate(t *testing.T) {
 				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
 				Name:           "Test User",
 				Email:          "invalid-email",
-				Role:           openapi.Admin,
+				Role:           UserRoleAdmin,
 			},
 			wantErr: true,
 		},
@@ -403,17 +401,17 @@ func TestUser_SetEmail(t *testing.T) {
 func TestUser_SetRole(t *testing.T) {
 	tests := []struct {
 		name    string
-		role    openapi.UserRole
+		role    UserRole
 		wantErr bool
 	}{
 		{
 			name:    "success with Admin role",
-			role:    openapi.Admin,
+			role:    UserRoleAdmin,
 			wantErr: false,
 		},
 		{
 			name:    "success with Operator role",
-			role:    openapi.Operator,
+			role:    UserRoleOperator,
 			wantErr: false,
 		},
 	}

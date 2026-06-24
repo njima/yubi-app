@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -17,10 +16,10 @@ type apiKey struct{}
 func NewAPIKey() *apiKey { return &apiKey{} }
 
 func apiKeyEntityToModel(e entity.APIKey) model.APIKey {
-	var userRole openapi.UserRole
+	var userRole model.UserRole
 	var userName string
 	if e.User != nil {
-		userRole = openapi.UserRole(e.User.Role)
+		userRole = model.UserRole(e.User.Role)
 		userName = e.User.Name
 	}
 	var robotName *string
