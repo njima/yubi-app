@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/uptrace/bun"
 )
 
@@ -15,19 +15,19 @@ type TaskVersion struct {
 	OrgScoped
 
 	// columns
-	ID                              int64                  `bun:"id,pk,autoincrement"`
-	IDNatural                       string                 `bun:"id_natural,unique,type:varchar(36),notnull"` // task_version_id (UUID)
-	OrganizationID                  string                 `bun:"organization_id,type:varchar(36),notnull"`   // Organization ID (stores organization's id_natural)
-	TaskID                          string                 `bun:"task_id,type:varchar(36),notnull"`           // FK to task
-	Version                         string                 `bun:"version,type:varchar(50),notnull"`           // "v1", "v2", "2025-01"
-	SchemaHash                      string                 `bun:"schema_hash,type:varchar(255)"`
-	IsActive                        bool                   `bun:"is_active,type:boolean,notnull,default:true"`
-	ApprovalStatus                  openapi.ApprovalStatus `bun:"approval_status,type:integer,notnull,default:0"` // 0=draft, 1=approved
-	TargetDurationSeconds           *int                   `bun:"target_duration_seconds,type:integer"`
-	TargetEpisodeCount              *int                   `bun:"target_episode_count,type:integer"`
-	TargetDurationPerEpisodeSeconds *int                   `bun:"target_duration_per_episode_seconds,type:integer"`
-	DisplayName                     *string                `bun:"display_name,type:varchar(100)"` // Optional human-readable label
-	Parameters                      json.RawMessage        `bun:"parameters,type:jsonb"`          // JSON array of {key, values[]}
+	ID                              int64                `bun:"id,pk,autoincrement"`
+	IDNatural                       string               `bun:"id_natural,unique,type:varchar(36),notnull"` // task_version_id (UUID)
+	OrganizationID                  string               `bun:"organization_id,type:varchar(36),notnull"`   // Organization ID (stores organization's id_natural)
+	TaskID                          string               `bun:"task_id,type:varchar(36),notnull"`           // FK to task
+	Version                         string               `bun:"version,type:varchar(50),notnull"`           // "v1", "v2", "2025-01"
+	SchemaHash                      string               `bun:"schema_hash,type:varchar(255)"`
+	IsActive                        bool                 `bun:"is_active,type:boolean,notnull,default:true"`
+	ApprovalStatus                  model.ApprovalStatus `bun:"approval_status,type:integer,notnull,default:0"` // 0=draft, 1=approved
+	TargetDurationSeconds           *int                 `bun:"target_duration_seconds,type:integer"`
+	TargetEpisodeCount              *int                 `bun:"target_episode_count,type:integer"`
+	TargetDurationPerEpisodeSeconds *int                 `bun:"target_duration_per_episode_seconds,type:integer"`
+	DisplayName                     *string              `bun:"display_name,type:varchar(100)"` // Optional human-readable label
+	Parameters                      json.RawMessage      `bun:"parameters,type:jsonb"`          // JSON array of {key, values[]}
 
 	// relations
 	Organization *Organization `bun:"rel:belongs-to,join:organization_id=id_natural"`

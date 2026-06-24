@@ -66,6 +66,15 @@ var executionStatusMappingCases = []struct {
 	{name: "finished", api: openapi.ExecutionStatusFinished, want: model.ExecutionStatusFinished},
 }
 
+var approvalStatusMappingCases = []struct {
+	name string
+	api  openapi.ApprovalStatus
+	want model.ApprovalStatus
+}{
+	{name: "draft", api: openapi.Draft, want: model.ApprovalStatusDraft},
+	{name: "approved", api: openapi.Approved, want: model.ApprovalStatusApproved},
+}
+
 func TestRobotStatusModelMapping(t *testing.T) {
 	for _, tt := range robotStatusMappingCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -231,6 +240,28 @@ func TestExecutionStatusMappingCoversOpenAPISchemaEnum(t *testing.T) {
 
 	if got := len(executionStatusMappingCases); got != want {
 		t.Fatalf("execution status mapping count = %d, want OpenAPI enum count %d", got, want)
+	}
+}
+
+func TestApprovalStatusModelMapping(t *testing.T) {
+	for _, tt := range approvalStatusMappingCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := approvalStatusModel(tt.api)
+			if got != tt.want {
+				t.Fatalf("approvalStatusModel() = %v, want %v", got, tt.want)
+			}
+			if roundTrip := openAPIApprovalStatus(got); roundTrip != tt.api {
+				t.Fatalf("openAPIApprovalStatus(approvalStatusModel()) = %v, want %v", roundTrip, tt.api)
+			}
+		})
+	}
+}
+
+func TestApprovalStatusMappingCoversOpenAPISchemaEnum(t *testing.T) {
+	want := openAPISchemaEnumCount(t, "ApprovalStatus")
+
+	if got := len(approvalStatusMappingCases); got != want {
+		t.Fatalf("approval status mapping count = %d, want OpenAPI enum count %d", got, want)
 	}
 }
 

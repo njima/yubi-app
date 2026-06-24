@@ -11,7 +11,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/database/bunconv"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
 )
@@ -432,7 +431,7 @@ func (e *episode) SumDurationByTaskID(ctx context.Context, conn repository.DBCon
 		ColumnExpr("COALESCE(SUM(EXTRACT(EPOCH FROM (e.finished_at - e.started_at))::bigint), 0)").
 		Where("e.organization_id = ?", orgID).
 		Where("tv.task_id = ?", taskID).
-		Where("tv.approval_status = ?", openapi.Approved).
+		Where("tv.approval_status = ?", model.ApprovalStatusApproved).
 		Where("e.collection_status = ?", model.EpisodeStatusCompleted).
 		Where("e.finished_at IS NOT NULL").
 		Where("e.started_at IS NOT NULL").

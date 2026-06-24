@@ -5,8 +5,14 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+type ApprovalStatus int
+
+const (
+	ApprovalStatusDraft    ApprovalStatus = 0
+	ApprovalStatusApproved ApprovalStatus = 1
 )
 
 type TaskVersionParameter struct {
@@ -21,7 +27,7 @@ type TaskVersion struct {
 	TaskID                          string
 	Version                         string
 	DisplayName                     *string
-	ApprovalStatus                  openapi.ApprovalStatus
+	ApprovalStatus                  ApprovalStatus
 	Parameters                      []TaskVersionParameter
 	IsCurrent                       bool
 	CreatedAt                       time.Time
@@ -33,15 +39,15 @@ type TaskVersion struct {
 }
 
 func (tv *TaskVersion) Approve() {
-	tv.ApprovalStatus = openapi.Approved
+	tv.ApprovalStatus = ApprovalStatusApproved
 }
 
 func (tv TaskVersion) IsDraft() bool {
-	return tv.ApprovalStatus == openapi.Draft
+	return tv.ApprovalStatus == ApprovalStatusDraft
 }
 
 func (tv TaskVersion) IsApproved() bool {
-	return tv.ApprovalStatus == openapi.Approved
+	return tv.ApprovalStatus == ApprovalStatusApproved
 }
 
 func (tv TaskVersion) DisplayLabel(taskName string) string {
@@ -65,7 +71,7 @@ func InitTaskVersion(organizationID, taskID, version string, displayName *string
 		TaskID:                          taskID,
 		Version:                         version,
 		DisplayName:                     normalizeDisplayName(displayName),
-		ApprovalStatus:                  openapi.Draft,
+		ApprovalStatus:                  ApprovalStatusDraft,
 		Parameters:                      parameters,
 		CreatedAt:                       time.Now(),
 		TargetDurationSeconds:           targetDurationSeconds,
@@ -111,7 +117,7 @@ func (tv TaskVersion) validate() error {
 		),
 		"approval_status": validation.Validate(
 			tv.ApprovalStatus,
-			validation.In(openapi.Draft, openapi.Approved).Error("approval_status must be 0 (draft) or 1 (approved)"),
+			validation.In(ApprovalStatusDraft, ApprovalStatusApproved).Error("approval_status must be 0 (draft) or 1 (approved)"),
 		),
 		"target_duration_seconds":             validation.Validate(tv.TargetDurationSeconds, validation.Min(1).Error("target_duration_seconds must be at least 1")),
 		"target_episode_count":                validation.Validate(tv.TargetEpisodeCount, validation.Min(1).Error("target_episode_count must be at least 1")),

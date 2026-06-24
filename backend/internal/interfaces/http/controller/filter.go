@@ -59,6 +59,14 @@ func executionStatusModel(value openapi.ExecutionStatus) model.ExecutionStatus {
 	return model.ExecutionStatus(value)
 }
 
+func openAPIApprovalStatus(value model.ApprovalStatus) openapi.ApprovalStatus {
+	return openapi.ApprovalStatus(value)
+}
+
+func approvalStatusModel(value openapi.ApprovalStatus) model.ApprovalStatus {
+	return model.ApprovalStatus(value)
+}
+
 func robotStatus(value *openapi.RobotStatus) *repository.RobotFilterStatus {
 	if value == nil {
 		return nil

@@ -9,7 +9,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/database/bunconv"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
 )
@@ -133,7 +132,7 @@ func (tv *taskVersion) GetLatestApprovedByTaskID(ctx context.Context, conn repos
 	if err := conn.NewSelect().
 		Model(&e).
 		Where("task_id = ?", taskID).
-		Where("approval_status = ?", openapi.Approved).
+		Where("approval_status = ?", model.ApprovalStatusApproved).
 		Order("created_at DESC").
 		Limit(1).
 		Scan(ctx); err != nil {
@@ -149,7 +148,7 @@ func (tv *taskVersion) Approve(ctx context.Context, conn repository.DBConn, id s
 	var updated entity.TaskVersion
 	if err := conn.NewUpdate().
 		Model((*entity.TaskVersion)(nil)).
-		Set("approval_status = ?", openapi.Approved).
+		Set("approval_status = ?", model.ApprovalStatusApproved).
 		Where("id_natural = ?", id).
 		Returning("*").
 		Scan(ctx, &updated); err != nil {
@@ -256,7 +255,7 @@ func (tv *taskVersion) SumTargetByTaskID(ctx context.Context, conn repository.DB
 		ColumnExpr("COALESCE(SUM(COALESCE(target_duration_seconds, 0)), 0)").
 		Where("organization_id = ?", orgID).
 		Where("task_id = ?", taskID).
-		Where("approval_status = ?", openapi.Approved).
+		Where("approval_status = ?", model.ApprovalStatusApproved).
 		Scan(ctx, &total)
 
 	if err != nil {
