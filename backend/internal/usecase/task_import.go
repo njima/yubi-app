@@ -15,7 +15,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -471,25 +470,25 @@ func validateImportRow(row TaskImportRow, validTags map[string]bool) []string {
 	return errs
 }
 
-var priorityMap = map[string]openapi.TaskPriority{
-	"low":    openapi.TaskPriorityLow,
-	"normal": openapi.TaskPriorityNormal,
-	"high":   openapi.TaskPriorityHigh,
-	"urgent": openapi.TaskPriorityUrgent,
+var priorityMap = map[string]model.TaskPriority{
+	"low":    model.TaskPriorityLow,
+	"normal": model.TaskPriorityNormal,
+	"high":   model.TaskPriorityHigh,
+	"urgent": model.TaskPriorityUrgent,
 }
 
-var difficultyMap = map[string]openapi.TaskDifficulty{
-	"s": openapi.DifficultyS,
-	"a": openapi.DifficultyA,
-	"b": openapi.DifficultyB,
-	"c": openapi.DifficultyC,
+var difficultyMap = map[string]model.TaskDifficulty{
+	"s": model.TaskDifficultyS,
+	"a": model.TaskDifficultyA,
+	"b": model.TaskDifficultyB,
+	"c": model.TaskDifficultyC,
 }
 
-var statusMap = map[string]openapi.TaskStatus{
-	"planning":  openapi.TaskStatusPlanning,
-	"doing":     openapi.TaskStatusDoing,
-	"completed": openapi.TaskStatusCompleted,
-	"canceled":  openapi.TaskStatusCanceled,
+var statusMap = map[string]model.TaskStatus{
+	"planning":  model.TaskStatusPlanning,
+	"doing":     model.TaskStatusDoing,
+	"completed": model.TaskStatusCompleted,
+	"canceled":  model.TaskStatusCanceled,
 }
 
 func isValidPriority(s string) bool {
@@ -507,25 +506,25 @@ func isValidStatus(s string) bool {
 	return ok
 }
 
-func parsePriority(s string) openapi.TaskPriority {
+func parsePriority(s string) model.TaskPriority {
 	if v, ok := priorityMap[strings.ToLower(s)]; ok {
 		return v
 	}
-	return openapi.TaskPriorityNormal
+	return model.TaskPriorityNormal
 }
 
-func parseDifficulty(s string) openapi.TaskDifficulty {
+func parseDifficulty(s string) model.TaskDifficulty {
 	if v, ok := difficultyMap[strings.ToLower(s)]; ok {
 		return v
 	}
-	return openapi.DifficultyB
+	return model.TaskDifficultyB
 }
 
-func parseStatus(s string) openapi.TaskStatus {
+func parseStatus(s string) model.TaskStatus {
 	if v, ok := statusMap[strings.ToLower(s)]; ok {
 		return v
 	}
-	return openapi.TaskStatusPlanning
+	return model.TaskStatusPlanning
 }
 
 func parseDeadline(s string) time.Time {

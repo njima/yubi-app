@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
@@ -43,4 +44,19 @@ func taskDifficulties(values []openapi.TaskDifficulty) []repository.TaskDifficul
 		difficulties = append(difficulties, repository.TaskDifficulty(value))
 	}
 	return difficulties
+}
+
+func taskPriorityPtr(value openapi.TaskPriority) *model.TaskPriority {
+	priority := model.TaskPriority(value)
+	return &priority
+}
+
+func taskDifficultyPtr(value openapi.TaskDifficulty) *model.TaskDifficulty {
+	difficulty := model.TaskDifficulty(value)
+	return &difficulty
+}
+
+func taskStatusPtr(value openapi.TaskStatus) *model.TaskStatus {
+	status := model.TaskStatus(value)
+	return &status
 }

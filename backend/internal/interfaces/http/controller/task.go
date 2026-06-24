@@ -36,15 +36,15 @@ func toOpenAPITags(tags model.TaskTags) *[]openapi.TaskTag {
 func toOpenAPITask(t model.Task) openapi.Task {
 	var priority openapi.TaskPriority
 	if t.Priority != nil {
-		priority = *t.Priority
+		priority = openapi.TaskPriority(*t.Priority)
 	}
 	var difficulty openapi.TaskDifficulty
 	if t.Difficulty != nil {
-		difficulty = *t.Difficulty
+		difficulty = openapi.TaskDifficulty(*t.Difficulty)
 	}
 	var status openapi.TaskStatus
 	if t.Status != nil {
-		status = *t.Status
+		status = openapi.TaskStatus(*t.Status)
 	}
 	task := openapi.Task{
 		Id:                    t.IDNatural,
@@ -120,9 +120,9 @@ func (c *controller) CreateTask(ctx context.Context, request openapi.CreateTaskR
 		Name:           request.Body.Name,
 		Description:    request.Body.Description,
 		ManualURL:      request.Body.ManualUrl,
-		Priority:       request.Body.Priority,
-		Difficulty:     request.Body.Difficulty,
-		Status:         request.Body.Status,
+		Priority:       model.TaskPriority(request.Body.Priority),
+		Difficulty:     model.TaskDifficulty(request.Body.Difficulty),
+		Status:         model.TaskStatus(request.Body.Status),
 		Deadline:       request.Body.Deadline,
 		RobotType:      request.Body.RobotType,
 	}
@@ -172,13 +172,13 @@ func (c *controller) UpdateTaskById(ctx context.Context, request openapi.UpdateT
 		input.ManualURL = request.Body.ManualUrl
 	}
 	if request.Body.Priority != nil {
-		input.Priority = request.Body.Priority
+		input.Priority = taskPriorityPtr(*request.Body.Priority)
 	}
 	if request.Body.Difficulty != nil {
-		input.Difficulty = request.Body.Difficulty
+		input.Difficulty = taskDifficultyPtr(*request.Body.Difficulty)
 	}
 	if request.Body.Status != nil {
-		input.Status = request.Body.Status
+		input.Status = taskStatusPtr(*request.Body.Status)
 	}
 	if request.Body.Deadline != nil {
 		input.Deadline = request.Body.Deadline

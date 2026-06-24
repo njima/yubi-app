@@ -5,9 +5,35 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+)
+
+type TaskPriority int
+
+const (
+	TaskPriorityLow    TaskPriority = 0
+	TaskPriorityNormal TaskPriority = 1
+	TaskPriorityHigh   TaskPriority = 2
+	TaskPriorityUrgent TaskPriority = 3
+)
+
+type TaskDifficulty int
+
+const (
+	TaskDifficultyS TaskDifficulty = 0
+	TaskDifficultyA TaskDifficulty = 1
+	TaskDifficultyB TaskDifficulty = 2
+	TaskDifficultyC TaskDifficulty = 3
+)
+
+type TaskStatus int
+
+const (
+	TaskStatusPlanning  TaskStatus = 0
+	TaskStatusDoing     TaskStatus = 1
+	TaskStatusCompleted TaskStatus = 2
+	TaskStatusCanceled  TaskStatus = 3
 )
 
 type Task struct {
@@ -17,9 +43,9 @@ type Task struct {
 	Name                  string
 	Description           *string
 	ManualURL             string
-	Priority              *openapi.TaskPriority
-	Difficulty            *openapi.TaskDifficulty
-	Status                *openapi.TaskStatus
+	Priority              *TaskPriority
+	Difficulty            *TaskDifficulty
+	Status                *TaskStatus
 	Deadline              time.Time
 	RobotType             *string
 	TargetDurationSeconds *int
@@ -39,7 +65,7 @@ const (
 	InitialVersion = "v1.0.0"
 )
 
-func InitTask(organizationID string, name string, description *string, manualURL string, priority *openapi.TaskPriority, difficulty *openapi.TaskDifficulty, status *openapi.TaskStatus, deadline time.Time, robotType *string) (Task, error) {
+func InitTask(organizationID string, name string, description *string, manualURL string, priority *TaskPriority, difficulty *TaskDifficulty, status *TaskStatus, deadline time.Time, robotType *string) (Task, error) {
 	nID, err := InitID()
 	if err != nil {
 		return Task{}, err
@@ -136,9 +162,9 @@ func (t Task) validate() error {
 	return nil
 }
 
-func validateDifficulty(difficulty openapi.TaskDifficulty) error {
+func validateDifficulty(difficulty TaskDifficulty) error {
 	switch difficulty {
-	case openapi.DifficultyS, openapi.DifficultyA, openapi.DifficultyB, openapi.DifficultyC:
+	case TaskDifficultyS, TaskDifficultyA, TaskDifficultyB, TaskDifficultyC:
 		return nil
 	default:
 		return apperror.NewError(apperror.NewMessage(apperror.CodeValidationError, "difficulty must be 0 (S), 1 (A), 2 (B), or 3 (C)"))
@@ -148,19 +174,19 @@ func validateDifficulty(difficulty openapi.TaskDifficulty) error {
 // DetermineTaskStatus determines the task status based on actual vs target duration.
 // actualDuration: sum of completed episode durations for all approved versions (seconds)
 // targetDuration: sum of target_duration_seconds for all approved versions (null treated as 0)
-func DetermineTaskStatus(actualDuration, targetDuration int64) openapi.TaskStatus {
+func DetermineTaskStatus(actualDuration, targetDuration int64) TaskStatus {
 	if actualDuration == 0 {
-		return openapi.TaskStatusPlanning
+		return TaskStatusPlanning
 	}
 	if actualDuration < targetDuration {
-		return openapi.TaskStatusDoing
+		return TaskStatusDoing
 	}
-	return openapi.TaskStatusCompleted
+	return TaskStatusCompleted
 }
 
-func validateTaskStatus(status openapi.TaskStatus) error {
+func validateTaskStatus(status TaskStatus) error {
 	switch status {
-	case openapi.TaskStatusPlanning, openapi.TaskStatusDoing, openapi.TaskStatusCompleted, openapi.TaskStatusCanceled:
+	case TaskStatusPlanning, TaskStatusDoing, TaskStatusCompleted, TaskStatusCanceled:
 		return nil
 	default:
 		return apperror.NewError(apperror.NewMessage(apperror.CodeValidationError, "status must be 0 (Planning), 1 (Doing), 2 (Completed), or 3 (Canceled)"))
@@ -200,7 +226,7 @@ func (t *Task) SetName(name string) error {
 	return nil
 }
 
-func (t *Task) SetStatus(status *openapi.TaskStatus) error {
+func (t *Task) SetStatus(status *TaskStatus) error {
 	if status != nil {
 		if err := validateTaskStatus(*status); err != nil {
 			return err
@@ -228,7 +254,7 @@ func validateName(name string) error {
 	return nil
 }
 
-func (t *Task) SetPriority(priority *openapi.TaskPriority) error {
+func (t *Task) SetPriority(priority *TaskPriority) error {
 	if priority != nil {
 		if err := validatePriority(*priority); err != nil {
 			return err
@@ -238,16 +264,16 @@ func (t *Task) SetPriority(priority *openapi.TaskPriority) error {
 	return nil
 }
 
-func validatePriority(priority openapi.TaskPriority) error {
+func validatePriority(priority TaskPriority) error {
 	switch priority {
-	case openapi.TaskPriorityLow, openapi.TaskPriorityNormal, openapi.TaskPriorityHigh, openapi.TaskPriorityUrgent:
+	case TaskPriorityLow, TaskPriorityNormal, TaskPriorityHigh, TaskPriorityUrgent:
 		return nil
 	default:
 		return apperror.NewError(apperror.NewMessage(apperror.CodeValidationError, "priority must be 0 (Low), 1 (Normal), 2 (High), or 3 (Urgent)"))
 	}
 }
 
-func (t *Task) SetDifficulty(difficulty *openapi.TaskDifficulty) error {
+func (t *Task) SetDifficulty(difficulty *TaskDifficulty) error {
 	if difficulty != nil {
 		if err := validateDifficulty(*difficulty); err != nil {
 			return err
