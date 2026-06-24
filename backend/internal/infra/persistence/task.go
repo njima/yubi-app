@@ -98,9 +98,9 @@ func (t *task) GetByID(ctx context.Context, conn repository.DBConn, id string) (
 		Name:        dbt.Name,
 		Description: dbt.Description,
 		ManualURL:   derefString(dbt.ManualURL),
-		Priority:    &dbt.Priority,
-		Difficulty:  &dbt.Difficulty,
-		Status:      &dbt.Status,
+		Priority:    modelTaskPriorityPtr(dbt.Priority),
+		Difficulty:  modelTaskDifficultyPtr(dbt.Difficulty),
+		Status:      modelTaskStatusPtr(dbt.Status),
 		Deadline:    dbt.Deadline,
 		RobotType:   dbt.RobotType,
 		CreatedAt:   dbt.CreatedAt,
@@ -254,9 +254,9 @@ func (t *task) List(ctx context.Context, conn repository.DBConn, filter reposito
 			Name:           d.Name,
 			Description:    d.Description,
 			ManualURL:      derefString(d.ManualURL),
-			Priority:       &d.Priority,
-			Difficulty:     &d.Difficulty,
-			Status:         &d.Status,
+			Priority:       modelTaskPriorityPtr(d.Priority),
+			Difficulty:     modelTaskDifficultyPtr(d.Difficulty),
+			Status:         modelTaskStatusPtr(d.Status),
 			Deadline:       d.Deadline,
 			RobotType:      d.RobotType,
 			CreatedAt:      d.CreatedAt,
@@ -335,9 +335,9 @@ func (t *task) Update(ctx context.Context, conn repository.DBConn, tk model.Task
 		Name:        updated.Name,
 		Description: updated.Description,
 		ManualURL:   derefString(updated.ManualURL),
-		Priority:    &updated.Priority,
-		Difficulty:  &updated.Difficulty,
-		Status:      &updated.Status,
+		Priority:    modelTaskPriorityPtr(updated.Priority),
+		Difficulty:  modelTaskDifficultyPtr(updated.Difficulty),
+		Status:      modelTaskStatusPtr(updated.Status),
 		Deadline:    updated.Deadline,
 		RobotType:   updated.RobotType,
 		CreatedAt:   updated.CreatedAt,
@@ -371,9 +371,9 @@ func (t *task) ListByIDs(ctx context.Context, conn repository.DBConn, ids []stri
 			Name:        d.Name,
 			Description: d.Description,
 			ManualURL:   derefString(d.ManualURL),
-			Priority:    &d.Priority,
-			Difficulty:  &d.Difficulty,
-			Status:      &d.Status,
+			Priority:    modelTaskPriorityPtr(d.Priority),
+			Difficulty:  modelTaskDifficultyPtr(d.Difficulty),
+			Status:      modelTaskStatusPtr(d.Status),
 			Deadline:    d.Deadline,
 			RobotType:   d.RobotType,
 		})
@@ -382,18 +382,18 @@ func (t *task) ListByIDs(ctx context.Context, conn repository.DBConn, ids []stri
 	return res, nil
 }
 
-func derefDifficulty(d *openapi.TaskDifficulty) openapi.TaskDifficulty {
+func derefDifficulty(d *model.TaskDifficulty) openapi.TaskDifficulty {
 	if d == nil {
 		return openapi.DifficultyB
 	}
-	return *d
+	return openapi.TaskDifficulty(*d)
 }
 
-func derefTaskStatus(s *openapi.TaskStatus) openapi.TaskStatus {
+func derefTaskStatus(s *model.TaskStatus) openapi.TaskStatus {
 	if s == nil {
 		return openapi.TaskStatusPlanning
 	}
-	return *s
+	return openapi.TaskStatus(*s)
 }
 
 func derefString(s *string) string {
@@ -403,11 +403,26 @@ func derefString(s *string) string {
 	return *s
 }
 
-func derefPriority(p *openapi.TaskPriority) openapi.TaskPriority {
+func derefPriority(p *model.TaskPriority) openapi.TaskPriority {
 	if p == nil {
 		return openapi.TaskPriorityNormal
 	}
-	return *p
+	return openapi.TaskPriority(*p)
+}
+
+func modelTaskPriorityPtr(priority openapi.TaskPriority) *model.TaskPriority {
+	v := model.TaskPriority(priority)
+	return &v
+}
+
+func modelTaskDifficultyPtr(difficulty openapi.TaskDifficulty) *model.TaskDifficulty {
+	v := model.TaskDifficulty(difficulty)
+	return &v
+}
+
+func modelTaskStatusPtr(status openapi.TaskStatus) *model.TaskStatus {
+	v := model.TaskStatus(status)
+	return &v
 }
 
 func (t *task) Delete(ctx context.Context, conn repository.DBConn, id string) error {

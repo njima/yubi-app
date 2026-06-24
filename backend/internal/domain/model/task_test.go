@@ -4,8 +4,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 func TestInitTask(t *testing.T) {
@@ -98,9 +96,9 @@ func TestInitTask(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			priority := openapi.TaskPriorityNormal
-			difficulty := openapi.DifficultyB
-			status := openapi.TaskStatusPlanning
+			priority := TaskPriorityNormal
+			difficulty := TaskDifficultyB
+			status := TaskStatusPlanning
 			got, err := InitTask(tt.organizationID, tt.taskName, tt.description, tt.manualURL, &priority, &difficulty, &status, tt.deadline, nil)
 
 			if tt.wantErr {
@@ -206,9 +204,9 @@ func TestNewTask(t *testing.T) {
 }
 
 func newValidTask() Task {
-	priority := openapi.TaskPriorityNormal
-	difficulty := openapi.DifficultyB
-	status := openapi.TaskStatusPlanning
+	priority := TaskPriorityNormal
+	difficulty := TaskDifficultyB
+	status := TaskStatusPlanning
 	return Task{
 		IDNatural:      "550e8400-e29b-41d4-a716-446655440000",
 		OrganizationID: "550e8400-e29b-41d4-a716-446655440001",

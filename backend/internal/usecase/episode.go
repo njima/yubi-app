@@ -532,7 +532,7 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 		if err != nil {
 			return err
 		}
-		if tk.Status != nil && *tk.Status == openapi.TaskStatusCanceled {
+		if tk.Status != nil && *tk.Status == model.TaskStatusCanceled {
 			return nil
 		}
 		newStatus := model.DetermineTaskStatus(actual, target)

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
@@ -29,9 +28,9 @@ type TaskCreateInput struct {
 	LocationID     string
 	Description    *string
 	ManualURL      string
-	Priority       openapi.TaskPriority
-	Difficulty     openapi.TaskDifficulty
-	Status         openapi.TaskStatus
+	Priority       model.TaskPriority
+	Difficulty     model.TaskDifficulty
+	Status         model.TaskStatus
 	Deadline       time.Time
 	RobotType      *string
 	TagIDs         []string
@@ -42,9 +41,9 @@ type TaskUpdateInput struct {
 	Name        *string
 	Description *string
 	ManualURL   *string
-	Priority    *openapi.TaskPriority
-	Difficulty  *openapi.TaskDifficulty
-	Status      *openapi.TaskStatus
+	Priority    *model.TaskPriority
+	Difficulty  *model.TaskDifficulty
+	Status      *model.TaskStatus
 	Deadline    *time.Time
 	RobotType   *string
 	TagIDs      *[]string
@@ -194,7 +193,7 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 	err := t.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		// Handle status change inside transaction
 		if input.Status != nil {
-			if *input.Status == openapi.TaskStatusCanceled {
+			if *input.Status == model.TaskStatusCanceled {
 				// Any → Canceled: set directly
 				if err := tk.SetStatus(input.Status); err != nil {
 					return err
@@ -205,7 +204,7 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 				if err != nil {
 					return err
 				}
-				if currentTask.Status != nil && *currentTask.Status == openapi.TaskStatusCanceled {
+				if currentTask.Status != nil && *currentTask.Status == model.TaskStatusCanceled {
 					// Canceled → non-Canceled: auto-determine correct status
 					actual, err := t.episodeRepo.SumDurationByTaskID(ctx, tx, currentTask.IDNatural)
 					if err != nil {
@@ -410,7 +409,7 @@ func labelsForTask(tk repository.FilteredTask, tagsByTask map[string]model.TaskT
 // addToGroup accumulates task metrics into a TrendGroup.
 func addToGroup(g *model.TrendGroup, tk repository.FilteredTask, tgt repository.TaskTargets, act repository.TaskActuals) {
 	g.TargetTasks++
-	if tk.Status == int(openapi.TaskStatusCompleted) {
+	if tk.Status == int(model.TaskStatusCompleted) {
 		g.ActualTasks++
 	}
 	g.TargetDuration += tgt.TargetDuration
@@ -488,14 +487,14 @@ func buildCompletionTrend(
 }
 
 func statusLabel(status int) string {
-	switch openapi.TaskStatus(status) {
-	case openapi.TaskStatusPlanning:
+	switch model.TaskStatus(status) {
+	case model.TaskStatusPlanning:
 		return "Planning"
-	case openapi.TaskStatusDoing:
+	case model.TaskStatusDoing:
 		return "Doing"
-	case openapi.TaskStatusCompleted:
+	case model.TaskStatusCompleted:
 		return "Completed"
-	case openapi.TaskStatusCanceled:
+	case model.TaskStatusCanceled:
 		return "Canceled"
 	default:
 		return "Unknown"

@@ -7,7 +7,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -228,7 +227,7 @@ func (u *taskVersion) Approve(ctx context.Context, taskID, versionID string) (mo
 		if err != nil {
 			return err
 		}
-		if tk.Status != nil && *tk.Status == openapi.TaskStatusCanceled {
+		if tk.Status != nil && *tk.Status == model.TaskStatusCanceled {
 			return nil
 		}
 		newStatus := model.DetermineTaskStatus(actual, target)
