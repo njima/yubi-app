@@ -16,7 +16,7 @@ type EpisodeListFilter struct {
 	TaskVersionID *string
 	RobotID       *string
 	UserID        *string
-	Statuses      []openapi.EpisodeCollectionStatus
+	Statuses      []EpisodeStatus
 	StartedAtFrom *time.Time
 	StartedAtTo   *time.Time
 	SortBy        *EpisodeSortBy

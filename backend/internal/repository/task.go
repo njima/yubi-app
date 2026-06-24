@@ -15,9 +15,9 @@ type TaskListFilter struct {
 	HasApprovedVersion *bool
 	SortBy             *TaskSortBy
 	SortOrder          *SortOrder
-	Statuses           []openapi.TaskStatus
-	Priorities         []openapi.TaskPriority
-	Difficulties       []openapi.TaskDifficulty
+	Statuses           []TaskStatus
+	Priorities         []TaskPriority
+	Difficulties       []TaskDifficulty
 	RobotType          *string
 	Search             *string
 }

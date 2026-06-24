@@ -582,9 +582,9 @@ func (e *episode) RepeatLast(ctx context.Context) (model.Episode, error) {
 		return model.Episode{}, err
 	}
 
-	statuses := []openapi.EpisodeCollectionStatus{
-		openapi.EpisodeCollectionStatusCompleted,
-		openapi.EpisodeCollectionStatusCancel,
+	statuses := []repository.EpisodeStatus{
+		repository.EpisodeStatusCompleted,
+		repository.EpisodeStatusCancel,
 	}
 	eps, _, err := e.repo.List(ctx, e.db, repository.EpisodeListFilter{
 		RobotID:  &robotID,

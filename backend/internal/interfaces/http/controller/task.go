@@ -81,13 +81,13 @@ func (c *controller) ListTasks(ctx context.Context, request openapi.ListTasksReq
 		Search:             request.Params.Search,
 	}
 	if request.Params.Status != nil {
-		filter.Statuses = *request.Params.Status
+		filter.Statuses = taskStatuses(*request.Params.Status)
 	}
 	if request.Params.Priority != nil {
-		filter.Priorities = *request.Params.Priority
+		filter.Priorities = taskPriorities(*request.Params.Priority)
 	}
 	if request.Params.Difficulty != nil {
-		filter.Difficulties = *request.Params.Difficulty
+		filter.Difficulties = taskDifficulties(*request.Params.Difficulty)
 	}
 
 	tasks, total, err := c.taskUsecase.List(ctx, filter, pg.Page, pg.Limit)
@@ -450,13 +450,13 @@ func (c *controller) GetTaskAvailableTags(ctx context.Context, request openapi.G
 func (c *controller) ExportTasks(ctx context.Context, request openapi.ExportTasksRequestObject) (openapi.ExportTasksResponseObject, error) {
 	filter := repository.TaskListFilter{}
 	if request.Params.Status != nil {
-		filter.Statuses = *request.Params.Status
+		filter.Statuses = taskStatuses(*request.Params.Status)
 	}
 	if request.Params.Priority != nil {
-		filter.Priorities = *request.Params.Priority
+		filter.Priorities = taskPriorities(*request.Params.Priority)
 	}
 	if request.Params.Difficulty != nil {
-		filter.Difficulties = *request.Params.Difficulty
+		filter.Difficulties = taskDifficulties(*request.Params.Difficulty)
 	}
 	filter.RobotType = request.Params.RobotType
 

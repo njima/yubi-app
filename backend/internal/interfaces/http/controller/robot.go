@@ -17,7 +17,7 @@ func (c *controller) ListRobots(ctx context.Context, request openapi.ListRobotsR
 	filter := repository.RobotListFilter{
 		SiteID:     request.Params.SiteId,
 		LocationID: request.Params.LocationId,
-		Status:     request.Params.Status,
+		Status:     robotStatus(request.Params.Status),
 		RobotType:  request.Params.RobotType,
 		Search:     request.Params.Search,
 		SortBy:     robotSortBy(request.Params.SortBy),
@@ -78,7 +78,7 @@ func (c *controller) ListRobotTypes(ctx context.Context, request openapi.ListRob
 	filter := repository.RobotTypeFilter{
 		SiteID:     request.Params.SiteId,
 		LocationID: request.Params.LocationId,
-		Status:     request.Params.Status,
+		Status:     robotStatus(request.Params.Status),
 	}
 	types, err := c.robotUsecase.ListTypes(ctx, filter)
 	if err != nil {

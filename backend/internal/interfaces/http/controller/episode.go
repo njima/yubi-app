@@ -189,7 +189,7 @@ func (c *controller) ExportEpisodes(ctx context.Context, request openapi.ExportE
 		StartedAtTo:   toT,
 	}
 	if request.Params.Status != nil {
-		listFilter.Statuses = *request.Params.Status
+		listFilter.Statuses = episodeStatuses(*request.Params.Status)
 	}
 
 	filter := repository.EpisodeExportFilter{EpisodeListFilter: listFilter}
@@ -225,7 +225,7 @@ func (c *controller) ListEpisodes(ctx context.Context, request openapi.ListEpiso
 		SortOrder:     sortOrder(request.Params.SortOrder),
 	}
 	if request.Params.Status != nil {
-		filter.Statuses = *request.Params.Status
+		filter.Statuses = episodeStatuses(*request.Params.Status)
 	}
 
 	eps, total, err := c.episodeUsecase.List(ctx, filter, pg.Page, pg.Limit)
@@ -456,7 +456,7 @@ func (c *controller) ListRobotEpisodes(ctx context.Context, request openapi.List
 
 	filter := repository.EpisodeListFilter{
 		RobotID:  &robotID,
-		Statuses: []openapi.EpisodeCollectionStatus{openapi.EpisodeCollectionStatusReady},
+		Statuses: []repository.EpisodeStatus{repository.EpisodeStatusReady},
 	}
 
 	eps, _, err := c.episodeUsecase.List(ctx, filter, 1, 100)
