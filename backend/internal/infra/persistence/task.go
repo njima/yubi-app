@@ -13,7 +13,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/database/bunconv"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -382,18 +381,18 @@ func (t *task) ListByIDs(ctx context.Context, conn repository.DBConn, ids []stri
 	return res, nil
 }
 
-func derefDifficulty(d *model.TaskDifficulty) openapi.TaskDifficulty {
+func derefDifficulty(d *model.TaskDifficulty) model.TaskDifficulty {
 	if d == nil {
-		return openapi.DifficultyB
+		return model.TaskDifficultyB
 	}
-	return openapi.TaskDifficulty(*d)
+	return *d
 }
 
-func derefTaskStatus(s *model.TaskStatus) openapi.TaskStatus {
+func derefTaskStatus(s *model.TaskStatus) model.TaskStatus {
 	if s == nil {
-		return openapi.TaskStatusPlanning
+		return model.TaskStatusPlanning
 	}
-	return openapi.TaskStatus(*s)
+	return *s
 }
 
 func derefString(s *string) string {
@@ -403,26 +402,23 @@ func derefString(s *string) string {
 	return *s
 }
 
-func derefPriority(p *model.TaskPriority) openapi.TaskPriority {
+func derefPriority(p *model.TaskPriority) model.TaskPriority {
 	if p == nil {
-		return openapi.TaskPriorityNormal
+		return model.TaskPriorityNormal
 	}
-	return openapi.TaskPriority(*p)
+	return *p
 }
 
-func modelTaskPriorityPtr(priority openapi.TaskPriority) *model.TaskPriority {
-	v := model.TaskPriority(priority)
-	return &v
+func modelTaskPriorityPtr(priority model.TaskPriority) *model.TaskPriority {
+	return &priority
 }
 
-func modelTaskDifficultyPtr(difficulty openapi.TaskDifficulty) *model.TaskDifficulty {
-	v := model.TaskDifficulty(difficulty)
-	return &v
+func modelTaskDifficultyPtr(difficulty model.TaskDifficulty) *model.TaskDifficulty {
+	return &difficulty
 }
 
-func modelTaskStatusPtr(status openapi.TaskStatus) *model.TaskStatus {
-	v := model.TaskStatus(status)
-	return &v
+func modelTaskStatusPtr(status model.TaskStatus) *model.TaskStatus {
+	return &status
 }
 
 func (t *task) Delete(ctx context.Context, conn repository.DBConn, id string) error {

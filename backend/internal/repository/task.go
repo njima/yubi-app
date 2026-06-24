@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 // MaxTaskBatchSize is the maximum number of tasks allowed in a single import or export operation.
@@ -74,9 +73,9 @@ type TaskExportRow struct {
 	Name                            string
 	Description                     *string
 	ManualURL                       string
-	Priority                        openapi.TaskPriority
-	Difficulty                      openapi.TaskDifficulty
-	Status                          openapi.TaskStatus
+	Priority                        model.TaskPriority
+	Difficulty                      model.TaskDifficulty
+	Status                          model.TaskStatus
 	Deadline                        time.Time
 	RobotType                       *string
 	SubtaskNames                    []string // from latest approved version, sorted by order_index

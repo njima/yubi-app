@@ -3,7 +3,6 @@ package bunconv
 import (
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 func EntityToTaskModel(et entity.Task, etv entity.TaskVersion) model.Task {
@@ -32,17 +31,14 @@ func EntityToTaskModel(et entity.Task, etv entity.TaskVersion) model.Task {
 	}
 }
 
-func taskPriorityPtr(priority openapi.TaskPriority) *model.TaskPriority {
-	v := model.TaskPriority(priority)
-	return &v
+func taskPriorityPtr(priority model.TaskPriority) *model.TaskPriority {
+	return &priority
 }
 
-func taskDifficultyPtr(difficulty openapi.TaskDifficulty) *model.TaskDifficulty {
-	v := model.TaskDifficulty(difficulty)
-	return &v
+func taskDifficultyPtr(difficulty model.TaskDifficulty) *model.TaskDifficulty {
+	return &difficulty
 }
 
-func taskStatusPtr(status openapi.TaskStatus) *model.TaskStatus {
-	v := model.TaskStatus(status)
-	return &v
+func taskStatusPtr(status model.TaskStatus) *model.TaskStatus {
+	return &status
 }
