@@ -32,6 +32,17 @@ var leaderStatusMappingCases = []struct {
 	{name: "maintenance", api: openapi.LeaderMaintenance, want: model.LeaderStatusMaintenance},
 }
 
+var episodeStatusMappingCases = []struct {
+	name string
+	api  openapi.EpisodeCollectionStatus
+	want model.EpisodeStatus
+}{
+	{name: "ready", api: openapi.EpisodeCollectionStatusReady, want: model.EpisodeStatusReady},
+	{name: "recording", api: openapi.EpisodeCollectionStatusRecording, want: model.EpisodeStatusRecording},
+	{name: "cancel", api: openapi.EpisodeCollectionStatusCancel, want: model.EpisodeStatusCancel},
+	{name: "completed", api: openapi.EpisodeCollectionStatusCompleted, want: model.EpisodeStatusCompleted},
+}
+
 func TestRobotStatusModelMapping(t *testing.T) {
 	for _, tt := range robotStatusMappingCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -113,6 +124,46 @@ func TestLeaderStatusRejectsUnknownValue(t *testing.T) {
 	}
 	if got != nil {
 		t.Fatalf("leaderStatus() = %v, want nil", *got)
+	}
+}
+
+func TestEpisodeStatusModelMapping(t *testing.T) {
+	for _, tt := range episodeStatusMappingCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := episodeStatusModel(&tt.api)
+			if err != nil {
+				t.Fatalf("episodeStatusModel() error = %v", err)
+			}
+			if got == nil {
+				t.Fatalf("episodeStatusModel() = nil")
+			}
+			if *got != tt.want {
+				t.Fatalf("episodeStatusModel() = %v, want %v", *got, tt.want)
+			}
+			if roundTrip := openAPIEpisodeStatus(*got); roundTrip != tt.api {
+				t.Fatalf("openAPIEpisodeStatus(episodeStatusModel()) = %v, want %v", roundTrip, tt.api)
+			}
+		})
+	}
+}
+
+func TestEpisodeStatusMappingCoversOpenAPISchemaEnum(t *testing.T) {
+	want := openAPISchemaEnumCount(t, "EpisodeCollectionStatus")
+
+	if got := len(episodeStatusMappingCases); got != want {
+		t.Fatalf("episode status mapping count = %d, want OpenAPI enum count %d", got, want)
+	}
+}
+
+func TestEpisodeStatusRejectsUnknownValue(t *testing.T) {
+	value := openapi.EpisodeCollectionStatus(999)
+
+	got, err := episodeStatusModel(&value)
+	if err == nil {
+		t.Fatalf("episodeStatusModel() error = nil")
+	}
+	if got != nil {
+		t.Fatalf("episodeStatusModel() = %v, want nil", *got)
 	}
 }
 

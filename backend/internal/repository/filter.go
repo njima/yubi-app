@@ -1,12 +1,14 @@
 package repository
 
-type EpisodeStatus int
+import "github.com/airoa-org/yubi-app/backend/internal/domain/model"
+
+type EpisodeStatus = model.EpisodeStatus
 
 const (
-	EpisodeStatusReady     EpisodeStatus = 0
-	EpisodeStatusRecording EpisodeStatus = 1
-	EpisodeStatusCancel    EpisodeStatus = 2
-	EpisodeStatusCompleted EpisodeStatus = 3
+	EpisodeStatusReady     = model.EpisodeStatusReady
+	EpisodeStatusRecording = model.EpisodeStatusRecording
+	EpisodeStatusCancel    = model.EpisodeStatusCancel
+	EpisodeStatusCompleted = model.EpisodeStatusCompleted
 )
 
 type RobotFilterStatus int

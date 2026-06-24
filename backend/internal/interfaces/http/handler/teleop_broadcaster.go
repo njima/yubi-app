@@ -272,7 +272,7 @@ func (tb *teleopBroadcaster) pushEpisodeAndMaybeTask(ctx context.Context, robotI
 		LocationId:    ep.LocationID,
 		UserId:        ep.UserID,
 		RobotId:       ep.RobotID,
-		Status:        ep.Status,
+		Status:        openapi.EpisodeCollectionStatus(ep.Status),
 		TaskId:        ep.TaskID,
 		TaskVersionId: ep.TaskVersionID,
 		StartedAt:     ep.StartedAt,

@@ -4,8 +4,16 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+type EpisodeStatus int
+
+const (
+	EpisodeStatusReady     EpisodeStatus = 0
+	EpisodeStatusRecording EpisodeStatus = 1
+	EpisodeStatusCancel    EpisodeStatus = 2
+	EpisodeStatusCompleted EpisodeStatus = 3
 )
 
 type Episode struct {
@@ -20,7 +28,7 @@ type Episode struct {
 	RecordedByID    *string
 	StartedAt       *time.Time
 	FinishedAt      *time.Time
-	Status          openapi.EpisodeCollectionStatus
+	Status          EpisodeStatus
 	ErrorDetails    *string
 	ParameterValues map[string]string
 	CreatedAt       time.Time
@@ -47,7 +55,7 @@ func InitEpisode(organizationID, taskID, locationID, robotID, userID string, rec
 		RobotID:        robotID,
 		UserID:         userID,
 		RecordedByID:   recordedByID,
-		Status:         openapi.EpisodeCollectionStatusReady,
+		Status:         EpisodeStatusReady,
 		CreatedAt:      time.Now(),
 	}
 
@@ -69,7 +77,7 @@ func NewEpisode(
 	errorDetails *string,
 	startedAt,
 	finishedAt *time.Time,
-	status openapi.EpisodeCollectionStatus,
+	status EpisodeStatus,
 	createdAt time.Time,
 	updatedAt *time.Time,
 	recordedByID *string,
@@ -122,7 +130,7 @@ func (e *Episode) SetFinishedAt(finishedAt time.Time) error {
 	return e.validate()
 }
 
-func (e *Episode) SetStatus(status openapi.EpisodeCollectionStatus) error {
+func (e *Episode) SetStatus(status EpisodeStatus) error {
 	e.Status = status
 	return e.validate()
 }
@@ -139,7 +147,7 @@ func (e *Episode) SetRecordedByID(userID string) error {
 
 // CanStart checks if the episode can be started
 func (e *Episode) CanStart() error {
-	if e.Status != openapi.EpisodeCollectionStatusReady {
+	if e.Status != EpisodeStatusReady {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "episode status must be Ready to start, current: %d", e.Status),
 		)
@@ -152,14 +160,14 @@ func (e *Episode) Start(occurredAt time.Time) error {
 	if err := e.CanStart(); err != nil {
 		return err
 	}
-	e.Status = openapi.EpisodeCollectionStatusRecording
+	e.Status = EpisodeStatusRecording
 	e.StartedAt = &occurredAt
 	return nil
 }
 
 // CanFinish checks if the episode can be finished
 func (e *Episode) CanFinish() error {
-	if e.Status != openapi.EpisodeCollectionStatusRecording {
+	if e.Status != EpisodeStatusRecording {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "episode status must be Recording to finish, current: %d", e.Status),
 		)
@@ -172,14 +180,14 @@ func (e *Episode) Finish(occurredAt time.Time) error {
 	if err := e.CanFinish(); err != nil {
 		return err
 	}
-	e.Status = openapi.EpisodeCollectionStatusCompleted
+	e.Status = EpisodeStatusCompleted
 	e.FinishedAt = &occurredAt
 	return nil
 }
 
 // CanCancel checks if the episode can be cancelled
 func (e *Episode) CanCancel() error {
-	if e.Status != openapi.EpisodeCollectionStatusRecording {
+	if e.Status != EpisodeStatusRecording {
 		return apperror.NewError(
 			apperror.NewMessage(apperror.CodeConflict, "episode status must be Recording to cancel, current: %d", e.Status),
 		)
@@ -192,6 +200,6 @@ func (e *Episode) Cancel() error {
 	if err := e.CanCancel(); err != nil {
 		return err
 	}
-	e.Status = openapi.EpisodeCollectionStatusCancel
+	e.Status = EpisodeStatusCancel
 	return nil
 }

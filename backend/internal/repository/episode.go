@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 // MaxEpisodeExportRows is the maximum number of episodes returned in a single export operation.
@@ -38,7 +37,7 @@ type EpisodeExportRow struct {
 	LocationID    string
 	UserID        string
 	RecordedByID  *string
-	Status        openapi.EpisodeCollectionStatus
+	Status        model.EpisodeStatus
 	StartedAt     *time.Time
 	FinishedAt    *time.Time
 	CreatedAt     time.Time
