@@ -87,6 +87,16 @@ var userRoleMappingCases = []struct {
 	{name: "viewer", api: openapi.Viewer, want: model.UserRoleViewer},
 }
 
+var fleetTrendGranularityMappingCases = []struct {
+	name string
+	api  openapi.GetFleetCollectionTrendParamsGranularity
+	want model.FleetTrendGranularity
+}{
+	{name: "hourly", api: openapi.Hourly, want: model.FleetTrendGranularityHourly},
+	{name: "daily", api: openapi.Daily, want: model.FleetTrendGranularityDaily},
+	{name: "monthly", api: openapi.Monthly, want: model.FleetTrendGranularityMonthly},
+}
+
 func TestRobotStatusModelMapping(t *testing.T) {
 	for _, tt := range robotStatusMappingCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -312,6 +322,25 @@ func TestUserRoleRejectsUnknownValue(t *testing.T) {
 	}
 }
 
+func TestFleetTrendGranularityModelMapping(t *testing.T) {
+	for _, tt := range fleetTrendGranularityMappingCases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := fleetTrendGranularityModel(tt.api)
+			if got != tt.want {
+				t.Fatalf("fleetTrendGranularityModel() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFleetTrendGranularityMappingCoversOpenAPIParameterEnum(t *testing.T) {
+	want := openAPIParameterEnumCount(t, "/fleet/collection-trend", "get", "granularity")
+
+	if got := len(fleetTrendGranularityMappingCases); got != want {
+		t.Fatalf("fleet trend granularity mapping count = %d, want OpenAPI enum count %d", got, want)
+	}
+}
+
 func openAPISchemaEnumCount(t *testing.T, schemaName string) int {
 	t.Helper()
 
@@ -337,4 +366,66 @@ func openAPISchemaEnumCount(t *testing.T, schemaName string) int {
 	}
 
 	return len(schema.Enum)
+}
+
+func openAPIParameterEnumCount(t *testing.T, path, method, parameterName string) int {
+	t.Helper()
+
+	content, err := os.ReadFile("../../../../../openapi/openapi.yaml")
+	if err != nil {
+		t.Fatalf("failed to read OpenAPI schema: %v", err)
+	}
+
+	var doc yaml.Node
+	if err := yaml.Unmarshal(content, &doc); err != nil {
+		t.Fatalf("failed to parse OpenAPI schema: %v", err)
+	}
+
+	root := doc.Content[0]
+	pathsNode := mappingValue(root, "paths")
+	if pathsNode == nil {
+		t.Fatalf("paths not found in OpenAPI schema")
+	}
+	pathNode := mappingValue(pathsNode, path)
+	if pathNode == nil {
+		t.Fatalf("path %q not found in OpenAPI schema", path)
+	}
+	operationNode := mappingValue(pathNode, method)
+	if operationNode == nil {
+		t.Fatalf("method %q not found for path %q", method, path)
+	}
+	parametersNode := mappingValue(operationNode, "parameters")
+	if parametersNode == nil {
+		t.Fatalf("parameters not found for %s %s", method, path)
+	}
+	for _, parameterNode := range parametersNode.Content {
+		nameNode := mappingValue(parameterNode, "name")
+		if nameNode == nil || nameNode.Value != parameterName {
+			continue
+		}
+		schemaNode := mappingValue(parameterNode, "schema")
+		if schemaNode == nil {
+			t.Fatalf("schema not found for parameter %q", parameterName)
+		}
+		enumNode := mappingValue(schemaNode, "enum")
+		if enumNode == nil {
+			t.Fatalf("enum not found for parameter %q", parameterName)
+		}
+		return len(enumNode.Content)
+	}
+
+	t.Fatalf("parameter %q not found for %s %s", parameterName, method, path)
+	return 0
+}
+
+func mappingValue(node *yaml.Node, key string) *yaml.Node {
+	if node == nil || node.Kind != yaml.MappingNode {
+		return nil
+	}
+	for i := 0; i < len(node.Content)-1; i += 2 {
+		if node.Content[i].Value == key {
+			return node.Content[i+1]
+		}
+	}
+	return nil
 }

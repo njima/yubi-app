@@ -67,6 +67,10 @@ func approvalStatusModel(value openapi.ApprovalStatus) model.ApprovalStatus {
 	return model.ApprovalStatus(value)
 }
 
+func fleetTrendGranularityModel(value openapi.GetFleetCollectionTrendParamsGranularity) model.FleetTrendGranularity {
+	return model.FleetTrendGranularity(value)
+}
+
 func openAPIUserRole(value model.UserRole) openapi.UserRole {
 	return openapi.UserRole(value)
 }

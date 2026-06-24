@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
 )
@@ -14,7 +13,7 @@ import (
 type FleetUsecase interface {
 	GetSummary(ctx context.Context) ([]model.FleetSiteSummary, error)
 	GetStats(ctx context.Context, from, to time.Time) ([]model.FleetSiteStats, error)
-	GetCollectionTrend(ctx context.Context, granularity openapi.GetFleetCollectionTrendParamsGranularity, from, to time.Time) (model.CollectionTrend, error)
+	GetCollectionTrend(ctx context.Context, granularity model.FleetTrendGranularity, from, to time.Time) (model.CollectionTrend, error)
 }
 
 type fleetUsecase struct {
@@ -51,7 +50,7 @@ func (f *fleetUsecase) GetStats(ctx context.Context, from, to time.Time) ([]mode
 	return buildStats(rows, uptimeRows, filter), nil
 }
 
-func (f *fleetUsecase) GetCollectionTrend(ctx context.Context, granularity openapi.GetFleetCollectionTrendParamsGranularity, from, to time.Time) (model.CollectionTrend, error) {
+func (f *fleetUsecase) GetCollectionTrend(ctx context.Context, granularity model.FleetTrendGranularity, from, to time.Time) (model.CollectionTrend, error) {
 	rows, err := f.repo.GetCollectionTrend(ctx, f.db, repository.FleetTrendFilter{
 		Granularity: granularity,
 		From:        from,
@@ -66,14 +65,14 @@ func (f *fleetUsecase) GetCollectionTrend(ctx context.Context, granularity opena
 
 // isFollowerOperational returns true if the robot follower status is operational.
 // Online(0), Busy(1), Offline(2) = operational; Faulted(3), Maintenance(4) = not operational.
-func isFollowerOperational(status openapi.RobotStatus) bool {
-	return status != openapi.RobotStatusFaulted && status != openapi.RobotStatusMaintenance
+func isFollowerOperational(status model.RobotStatus) bool {
+	return status != model.RobotStatusFaulted && status != model.RobotStatusMaintenance
 }
 
 // isLeaderOperational returns true if the robot leader status is operational.
 // Ready(0) = operational; Faulted(1), Maintenance(2) = not operational.
-func isLeaderOperational(status openapi.LeaderStatus) bool {
-	return status == openapi.LeaderReady
+func isLeaderOperational(status model.LeaderStatus) bool {
+	return status == model.LeaderStatusReady
 }
 
 func buildSummary(rows []repository.FleetSummaryRow) []model.FleetSiteSummary {
@@ -203,7 +202,7 @@ func buildStats(rows []repository.FleetStatsRow, uptimeRows []repository.FleetUp
 	return result
 }
 
-func buildCollectionTrend(rows []repository.FleetTrendRow, granularity openapi.GetFleetCollectionTrendParamsGranularity) model.CollectionTrend {
+func buildCollectionTrend(rows []repository.FleetTrendRow, granularity model.FleetTrendGranularity) model.CollectionTrend {
 	if len(rows) == 0 {
 		return model.CollectionTrend{
 			Labels:      []string{},
@@ -287,13 +286,13 @@ func buildCollectionTrend(rows []repository.FleetTrendRow, granularity openapi.G
 	}
 }
 
-func formatLabel(t time.Time, granularity openapi.GetFleetCollectionTrendParamsGranularity) string {
+func formatLabel(t time.Time, granularity model.FleetTrendGranularity) string {
 	switch granularity {
-	case openapi.Hourly:
+	case model.FleetTrendGranularityHourly:
 		return t.UTC().Format(time.RFC3339)
-	case openapi.Daily:
+	case model.FleetTrendGranularityDaily:
 		return t.UTC().Format("2006-01-02")
-	case openapi.Monthly:
+	case model.FleetTrendGranularityMonthly:
 		return t.UTC().Format("2006-01")
 	default:
 		return t.UTC().Format(time.RFC3339)

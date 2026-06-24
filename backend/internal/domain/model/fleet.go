@@ -1,5 +1,13 @@
 package model
 
+type FleetTrendGranularity string
+
+const (
+	FleetTrendGranularityHourly  FleetTrendGranularity = "hourly"
+	FleetTrendGranularityDaily   FleetTrendGranularity = "daily"
+	FleetTrendGranularityMonthly FleetTrendGranularity = "monthly"
+)
+
 type FleetSiteSummary struct {
 	Site       string
 	SiteID     string
