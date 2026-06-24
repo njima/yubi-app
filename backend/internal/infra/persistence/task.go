@@ -56,7 +56,7 @@ func (t *task) Create(ctx context.Context, conn repository.DBConn, tk model.Task
 		OrganizationID: tk.OrganizationID,
 		Version:        tk.Version,
 		IsActive:       tk.IsActive,
-		ApprovalStatus: openapi.Draft,
+		ApprovalStatus: model.ApprovalStatusDraft,
 	}
 
 	if err := conn.NewInsert().
@@ -488,7 +488,7 @@ func (t *task) Export(ctx context.Context, conn repository.DBConn, filter reposi
 	if err := conn.NewSelect().
 		Model(&approvedVersions).
 		Where("task_id IN (?)", bun.In(taskIDs)).
-		Where("approval_status = ?", openapi.Approved).
+		Where("approval_status = ?", model.ApprovalStatusApproved).
 		Order("created_at DESC").
 		Scan(ctx); err != nil && err != sql.ErrNoRows {
 		return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to get approved versions for export: %v", err))
@@ -646,7 +646,7 @@ func (t *task) GetTargetsByTaskIDs(ctx context.Context, conn repository.DBConn, 
 		ColumnExpr("COALESCE(SUM(COALESCE(target_episode_count, 0)), 0) AS target_episodes").
 		Where("organization_id = ?", orgID).
 		Where("task_id IN (?)", bun.In(taskIDs)).
-		Where("approval_status = ?", openapi.Approved).
+		Where("approval_status = ?", model.ApprovalStatusApproved).
 		GroupExpr("task_id").
 		Scan(ctx, &rows)
 
@@ -734,7 +734,7 @@ func (t *task) BulkCreate(ctx context.Context, conn repository.DBConn, items []r
 			OrganizationID:                  item.Task.OrganizationID,
 			Version:                         model.InitialVersion,
 			IsActive:                        true,
-			ApprovalStatus:                  openapi.Draft,
+			ApprovalStatus:                  model.ApprovalStatusDraft,
 			TargetDurationSeconds:           item.TargetDurationSeconds,
 			TargetEpisodeCount:              item.TargetEpisodeCount,
 			TargetDurationPerEpisodeSeconds: item.TargetDurationPerEpisodeSeconds,
@@ -799,7 +799,7 @@ func (t *task) GetActualsByTaskIDs(ctx context.Context, conn repository.DBConn, 
 		ColumnExpr("COALESCE(SUM(tvs.episode_count), 0) AS actual_episodes").
 		Where("tv.organization_id = ?", orgID).
 		Where("tv.task_id IN (?)", bun.In(taskIDs)).
-		Where("tv.approval_status = ?", openapi.Approved).
+		Where("tv.approval_status = ?", model.ApprovalStatusApproved).
 		GroupExpr("tv.task_id").
 		Scan(ctx, &rows)
 

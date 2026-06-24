@@ -286,7 +286,7 @@ func taskVersionToResponse(tv model.TaskVersion) openapi.TaskVersion {
 		Version:                         tv.Version,
 		DisplayName:                     tv.DisplayName,
 		IsCurrent:                       tv.IsCurrent,
-		ApprovalStatus:                  tv.ApprovalStatus,
+		ApprovalStatus:                  openAPIApprovalStatus(tv.ApprovalStatus),
 		CreatedAt:                       tv.CreatedAt,
 		TargetDurationSeconds:           tv.TargetDurationSeconds,
 		TargetEpisodeCount:              tv.TargetEpisodeCount,
