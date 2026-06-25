@@ -54,7 +54,8 @@ func NewSubTask(repo repository.SubTask, rt repository.Task, tvRepo repository.T
 func (s *subtask) Create(ctx context.Context, input SubTaskCreateInput) (model.SubTask, error) {
 	var cst model.SubTask
 	err := s.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		tv, err := s.tvRepo.GetByIDForUpdate(ctx, txData.Conn(), input.TaskVersionID)
+		conn := txData.Conn()
+		tv, err := s.tvRepo.GetByIDForUpdate(ctx, conn, input.TaskVersionID)
 		if err != nil {
 			return err
 		}
@@ -62,7 +63,7 @@ func (s *subtask) Create(ctx context.Context, input SubTaskCreateInput) (model.S
 			return apperror.NewError(apperror.NewMessage(apperror.CodeConflict, "cannot edit approved task version: id=%s", input.TaskVersionID))
 		}
 
-		maxIndex, err := s.repo.GetMaxOrderIndex(ctx, txData.Conn(), input.TaskVersionID)
+		maxIndex, err := s.repo.GetMaxOrderIndex(ctx, conn, input.TaskVersionID)
 		if err != nil {
 			return err
 		}
@@ -72,7 +73,7 @@ func (s *subtask) Create(ctx context.Context, input SubTaskCreateInput) (model.S
 			return err
 		}
 
-		cst, err = s.repo.Create(ctx, txData.Conn(), st)
+		cst, err = s.repo.Create(ctx, conn, st)
 		return err
 	})
 	if err != nil {
@@ -135,7 +136,8 @@ func (s *subtask) Update(ctx context.Context, input SubTaskUpdateInput) (model.S
 func (s *subtask) Reorder(ctx context.Context, input SubTaskReorderInput) (model.SubTasks, error) {
 	var result model.SubTasks
 	err := s.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		tv, err := s.tvRepo.GetByIDForUpdate(ctx, txData.Conn(), input.TaskVersionID)
+		conn := txData.Conn()
+		tv, err := s.tvRepo.GetByIDForUpdate(ctx, conn, input.TaskVersionID)
 		if err != nil {
 			return err
 		}
@@ -143,7 +145,7 @@ func (s *subtask) Reorder(ctx context.Context, input SubTaskReorderInput) (model
 			return apperror.NewError(apperror.NewMessage(apperror.CodeConflict, "cannot edit approved task version: id=%s", input.TaskVersionID))
 		}
 
-		existing, err := s.repo.GetByTaskVersionID(ctx, txData.Conn(), input.TaskVersionID)
+		existing, err := s.repo.GetByTaskVersionID(ctx, conn, input.TaskVersionID)
 		if err != nil {
 			return err
 		}
@@ -160,11 +162,11 @@ func (s *subtask) Reorder(ctx context.Context, input SubTaskReorderInput) (model
 			}
 		}
 
-		if err := s.repo.UpdateOrderIndices(ctx, txData.Conn(), input.SubTaskIDs); err != nil {
+		if err := s.repo.UpdateOrderIndices(ctx, conn, input.SubTaskIDs); err != nil {
 			return err
 		}
 
-		result, err = s.repo.GetByTaskVersionID(ctx, txData.Conn(), input.TaskVersionID)
+		result, err = s.repo.GetByTaskVersionID(ctx, conn, input.TaskVersionID)
 		return err
 	})
 	if err != nil {

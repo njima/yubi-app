@@ -53,7 +53,8 @@ func (e *episodeSubTask) Complete(ctx context.Context, input SubTaskActionInput)
 	}
 
 	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		episode, err := e.episodeRepo.GetByID(ctx, txData.Conn(), input.EpisodeID)
+		conn := txData.Conn()
+		episode, err := e.episodeRepo.GetByID(ctx, conn, input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -62,7 +63,7 @@ func (e *episodeSubTask) Complete(ctx context.Context, input SubTaskActionInput)
 			return apperror.NewError(apperror.NewMessage(apperror.CodeForbidden, "robot is not authorized to operate this episode"))
 		}
 
-		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, txData.Conn(), input.SubTaskID)
+		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, conn, input.SubTaskID)
 		if err != nil {
 			return err
 		}
@@ -75,7 +76,7 @@ func (e *episodeSubTask) Complete(ctx context.Context, input SubTaskActionInput)
 			return err
 		}
 
-		if err := e.episodeSubTaskRepo.Update(ctx, txData.Conn(), subtask); err != nil {
+		if err := e.episodeSubTaskRepo.Update(ctx, conn, subtask); err != nil {
 			return err
 		}
 
@@ -98,7 +99,8 @@ func (e *episodeSubTask) Skip(ctx context.Context, input SubTaskActionInput) err
 	}
 
 	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		episode, err := e.episodeRepo.GetByID(ctx, txData.Conn(), input.EpisodeID)
+		conn := txData.Conn()
+		episode, err := e.episodeRepo.GetByID(ctx, conn, input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -107,7 +109,7 @@ func (e *episodeSubTask) Skip(ctx context.Context, input SubTaskActionInput) err
 			return apperror.NewError(apperror.NewMessage(apperror.CodeForbidden, "robot is not authorized to operate this episode"))
 		}
 
-		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, txData.Conn(), input.SubTaskID)
+		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, conn, input.SubTaskID)
 		if err != nil {
 			return err
 		}
@@ -120,7 +122,7 @@ func (e *episodeSubTask) Skip(ctx context.Context, input SubTaskActionInput) err
 			return err
 		}
 
-		if err := e.episodeSubTaskRepo.Update(ctx, txData.Conn(), subtask); err != nil {
+		if err := e.episodeSubTaskRepo.Update(ctx, conn, subtask); err != nil {
 			return err
 		}
 

@@ -193,6 +193,7 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 
 	episodes := make(model.Episodes, 0, count)
 	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		conn := txData.Conn()
 		allEpisodeSubTasks := make([]model.EpisodeSubTask, 0, len(subtasks)*count)
 
 		for i := 0; i < count; i++ {
@@ -211,7 +212,7 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 			}
 			inep.ParameterValues = paramValues
 
-			ep, err := e.repo.Create(ctx, txData.Conn(), inep)
+			ep, err := e.repo.Create(ctx, conn, inep)
 			if err != nil {
 				return err
 			}
@@ -232,7 +233,7 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 			}
 		}
 
-		if err := e.estr.BulkCreate(ctx, txData.Conn(), allEpisodeSubTasks); err != nil {
+		if err := e.estr.BulkCreate(ctx, conn, allEpisodeSubTasks); err != nil {
 			return err
 		}
 
@@ -418,7 +419,8 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 	}
 
 	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		episode, err := e.repo.GetByID(ctx, txData.Conn(), input.EpisodeID)
+		conn := txData.Conn()
+		episode, err := e.repo.GetByID(ctx, conn, input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -431,7 +433,7 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 			return err
 		}
 
-		robot, err := e.rr.GetByID(ctx, txData.Conn(), robotID)
+		robot, err := e.rr.GetByID(ctx, conn, robotID)
 		if err != nil {
 			return err
 		}
@@ -460,11 +462,11 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 			return err
 		}
 
-		if _, err := e.repo.Update(ctx, txData.Conn(), episode); err != nil {
+		if _, err := e.repo.Update(ctx, conn, episode); err != nil {
 			return err
 		}
 
-		if _, err := e.rr.Update(ctx, txData.Conn(), robot); err != nil {
+		if _, err := e.rr.Update(ctx, conn, robot); err != nil {
 			return err
 		}
 
@@ -487,7 +489,8 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 	}
 
 	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		episode, err := e.repo.GetByID(ctx, txData.Conn(), input.EpisodeID)
+		conn := txData.Conn()
+		episode, err := e.repo.GetByID(ctx, conn, input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -500,7 +503,7 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 			return err
 		}
 
-		robot, err := e.rr.GetByID(ctx, txData.Conn(), robotID)
+		robot, err := e.rr.GetByID(ctx, conn, robotID)
 		if err != nil {
 			return err
 		}
@@ -509,24 +512,24 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 			return err
 		}
 
-		if _, err := e.repo.Update(ctx, txData.Conn(), episode); err != nil {
+		if _, err := e.repo.Update(ctx, conn, episode); err != nil {
 			return err
 		}
 
-		if _, err := e.rr.Update(ctx, txData.Conn(), robot); err != nil {
+		if _, err := e.rr.Update(ctx, conn, robot); err != nil {
 			return err
 		}
 
 		// Auto-update task status based on collection progress
-		actual, err := e.repo.SumDurationByTaskID(ctx, txData.Conn(), episode.TaskID)
+		actual, err := e.repo.SumDurationByTaskID(ctx, conn, episode.TaskID)
 		if err != nil {
 			return err
 		}
-		target, err := e.tvRepo.SumTargetByTaskID(ctx, txData.Conn(), episode.TaskID)
+		target, err := e.tvRepo.SumTargetByTaskID(ctx, conn, episode.TaskID)
 		if err != nil {
 			return err
 		}
-		tk, err := e.taskRepo.GetByID(ctx, txData.Conn(), episode.TaskID)
+		tk, err := e.taskRepo.GetByID(ctx, conn, episode.TaskID)
 		if err != nil {
 			return err
 		}
@@ -541,7 +544,7 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 		if err := updateTask.SetStatus(&newStatus); err != nil {
 			return err
 		}
-		if _, err := e.taskRepo.Update(ctx, txData.Conn(), updateTask); err != nil {
+		if _, err := e.taskRepo.Update(ctx, conn, updateTask); err != nil {
 			return err
 		}
 
@@ -614,7 +617,8 @@ func (e *episode) Cancel(ctx context.Context, input CancelEpisodeInput) error {
 	}
 
 	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		episode, err := e.repo.GetByID(ctx, txData.Conn(), input.EpisodeID)
+		conn := txData.Conn()
+		episode, err := e.repo.GetByID(ctx, conn, input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -627,7 +631,7 @@ func (e *episode) Cancel(ctx context.Context, input CancelEpisodeInput) error {
 			return err
 		}
 
-		robot, err := e.rr.GetByID(ctx, txData.Conn(), robotID)
+		robot, err := e.rr.GetByID(ctx, conn, robotID)
 		if err != nil {
 			return err
 		}
@@ -636,19 +640,19 @@ func (e *episode) Cancel(ctx context.Context, input CancelEpisodeInput) error {
 			return err
 		}
 
-		if err := e.estr.BulkCancelByEpisodeID(ctx, txData.Conn(), input.EpisodeID); err != nil {
+		if err := e.estr.BulkCancelByEpisodeID(ctx, conn, input.EpisodeID); err != nil {
 			return err
 		}
 
-		if err := e.execr.BulkCancelByEpisodeID(ctx, txData.Conn(), input.EpisodeID); err != nil {
+		if err := e.execr.BulkCancelByEpisodeID(ctx, conn, input.EpisodeID); err != nil {
 			return err
 		}
 
-		if _, err := e.repo.Update(ctx, txData.Conn(), episode); err != nil {
+		if _, err := e.repo.Update(ctx, conn, episode); err != nil {
 			return err
 		}
 
-		if _, err := e.rr.Update(ctx, txData.Conn(), robot); err != nil {
+		if _, err := e.rr.Update(ctx, conn, robot); err != nil {
 			return err
 		}
 

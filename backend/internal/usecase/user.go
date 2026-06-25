@@ -82,15 +82,16 @@ func (u *user) Create(ctx context.Context, input CreateInput) (model.User, error
 
 	var cu model.User
 	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		conn := txData.Conn()
 		var err error
-		cu, err = u.userRepo.Create(ctx, txData.Conn(), nu)
+		cu, err = u.userRepo.Create(ctx, conn, nu)
 		if err != nil {
 			return err
 		}
-		if err := u.userLocationRepo.SetUserLocations(ctx, txData.Conn(), cu.IDNatural, cu.OrganizationID, input.LocationIDs); err != nil {
+		if err := u.userLocationRepo.SetUserLocations(ctx, conn, cu.IDNatural, cu.OrganizationID, input.LocationIDs); err != nil {
 			return err
 		}
-		return u.userSiteRepo.SetUserSites(ctx, txData.Conn(), cu.IDNatural, cu.OrganizationID, input.SiteIDs)
+		return u.userSiteRepo.SetUserSites(ctx, conn, cu.IDNatural, cu.OrganizationID, input.SiteIDs)
 	}); err != nil {
 		return model.User{}, err
 	}
@@ -138,7 +139,8 @@ func (u *user) SetLocations(ctx context.Context, userID string, locationIDs []st
 	}
 
 	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		return u.userLocationRepo.SetUserLocations(ctx, txData.Conn(), existing.IDNatural, existing.OrganizationID, locationIDs)
+		conn := txData.Conn()
+		return u.userLocationRepo.SetUserLocations(ctx, conn, existing.IDNatural, existing.OrganizationID, locationIDs)
 	}); err != nil {
 		return model.User{}, err
 	}
@@ -153,7 +155,8 @@ func (u *user) SetSites(ctx context.Context, userID string, siteIDs []string) (m
 	}
 
 	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
-		return u.userSiteRepo.SetUserSites(ctx, txData.Conn(), existing.IDNatural, existing.OrganizationID, siteIDs)
+		conn := txData.Conn()
+		return u.userSiteRepo.SetUserSites(ctx, conn, existing.IDNatural, existing.OrganizationID, siteIDs)
 	}); err != nil {
 		return model.User{}, err
 	}

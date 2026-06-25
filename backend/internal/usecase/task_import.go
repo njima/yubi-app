@@ -248,14 +248,15 @@ func (u *taskImport) Import(ctx context.Context, csvContent string) (TaskImportR
 	// Bulk create in transaction
 	var createdTasks []model.Task
 	err = u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		conn := txData.Conn()
 		var err error
-		createdTasks, err = u.taskRepo.BulkCreate(ctx, txData.Conn(), items)
+		createdTasks, err = u.taskRepo.BulkCreate(ctx, conn, items)
 		if err != nil {
 			return err
 		}
 		for _, tk := range createdTasks {
 			if ids, ok := tagIDsByTask[tk.IDNatural]; ok {
-				if err := u.tagRepo.SetTaskTags(ctx, txData.Conn(), tk.IDNatural, ids); err != nil {
+				if err := u.tagRepo.SetTaskTags(ctx, conn, tk.IDNatural, ids); err != nil {
 					return err
 				}
 			}
