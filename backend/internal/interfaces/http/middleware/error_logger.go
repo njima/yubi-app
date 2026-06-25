@@ -78,7 +78,10 @@ func (e *ErrorHandler) ConvertErrorResponseWithLogging() openapi.StrictMiddlewar
 				}
 			}
 
-			ctx.JSON(errorResponse.Code, errorResponse)
+			ctx.JSON(errorResponse.Code, openapi.ErrorResponse{
+				Code:    errorResponse.Code,
+				Message: errorResponse.Message,
+			})
 
 			return nil, nil
 		}

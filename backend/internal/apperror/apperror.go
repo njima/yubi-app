@@ -6,8 +6,6 @@ import (
 	"io"
 	"runtime"
 	"strconv"
-
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 // Detail holds a single error code and a developer-facing message.
@@ -223,10 +221,16 @@ func SameKind(err error, k Kind) bool {
 	return false
 }
 
-// NewErrorResponse converts a slice of Code values into an HTTP error response.
+// ErrorResponse is the transport-neutral error response shape used by HTTP adapters.
+type ErrorResponse struct {
+	Code    int
+	Message string
+}
+
+// NewErrorResponse converts a slice of Code values into an error response.
 // Uses the first Code's Kind to determine the HTTP status and message.
 // Falls back to 500 Internal Server Error when cs is empty.
-func NewErrorResponse(cs []Code) openapi.ErrorResponse {
+func NewErrorResponse(cs []Code) ErrorResponse {
 	var status int
 	var message string
 
@@ -242,7 +246,7 @@ func NewErrorResponse(cs []Code) openapi.ErrorResponse {
 		message = KindInternal.ResponseWrapErrorMessage()
 	}
 
-	return openapi.ErrorResponse{
+	return ErrorResponse{
 		Code:    status,
 		Message: message,
 	}
