@@ -1,7 +1,8 @@
-package authz
+package middleware
 
 import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/authz"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 
@@ -18,11 +19,11 @@ import (
 func NewAuthzMiddleware() openapi.StrictMiddlewareFunc {
 	return func(f openapi.StrictHandlerFunc, operationID string) openapi.StrictHandlerFunc {
 		return func(ctx *gin.Context, request any) (any, error) {
-			if IsAuthzBypassOperation(operationID) {
+			if authz.IsAuthzBypassOperation(operationID) {
 				return f(ctx, request)
 			}
 
-			action, ok := ActionForOperation(operationID)
+			action, ok := authz.ActionForOperation(operationID)
 			if !ok {
 				return nil, apperror.NewError(
 					apperror.NewMessage(apperror.CodeForbidden,
@@ -37,7 +38,7 @@ func NewAuthzMiddleware() openapi.StrictMiddlewareFunc {
 				)
 			}
 
-			if !HasPermission(role, action) {
+			if !authz.HasPermission(role, action) {
 				return nil, apperror.NewError(
 					apperror.NewMessage(apperror.CodeForbidden, "insufficient permissions"),
 				)

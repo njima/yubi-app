@@ -11,7 +11,6 @@ import (
 	"github.com/rs/zerolog"
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 
-	"github.com/airoa-org/yubi-app/backend/internal/authz"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/controller"
@@ -110,7 +109,7 @@ func registerAPIRoutes(ctx context.Context, engine *gin.Engine, cfg Config, deps
 	ctrl := controller.NewController(deps.Controller)
 	errorHandler := middleware.NewErrorHandler(deps.Logger)
 	strictHandler := openapi.NewStrictHandler(ctrl, []openapi.StrictMiddlewareFunc{
-		authz.NewAuthzMiddleware(),
+		middleware.NewAuthzMiddleware(),
 		errorHandler.ConvertErrorResponseWithLogging(),
 	})
 
