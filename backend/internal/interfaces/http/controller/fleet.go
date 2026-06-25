@@ -70,7 +70,7 @@ func (c *controller) GetFleetStats(ctx context.Context, request openapi.GetFleet
 }
 
 func (c *controller) GetFleetCollectionTrend(ctx context.Context, request openapi.GetFleetCollectionTrendRequestObject) (openapi.GetFleetCollectionTrendResponseObject, error) {
-	trend, err := c.fleetUsecase.GetCollectionTrend(ctx, request.Params.Granularity, request.Params.From, request.Params.To)
+	trend, err := c.fleetUsecase.GetCollectionTrend(ctx, fleetTrendGranularityModel(request.Params.Granularity), request.Params.From, request.Params.To)
 	if err != nil {
 		return nil, err
 	}

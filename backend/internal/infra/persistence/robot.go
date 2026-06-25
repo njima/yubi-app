@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"
 )
@@ -151,8 +150,8 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 	}
 	if filter.OnlineRobotIDs != nil {
 		ids := *filter.OnlineRobotIDs
-		sel = sel.Where("r.status IN (?)", bun.In([]openapi.RobotStatus{
-			openapi.RobotStatusReady, openapi.RobotStatusOnline,
+		sel = sel.Where("r.status IN (?)", bun.In([]model.RobotStatus{
+			model.RobotStatusReady, model.RobotStatusOnline,
 		}))
 		if filter.ExcludeOnline {
 			if len(ids) > 0 {
@@ -195,8 +194,8 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 	}
 	if filter.OnlineRobotIDs != nil {
 		ids := *filter.OnlineRobotIDs
-		countSel = countSel.Where("r.status IN (?)", bun.In([]openapi.RobotStatus{
-			openapi.RobotStatusReady, openapi.RobotStatusOnline,
+		countSel = countSel.Where("r.status IN (?)", bun.In([]model.RobotStatus{
+			model.RobotStatusReady, model.RobotStatusOnline,
 		}))
 		if filter.ExcludeOnline {
 			if len(ids) > 0 {
@@ -280,8 +279,8 @@ func (r *robot) ListTypes(ctx context.Context, conn repository.DBConn, filter re
 	}
 	if filter.OnlineRobotIDs != nil {
 		ids := *filter.OnlineRobotIDs
-		sel = sel.Where("r.status IN (?)", bun.In([]openapi.RobotStatus{
-			openapi.RobotStatusReady, openapi.RobotStatusOnline,
+		sel = sel.Where("r.status IN (?)", bun.In([]model.RobotStatus{
+			model.RobotStatusReady, model.RobotStatusOnline,
 		}))
 		if filter.ExcludeOnline {
 			if len(ids) > 0 {

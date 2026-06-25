@@ -6,7 +6,7 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
@@ -143,13 +143,13 @@ func (f *fleet) GetCollectionTrend(ctx context.Context, conn repository.DBConn, 
 	return rows, nil
 }
 
-func statsTableForGranularity(granularity openapi.GetFleetCollectionTrendParamsGranularity) (string, error) {
+func statsTableForGranularity(granularity model.FleetTrendGranularity) (string, error) {
 	switch granularity {
-	case openapi.Hourly:
+	case model.FleetTrendGranularityHourly:
 		return "episode_stats_hourly", nil
-	case openapi.Daily:
+	case model.FleetTrendGranularityDaily:
 		return "episode_stats_daily", nil
-	case openapi.Monthly:
+	case model.FleetTrendGranularityMonthly:
 		return "episode_stats_monthly", nil
 	default:
 		return "", apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "invalid granularity: %s", granularity))

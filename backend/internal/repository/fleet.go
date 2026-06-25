@@ -4,16 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 )
 
 type FleetSummaryRow struct {
-	SiteID       string                `bun:"site_id"`
-	SiteName     string                `bun:"site_name"`
-	RobotType    string                `bun:"robot_type"`
-	Status       openapi.RobotStatus   `bun:"status"`
-	LeaderStatus *openapi.LeaderStatus `bun:"leader_status"`
-	Count        int                   `bun:"count"`
+	SiteID       string              `bun:"site_id"`
+	SiteName     string              `bun:"site_name"`
+	RobotType    string              `bun:"robot_type"`
+	Status       model.RobotStatus   `bun:"status"`
+	LeaderStatus *model.LeaderStatus `bun:"leader_status"`
+	Count        int                 `bun:"count"`
 }
 
 type FleetStatsFilter struct {
@@ -37,7 +37,7 @@ type FleetUptimeStatsRow struct {
 }
 
 type FleetTrendFilter struct {
-	Granularity openapi.GetFleetCollectionTrendParamsGranularity
+	Granularity model.FleetTrendGranularity
 	From        time.Time
 	To          time.Time
 }
