@@ -6,14 +6,13 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
 func (c *controller) ListSites(ctx context.Context, request openapi.ListSitesRequestObject) (openapi.ListSitesResponseObject, error) {
 	pg := pagination.Parse(request.Params.Page, request.Params.Limit)
 
-	filter := repository.SiteListFilter{
+	filter := usecase.SiteListFilter{
 		OrganizationID: request.Params.OrganizationId,
 		Search:         request.Params.Search,
 	}

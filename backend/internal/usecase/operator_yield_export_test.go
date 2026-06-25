@@ -6,9 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rs/zerolog"
-
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/rs/zerolog"
 )
 
 func newTestUsecase(repo repository.OperatorYield) *operatorYieldExport {
@@ -53,7 +52,7 @@ func TestOperatorYieldExport_FormatsRows(t *testing.T) {
 	}
 
 	uc := newTestUsecase(&stubOperatorYieldRepo{rows: rows})
-	got, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	got, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})
@@ -87,7 +86,7 @@ func TestOperatorYieldExport_ZeroWorkingTimeYieldsDash(t *testing.T) {
 		},
 	}
 	uc := newTestUsecase(&stubOperatorYieldRepo{rows: rows})
-	got, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	got, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})
@@ -116,7 +115,7 @@ func TestOperatorYieldExport_NonWorkingClampedToZero(t *testing.T) {
 		},
 	}
 	uc := newTestUsecase(&stubOperatorYieldRepo{rows: rows})
-	got, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	got, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})
@@ -131,7 +130,7 @@ func TestOperatorYieldExport_NonWorkingClampedToZero(t *testing.T) {
 
 func TestOperatorYieldExport_RejectsInvertedDateRange(t *testing.T) {
 	uc := newTestUsecase(&stubOperatorYieldRepo{})
-	_, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	_, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 11, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})
@@ -159,7 +158,7 @@ func TestOperatorYieldExport_PreservesRowOrder(t *testing.T) {
 		},
 	}
 	uc := newTestUsecase(&stubOperatorYieldRepo{rows: rows})
-	got, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	got, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})
@@ -186,7 +185,7 @@ func TestOperatorYieldExport_EscapesCommaInTaskName(t *testing.T) {
 		},
 	}
 	uc := newTestUsecase(&stubOperatorYieldRepo{rows: rows})
-	got, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	got, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})
@@ -217,7 +216,7 @@ func TestOperatorYieldExport_AccurateSecondLevelArithmetic(t *testing.T) {
 		},
 	}
 	uc := newTestUsecase(&stubOperatorYieldRepo{rows: rows})
-	got, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	got, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})
@@ -250,7 +249,7 @@ func TestOperatorYieldExport_SanitizesFormulaInjection(t *testing.T) {
 		},
 	}
 	uc := newTestUsecase(&stubOperatorYieldRepo{rows: rows})
-	got, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	got, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})
@@ -283,7 +282,7 @@ func TestOperatorYieldExport_SanitizesFormulaInjection(t *testing.T) {
 
 func TestOperatorYieldExport_EmptyResultStillEmitsHeader(t *testing.T) {
 	uc := newTestUsecase(&stubOperatorYieldRepo{rows: nil})
-	got, err := uc.Export(context.Background(), repository.OperatorYieldExportFilter{
+	got, err := uc.Export(context.Background(), OperatorYieldExportFilter{
 		DateFrom: time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 		DateTo:   time.Date(2026, 4, 10, 0, 0, 0, 0, time.UTC),
 	})

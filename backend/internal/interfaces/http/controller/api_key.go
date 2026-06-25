@@ -7,7 +7,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -37,7 +36,7 @@ func (c *controller) ListApiKeys(ctx context.Context, request openapi.ListApiKey
 	params := request.Params
 	pg := pagination.Parse(params.Page, params.Limit)
 
-	filter := repository.APIKeyListFilter{
+	filter := usecase.APIKeyListFilter{
 		RobotID: params.RobotId,
 		UserID:  params.UserId,
 	}

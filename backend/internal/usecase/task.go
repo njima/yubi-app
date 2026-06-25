@@ -14,11 +14,11 @@ type TaskUsecase interface {
 	Create(ctx context.Context, input TaskCreateInput) (model.Task, error)
 	GetByID(ctx context.Context, id string) (model.Task, error)
 	ListByIDs(ctx context.Context, ids []string) (model.Tasks, error)
-	List(ctx context.Context, filter repository.TaskListFilter, page, limit int) (model.Tasks, int, error)
+	List(ctx context.Context, filter TaskListFilter, page, limit int) (model.Tasks, int, error)
 	Update(ctx context.Context, input TaskUpdateInput) (model.Task, error)
 	Delete(ctx context.Context, id string) error
-	GetSummary(ctx context.Context, filter repository.TaskSummaryFilter) (model.TaskSummary, error)
-	GetCompletionTrend(ctx context.Context, filter repository.TaskSummaryFilter, groupBy string, from, to time.Time, interval string) (model.TaskCompletionTrend, error)
+	GetSummary(ctx context.Context, filter TaskSummaryFilter) (model.TaskSummary, error)
+	GetCompletionTrend(ctx context.Context, filter TaskSummaryFilter, groupBy string, from, to time.Time, interval string) (model.TaskCompletionTrend, error)
 }
 
 type TaskCreateInput struct {
@@ -123,7 +123,7 @@ func (t *task) ListByIDs(ctx context.Context, ids []string) (model.Tasks, error)
 	return t.repo.ListByIDs(ctx, t.data.Conn(), ids)
 }
 
-func (t *task) List(ctx context.Context, filter repository.TaskListFilter, page, limit int) (model.Tasks, int, error) {
+func (t *task) List(ctx context.Context, filter TaskListFilter, page, limit int) (model.Tasks, int, error) {
 	if limit <= 0 {
 		limit = pagination.DefaultLimit
 	}
@@ -131,7 +131,7 @@ func (t *task) List(ctx context.Context, filter repository.TaskListFilter, page,
 		page = 1
 	}
 	offset := (page - 1) * limit
-	tasks, total, err := t.repo.List(ctx, t.data.Conn(), filter, limit, offset)
+	tasks, total, err := t.repo.List(ctx, t.data.Conn(), filter.repositoryFilter(), limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -255,9 +255,9 @@ func (t *task) Delete(ctx context.Context, id string) error {
 	return t.repo.Delete(ctx, t.data.Conn(), id)
 }
 
-func (t *task) GetSummary(ctx context.Context, filter repository.TaskSummaryFilter) (model.TaskSummary, error) {
+func (t *task) GetSummary(ctx context.Context, filter TaskSummaryFilter) (model.TaskSummary, error) {
 	// Step 1: Get filtered tasks
-	tasks, err := t.repo.GetFilteredTasks(ctx, t.data.Conn(), filter)
+	tasks, err := t.repo.GetFilteredTasks(ctx, t.data.Conn(), filter.repositoryFilter())
 	if err != nil {
 		return model.TaskSummary{}, err
 	}
@@ -281,9 +281,9 @@ func (t *task) GetSummary(ctx context.Context, filter repository.TaskSummaryFilt
 	return summary, nil
 }
 
-func (t *task) GetCompletionTrend(ctx context.Context, filter repository.TaskSummaryFilter, groupBy string, from, to time.Time, interval string) (model.TaskCompletionTrend, error) {
+func (t *task) GetCompletionTrend(ctx context.Context, filter TaskSummaryFilter, groupBy string, from, to time.Time, interval string) (model.TaskCompletionTrend, error) {
 	// Step 1: Get filtered tasks
-	tasks, err := t.repo.GetFilteredTasks(ctx, t.data.Conn(), filter)
+	tasks, err := t.repo.GetFilteredTasks(ctx, t.data.Conn(), filter.repositoryFilter())
 	if err != nil {
 		return model.TaskCompletionTrend{}, err
 	}

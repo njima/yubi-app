@@ -9,7 +9,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -73,7 +72,7 @@ func toOpenAPITask(t model.Task) openapi.Task {
 func (c *controller) ListTasks(ctx context.Context, request openapi.ListTasksRequestObject) (openapi.ListTasksResponseObject, error) {
 	pg := pagination.Parse(request.Params.Page, request.Params.Limit)
 
-	filter := repository.TaskListFilter{
+	filter := usecase.TaskListFilter{
 		HasApprovedVersion: request.Params.HasApprovedVersion,
 		SortBy:             taskSortBy(request.Params.SortBy),
 		SortOrder:          sortOrder(request.Params.SortOrder),
@@ -322,8 +321,8 @@ func modelToOpenAPIParameters(params []model.TaskVersionParameter) []openapi.Tas
 	return result
 }
 
-func buildTaskSummaryFilter(robotTypes *[]string, categoryTypeID *string, tagID *[]string) repository.TaskSummaryFilter {
-	filter := repository.TaskSummaryFilter{}
+func buildTaskSummaryFilter(robotTypes *[]string, categoryTypeID *string, tagID *[]string) usecase.TaskSummaryFilter {
+	filter := usecase.TaskSummaryFilter{}
 	if robotTypes != nil {
 		filter.RobotTypes = *robotTypes
 	}
@@ -448,7 +447,7 @@ func (c *controller) GetTaskAvailableTags(ctx context.Context, request openapi.G
 }
 
 func (c *controller) ExportTasks(ctx context.Context, request openapi.ExportTasksRequestObject) (openapi.ExportTasksResponseObject, error) {
-	filter := repository.TaskListFilter{}
+	filter := usecase.TaskListFilter{}
 	if request.Params.Status != nil {
 		filter.Statuses = taskStatuses(*request.Params.Status)
 	}

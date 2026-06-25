@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -19,10 +18,14 @@ func robotResponseFields(r *model.Robot) (openapi.RobotStatus, *openapi.LeaderSt
 func (c *controller) ListRobots(ctx context.Context, request openapi.ListRobotsRequestObject) (openapi.ListRobotsResponseObject, error) {
 	pg := pagination.Parse(request.Params.Page, request.Params.Limit)
 
-	filter := repository.RobotListFilter{
+	status, err := robotStatus(request.Params.Status)
+	if err != nil {
+		return nil, err
+	}
+	filter := usecase.RobotListFilter{
 		SiteID:     request.Params.SiteId,
 		LocationID: request.Params.LocationId,
-		Status:     robotStatus(request.Params.Status),
+		Status:     status,
 		RobotType:  request.Params.RobotType,
 		Search:     request.Params.Search,
 		SortBy:     robotSortBy(request.Params.SortBy),
@@ -81,10 +84,14 @@ func (c *controller) ListRobots(ctx context.Context, request openapi.ListRobotsR
 }
 
 func (c *controller) ListRobotTypes(ctx context.Context, request openapi.ListRobotTypesRequestObject) (openapi.ListRobotTypesResponseObject, error) {
-	filter := repository.RobotTypeFilter{
+	status, err := robotStatus(request.Params.Status)
+	if err != nil {
+		return nil, err
+	}
+	filter := usecase.RobotTypeFilter{
 		SiteID:     request.Params.SiteId,
 		LocationID: request.Params.LocationId,
-		Status:     robotStatus(request.Params.Status),
+		Status:     status,
 	}
 	types, err := c.robotUsecase.ListTypes(ctx, filter)
 	if err != nil {

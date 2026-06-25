@@ -129,3 +129,53 @@ func TestUsecaseTransactionCallbacksUseLocalConn(t *testing.T) {
 		t.Fatalf("transaction callbacks should assign conn := txData.Conn() before repository calls; violations: %s", strings.Join(violations, ", "))
 	}
 }
+
+func TestUsecaseInterfacesDoNotExposeRepositoryFilters(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	usecaseRoot := filepath.Join(backendRoot, "internal", "usecase")
+
+	var violations []string
+	err := filepath.WalkDir(usecaseRoot, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) != ".go" || strings.HasSuffix(path, "_test.go") {
+			return nil
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(backendRoot, path)
+		if err != nil {
+			return err
+		}
+
+		inUsecaseInterface := false
+		for lineNumber, line := range strings.Split(string(content), "\n") {
+			trimmed := strings.TrimSpace(line)
+			if strings.HasPrefix(trimmed, "type ") && strings.Contains(trimmed, "Usecase interface {") {
+				inUsecaseInterface = true
+				continue
+			}
+			if inUsecaseInterface && trimmed == "}" {
+				inUsecaseInterface = false
+				continue
+			}
+			if inUsecaseInterface && strings.Contains(line, "repository.") && strings.Contains(line, "Filter") {
+				violations = append(violations, rel+":"+strconv.Itoa(lineNumber+1))
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walk backend/internal/usecase: %v", err)
+	}
+	if len(violations) > 0 {
+		t.Fatalf("usecase interfaces must expose usecase input/filter types instead of repository filters; violations: %s", strings.Join(violations, ", "))
+	}
+}

@@ -14,7 +14,7 @@ import (
 
 // TaskExportUsecase generates a CSV export of tasks.
 type TaskExportUsecase interface {
-	Export(ctx context.Context, filter repository.TaskListFilter) ([]byte, error)
+	Export(ctx context.Context, filter TaskListFilter) ([]byte, error)
 }
 
 type taskExport struct {
@@ -39,8 +39,8 @@ var exportHeaders = []string{
 	"target_duration", "target_episode_count", "category_tags", "target_duration_per_episode",
 }
 
-func (u *taskExport) Export(ctx context.Context, filter repository.TaskListFilter) ([]byte, error) {
-	rows, err := u.taskRepo.Export(ctx, u.data.Conn(), filter)
+func (u *taskExport) Export(ctx context.Context, filter TaskListFilter) ([]byte, error) {
+	rows, err := u.taskRepo.Export(ctx, u.data.Conn(), filter.repositoryFilter())
 	if err != nil {
 		return nil, err
 	}

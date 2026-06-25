@@ -13,7 +13,7 @@ import (
 
 // EpisodeExportUsecase generates a CSV export of episodes.
 type EpisodeExportUsecase interface {
-	Export(ctx context.Context, filter repository.EpisodeExportFilter) ([]byte, error)
+	Export(ctx context.Context, filter EpisodeExportFilter) ([]byte, error)
 }
 
 type episodeExport struct {
@@ -30,8 +30,8 @@ var episodeExportHeaders = []string{
 	"user_id", "recorded_by", "status", "started_at", "finished_at", "created_at",
 }
 
-func (u *episodeExport) Export(ctx context.Context, filter repository.EpisodeExportFilter) ([]byte, error) {
-	rows, err := u.episodeRepo.Export(ctx, u.data.Conn(), filter)
+func (u *episodeExport) Export(ctx context.Context, filter EpisodeExportFilter) ([]byte, error) {
+	rows, err := u.episodeRepo.Export(ctx, u.data.Conn(), filter.repositoryFilter())
 	if err != nil {
 		return nil, err
 	}

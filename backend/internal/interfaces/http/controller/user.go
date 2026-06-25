@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -64,7 +63,7 @@ func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersReq
 	params := request.Params
 	pg := pagination.Parse(params.Page, params.Limit)
 
-	filter := repository.UserListFilter{
+	filter := usecase.UserListFilter{
 		Search:    params.Search,
 		SortBy:    userSortBy(params.SortBy),
 		SortOrder: sortOrder(params.SortOrder),

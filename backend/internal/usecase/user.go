@@ -17,7 +17,7 @@ type UserUsecase interface {
 	SetLocations(ctx context.Context, userID string, locationIDs []string) (model.User, error)
 	SetSites(ctx context.Context, userID string, siteIDs []string) (model.User, error)
 	GetByNaturalID(ctx context.Context, idNatural string) (model.User, error)
-	List(ctx context.Context, filter repository.UserListFilter, page, limit int) (model.Users, int, error)
+	List(ctx context.Context, filter UserListFilter, page, limit int) (model.Users, int, error)
 	Delete(ctx context.Context, idNatural string) error
 }
 
@@ -190,7 +190,7 @@ func (u *user) GetByNaturalID(ctx context.Context, idNatural string) (model.User
 	return user, nil
 }
 
-func (u *user) List(ctx context.Context, filter repository.UserListFilter, page, limit int) (model.Users, int, error) {
+func (u *user) List(ctx context.Context, filter UserListFilter, page, limit int) (model.Users, int, error) {
 	if limit <= 0 {
 		limit = pagination.DefaultLimit
 	}
@@ -198,7 +198,7 @@ func (u *user) List(ctx context.Context, filter repository.UserListFilter, page,
 		page = 1
 	}
 	offset := (page - 1) * limit
-	users, total, err := u.userRepo.List(ctx, u.data.Conn(), filter, limit, offset)
+	users, total, err := u.userRepo.List(ctx, u.data.Conn(), filter.repositoryFilter(), limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}

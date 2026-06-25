@@ -11,7 +11,7 @@ import (
 type LocationUsecase interface {
 	Create(ctx context.Context, input LocationCreateInput) (model.Location, error)
 	GetByID(ctx context.Context, id string) (model.Location, error)
-	List(ctx context.Context, filter repository.LocationListFilter, page, limit int) (model.Locations, int, error)
+	List(ctx context.Context, filter LocationListFilter, page, limit int) (model.Locations, int, error)
 	Update(ctx context.Context, input LocationUpdateInput) (model.Location, error)
 	Delete(ctx context.Context, id string) error
 }
@@ -54,7 +54,7 @@ func (l *location) GetByID(ctx context.Context, id string) (model.Location, erro
 	return l.locRepo.GetByID(ctx, l.data.Conn(), id)
 }
 
-func (l *location) List(ctx context.Context, filter repository.LocationListFilter, page, limit int) (model.Locations, int, error) {
+func (l *location) List(ctx context.Context, filter LocationListFilter, page, limit int) (model.Locations, int, error) {
 	if limit <= 0 {
 		limit = pagination.DefaultLimit
 	}
@@ -62,7 +62,7 @@ func (l *location) List(ctx context.Context, filter repository.LocationListFilte
 		page = 1
 	}
 	offset := (page - 1) * limit
-	return l.locRepo.List(ctx, l.data.Conn(), filter, limit, offset)
+	return l.locRepo.List(ctx, l.data.Conn(), filter.repositoryFilter(), limit, offset)
 }
 
 func (l *location) Update(ctx context.Context, input LocationUpdateInput) (model.Location, error) {

@@ -11,7 +11,7 @@ import (
 type SiteUsecase interface {
 	Create(ctx context.Context, input SiteCreateInput) (model.Site, error)
 	GetByID(ctx context.Context, id string) (model.Site, error)
-	List(ctx context.Context, filter repository.SiteListFilter, page, limit int) (model.Sites, int, error)
+	List(ctx context.Context, filter SiteListFilter, page, limit int) (model.Sites, int, error)
 	Update(ctx context.Context, input SiteUpdateInput) (model.Site, error)
 	Delete(ctx context.Context, id string) error
 }
@@ -56,7 +56,7 @@ func (s *siteUsecase) GetByID(ctx context.Context, id string) (model.Site, error
 	return s.siteRepo.GetByID(ctx, s.data.Conn(), id)
 }
 
-func (s *siteUsecase) List(ctx context.Context, filter repository.SiteListFilter, page, limit int) (model.Sites, int, error) {
+func (s *siteUsecase) List(ctx context.Context, filter SiteListFilter, page, limit int) (model.Sites, int, error) {
 	if limit <= 0 {
 		limit = pagination.DefaultLimit
 	}
@@ -64,7 +64,7 @@ func (s *siteUsecase) List(ctx context.Context, filter repository.SiteListFilter
 		page = 1
 	}
 	offset := (page - 1) * limit
-	return s.siteRepo.List(ctx, s.data.Conn(), filter, limit, offset)
+	return s.siteRepo.List(ctx, s.data.Conn(), filter.repositoryFilter(), limit, offset)
 }
 
 func (s *siteUsecase) Update(ctx context.Context, input SiteUpdateInput) (model.Site, error) {

@@ -12,7 +12,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -180,7 +179,7 @@ func (c *controller) ExportEpisodes(ctx context.Context, request openapi.ExportE
 	if err != nil {
 		return nil, err
 	}
-	listFilter := repository.EpisodeListFilter{
+	listFilter := usecase.EpisodeListFilter{
 		TaskID:        request.Params.TaskId,
 		TaskVersionID: request.Params.TaskVersionId,
 		RobotID:       request.Params.RobotId,
@@ -196,7 +195,7 @@ func (c *controller) ExportEpisodes(ctx context.Context, request openapi.ExportE
 		listFilter.Statuses = statuses
 	}
 
-	filter := repository.EpisodeExportFilter{EpisodeListFilter: listFilter}
+	filter := usecase.EpisodeExportFilter{EpisodeListFilter: listFilter}
 
 	csvBytes, err := c.episodeExportUsecase.Export(ctx, filter)
 	if err != nil {
@@ -218,7 +217,7 @@ func (c *controller) ListEpisodes(ctx context.Context, request openapi.ListEpiso
 	if err != nil {
 		return nil, err
 	}
-	filter := repository.EpisodeListFilter{
+	filter := usecase.EpisodeListFilter{
 		TaskID:        request.Params.TaskId,
 		TaskVersionID: request.Params.TaskVersionId,
 		RobotID:       request.Params.RobotId,
@@ -466,9 +465,9 @@ func (c *controller) ListRobotEpisodes(ctx context.Context, request openapi.List
 		return nil, err
 	}
 
-	filter := repository.EpisodeListFilter{
+	filter := usecase.EpisodeListFilter{
 		RobotID:  &robotID,
-		Statuses: []repository.EpisodeStatus{repository.EpisodeStatusReady},
+		Statuses: []model.EpisodeStatus{model.EpisodeStatusReady},
 	}
 
 	eps, _, err := c.episodeUsecase.List(ctx, filter, 1, 100)
