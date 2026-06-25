@@ -10,7 +10,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog"
-	"github.com/uptrace/bun"
 )
 
 // lastUsedFlushInterval is the minimum gap between two last_used_at writes for the same key.
@@ -62,7 +61,7 @@ type apiKey struct {
 	repo      repository.APIKey
 	userRepo  repository.User
 	robotRepo repository.Robot
-	db        *bun.DB
+	db        repository.DBConn
 	logger    zerolog.Logger
 
 	mu            sync.Mutex
@@ -75,7 +74,7 @@ func NewAPIKey(
 	repo repository.APIKey,
 	userRepo repository.User,
 	robotRepo repository.Robot,
-	db *bun.DB,
+	db repository.DBConn,
 	logger zerolog.Logger,
 ) *apiKey {
 	return &apiKey{

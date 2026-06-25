@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/uptrace/bun"
 )
 
@@ -10,4 +12,8 @@ type DBConn interface {
 	NewRaw(query string, args ...any) *bun.RawQuery
 	NewUpdate() *bun.UpdateQuery
 	NewDelete() *bun.DeleteQuery
+}
+
+type TxRunner interface {
+	RunInTx(ctx context.Context, fn func(ctx context.Context, conn DBConn) error) error
 }

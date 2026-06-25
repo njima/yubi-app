@@ -5,7 +5,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 type TaskTagUsecase interface {
@@ -22,10 +21,10 @@ type TaskTagCreateInput struct {
 
 type taskTag struct {
 	repo repository.TaskTag
-	db   *bun.DB
+	db   repository.DBConn
 }
 
-func NewTaskTag(repo repository.TaskTag, db *bun.DB) *taskTag {
+func NewTaskTag(repo repository.TaskTag, db repository.DBConn) *taskTag {
 	return &taskTag{repo: repo, db: db}
 }
 

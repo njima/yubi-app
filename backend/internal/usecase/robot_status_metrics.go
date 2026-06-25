@@ -6,7 +6,6 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/rs/zerolog"
-	"github.com/uptrace/bun"
 
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
@@ -22,7 +21,7 @@ type RobotUptimeMetricsWriter struct {
 	robotRepo       repository.Robot
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository
 	metricsRepo     repository.RobotUptimeMetricsRepository
-	db              *bun.DB
+	db              repository.DBConn
 	logger          zerolog.Logger
 }
 
@@ -30,7 +29,7 @@ func NewRobotUptimeMetricsWriter(
 	robotRepo repository.Robot,
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository,
 	metricsRepo repository.RobotUptimeMetricsRepository,
-	db *bun.DB,
+	db repository.DBConn,
 	logger zerolog.Logger,
 ) *RobotUptimeMetricsWriter {
 	return &RobotUptimeMetricsWriter{

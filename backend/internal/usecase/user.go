@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog"
-	"github.com/uptrace/bun"
 )
 
 type UserUsecase interface {
@@ -47,7 +46,8 @@ type user struct {
 	userRepo         repository.User
 	userLocationRepo repository.UserLocation
 	userSiteRepo     repository.UserSite
-	db               *bun.DB
+	db               repository.DBConn
+	tx               repository.TxRunner
 	logger           zerolog.Logger
 }
 
@@ -55,7 +55,8 @@ func NewUser(
 	userRepo repository.User,
 	userLocationRepo repository.UserLocation,
 	userSiteRepo repository.UserSite,
-	db *bun.DB,
+	db repository.DBConn,
+	txRunner repository.TxRunner,
 	logger zerolog.Logger,
 ) *user {
 	return &user{
@@ -63,6 +64,7 @@ func NewUser(
 		userLocationRepo: userLocationRepo,
 		userSiteRepo:     userSiteRepo,
 		db:               db,
+		tx:               txRunner,
 		logger:           logger,
 	}
 }
@@ -82,7 +84,7 @@ func (u *user) Create(ctx context.Context, input CreateInput) (model.User, error
 	}
 
 	var cu model.User
-	if err := u.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	if err := u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		var err error
 		cu, err = u.userRepo.Create(ctx, tx, nu)
 		if err != nil {
@@ -138,7 +140,7 @@ func (u *user) SetLocations(ctx context.Context, userID string, locationIDs []st
 		return model.User{}, err
 	}
 
-	if err := u.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	if err := u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		return u.userLocationRepo.SetUserLocations(ctx, tx, existing.IDNatural, existing.OrganizationID, locationIDs)
 	}); err != nil {
 		return model.User{}, err
@@ -153,7 +155,7 @@ func (u *user) SetSites(ctx context.Context, userID string, siteIDs []string) (m
 		return model.User{}, err
 	}
 
-	if err := u.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	if err := u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		return u.userSiteRepo.SetUserSites(ctx, tx, existing.IDNatural, existing.OrganizationID, siteIDs)
 	}); err != nil {
 		return model.User{}, err

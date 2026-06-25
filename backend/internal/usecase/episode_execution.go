@@ -9,7 +9,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 type CreateExecutionInput struct {
@@ -41,7 +40,8 @@ type episodeExecution struct {
 	episodeRepo        repository.Episode
 	episodeSubTaskRepo repository.EpisodeSubTask
 	executionRepo      repository.EpisodeSubTaskExecution
-	db                 *bun.DB
+	db                 repository.DBConn
+	tx                 repository.TxRunner
 	bus                *event.Bus
 	robotBus           *event.Bus
 	listBus            *event.Bus
@@ -51,7 +51,8 @@ func NewEpisodeExecution(
 	episodeRepo repository.Episode,
 	episodeSubTaskRepo repository.EpisodeSubTask,
 	executionRepo repository.EpisodeSubTaskExecution,
-	db *bun.DB,
+	db repository.DBConn,
+	txRunner repository.TxRunner,
 	bus *event.Bus,
 	robotBus *event.Bus,
 	listBus *event.Bus,
@@ -61,6 +62,7 @@ func NewEpisodeExecution(
 		episodeSubTaskRepo: episodeSubTaskRepo,
 		executionRepo:      executionRepo,
 		db:                 db,
+		tx:                 txRunner,
 		bus:                bus,
 		robotBus:           robotBus,
 		listBus:            listBus,
@@ -79,7 +81,7 @@ func (e *episodeExecution) Create(ctx context.Context, input CreateExecutionInpu
 	}
 
 	var executionID string
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err
@@ -135,7 +137,7 @@ func (e *episodeExecution) Start(ctx context.Context, input ExecutionActionInput
 		return err
 	}
 
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err
@@ -196,7 +198,7 @@ func (e *episodeExecution) Finish(ctx context.Context, input ExecutionActionInpu
 		return err
 	}
 
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err
@@ -249,7 +251,7 @@ func (e *episodeExecution) Cancel(ctx context.Context, input CancelExecutionInpu
 		return err
 	}
 
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err

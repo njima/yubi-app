@@ -3,8 +3,6 @@ package usecase
 import (
 	"context"
 
-	"github.com/uptrace/bun"
-
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
@@ -26,10 +24,10 @@ type EpisodeGradeUpsertInput struct {
 
 type episodeGrade struct {
 	repo repository.EpisodeGrade
-	db   *bun.DB
+	db   repository.DBConn
 }
 
-func NewEpisodeGrade(repo repository.EpisodeGrade, db *bun.DB) *episodeGrade {
+func NewEpisodeGrade(repo repository.EpisodeGrade, db repository.DBConn) *episodeGrade {
 	return &episodeGrade{repo: repo, db: db}
 }
 

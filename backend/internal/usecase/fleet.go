@@ -7,7 +7,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 type FleetUsecase interface {
@@ -18,10 +17,10 @@ type FleetUsecase interface {
 
 type fleetUsecase struct {
 	repo repository.Fleet
-	db   *bun.DB
+	db   repository.DBConn
 }
 
-func NewFleet(repo repository.Fleet, db *bun.DB) *fleetUsecase {
+func NewFleet(repo repository.Fleet, db repository.DBConn) *fleetUsecase {
 	return &fleetUsecase{repo: repo, db: db}
 }
 
