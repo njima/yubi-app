@@ -6,7 +6,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 type SiteUsecase interface {
@@ -29,10 +28,10 @@ type SiteUpdateInput struct {
 
 type siteUsecase struct {
 	siteRepo repository.Site
-	db       *bun.DB
+	db       repository.DBConn
 }
 
-func NewSite(siteRepo repository.Site, db *bun.DB) *siteUsecase {
+func NewSite(siteRepo repository.Site, db repository.DBConn) *siteUsecase {
 	return &siteUsecase{
 		siteRepo: siteRepo,
 		db:       db,

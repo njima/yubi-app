@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 type TaskUsecase interface {
@@ -54,11 +53,12 @@ type task struct {
 	tagRepo     repository.TaskTag
 	episodeRepo repository.Episode
 	tvRepo      repository.TaskVersion
-	db          *bun.DB
+	db          repository.DBConn
+	tx          repository.TxRunner
 }
 
-func NewTask(repo repository.Task, tagRepo repository.TaskTag, episodeRepo repository.Episode, tvRepo repository.TaskVersion, db *bun.DB) *task {
-	return &task{repo: repo, tagRepo: tagRepo, episodeRepo: episodeRepo, tvRepo: tvRepo, db: db}
+func NewTask(repo repository.Task, tagRepo repository.TaskTag, episodeRepo repository.Episode, tvRepo repository.TaskVersion, db repository.DBConn, txRunner repository.TxRunner) *task {
+	return &task{repo: repo, tagRepo: tagRepo, episodeRepo: episodeRepo, tvRepo: tvRepo, db: db, tx: txRunner}
 }
 
 func deduplicateTagIDs(tagIDs []string) []string {
@@ -82,7 +82,7 @@ func (t *task) Create(ctx context.Context, input TaskCreateInput) (model.Task, e
 	input.TagIDs = deduplicateTagIDs(input.TagIDs)
 
 	var result model.Task
-	err = t.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = t.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		var txErr error
 		result, txErr = t.repo.Create(ctx, tx, tk)
 		if txErr != nil {
@@ -190,7 +190,7 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 	}
 
 	var result model.Task
-	err := t.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err := t.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		// Handle status change inside transaction
 		if input.Status != nil {
 			if *input.Status == model.TaskStatusCanceled {

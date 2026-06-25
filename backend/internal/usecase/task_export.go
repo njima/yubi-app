@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/uptrace/bun"
-
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
@@ -22,10 +20,10 @@ type TaskExportUsecase interface {
 type taskExport struct {
 	taskRepo repository.Task
 	tagRepo  repository.TaskTag
-	db       *bun.DB
+	db       repository.DBConn
 }
 
-func NewTaskExport(taskRepo repository.Task, tagRepo repository.TaskTag, db *bun.DB) *taskExport {
+func NewTaskExport(taskRepo repository.Task, tagRepo repository.TaskTag, db repository.DBConn) *taskExport {
 	return &taskExport{taskRepo: taskRepo, tagRepo: tagRepo, db: db}
 }
 

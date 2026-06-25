@@ -3,8 +3,6 @@ package usecase
 import (
 	"context"
 
-	"github.com/uptrace/bun"
-
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
@@ -49,11 +47,12 @@ type taskVersion struct {
 	taskRepo    repository.Task
 	subtaskRepo repository.SubTask
 	episodeRepo repository.Episode
-	db          *bun.DB
+	db          repository.DBConn
+	tx          repository.TxRunner
 }
 
-func NewTaskVersion(repo repository.TaskVersion, taskRepo repository.Task, subtaskRepo repository.SubTask, episodeRepo repository.Episode, db *bun.DB) TaskVersionUsecase {
-	return &taskVersion{repo: repo, taskRepo: taskRepo, subtaskRepo: subtaskRepo, episodeRepo: episodeRepo, db: db}
+func NewTaskVersion(repo repository.TaskVersion, taskRepo repository.Task, subtaskRepo repository.SubTask, episodeRepo repository.Episode, db repository.DBConn, txRunner repository.TxRunner) TaskVersionUsecase {
+	return &taskVersion{repo: repo, taskRepo: taskRepo, subtaskRepo: subtaskRepo, episodeRepo: episodeRepo, db: db, tx: txRunner}
 }
 
 func (u *taskVersion) GetByID(ctx context.Context, id string) (model.TaskVersion, error) {
@@ -99,7 +98,7 @@ func (u *taskVersion) Create(ctx context.Context, input TaskVersionCreateInput) 
 	}
 
 	var result model.TaskVersion
-	err = u.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		// Get all versions for this task (includes OrganizationID)
 		versions, err := u.repo.ListByTaskID(ctx, tx, input.TaskID)
 		if err != nil {
@@ -207,7 +206,7 @@ func (u *taskVersion) Approve(ctx context.Context, taskID, versionID string) (mo
 	}
 
 	var result model.TaskVersion
-	err = u.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		var txErr error
 		result, txErr = u.repo.Approve(ctx, tx, versionID)
 		if txErr != nil {

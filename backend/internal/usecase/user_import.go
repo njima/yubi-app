@@ -11,7 +11,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/rs/zerolog"
-	"github.com/uptrace/bun"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
@@ -82,13 +81,13 @@ type UserImportRowError struct {
 
 type userImport struct {
 	userRepo repository.User
-	db       *bun.DB
+	db       repository.DBConn
 	logger   zerolog.Logger
 }
 
 func NewUserImport(
 	userRepo repository.User,
-	db *bun.DB,
+	db repository.DBConn,
 	logger zerolog.Logger,
 ) UserImportUsecase {
 	return &userImport{

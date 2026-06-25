@@ -7,7 +7,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 var (
@@ -37,10 +36,10 @@ type OrganizationUpdateInput struct {
 
 type organization struct {
 	orgRepo repository.Organization
-	db      *bun.DB
+	db      repository.DBConn
 }
 
-func NewOrganization(orgRepo repository.Organization, db *bun.DB) *organization {
+func NewOrganization(orgRepo repository.Organization, db repository.DBConn) *organization {
 	return &organization{
 		orgRepo: orgRepo,
 		db:      db,

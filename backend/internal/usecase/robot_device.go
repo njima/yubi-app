@@ -8,7 +8,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog"
-	"github.com/uptrace/bun"
 )
 
 // robotSessionThreshold is the maximum gap between heartbeats considered the same session.
@@ -34,7 +33,7 @@ type robotDevice struct {
 	robotRepo       repository.Robot
 	robotStatusRepo repository.RobotStatusRepository
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository
-	db              *bun.DB
+	db              repository.DBConn
 	logger          zerolog.Logger
 	statusBus       *event.Bus
 }
@@ -43,7 +42,7 @@ func NewRobotDevice(
 	robotRepo repository.Robot,
 	robotStatusRepo repository.RobotStatusRepository,
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository,
-	db *bun.DB,
+	db repository.DBConn,
 	logger zerolog.Logger,
 	statusBus *event.Bus,
 ) *robotDevice {

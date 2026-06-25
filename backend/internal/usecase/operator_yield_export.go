@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/uptrace/bun"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
@@ -21,11 +20,11 @@ type OperatorYieldExportUsecase interface {
 
 type operatorYieldExport struct {
 	repo   repository.OperatorYield
-	db     *bun.DB
+	db     repository.DBConn
 	logger zerolog.Logger
 }
 
-func NewOperatorYieldExport(repo repository.OperatorYield, db *bun.DB, logger zerolog.Logger) *operatorYieldExport {
+func NewOperatorYieldExport(repo repository.OperatorYield, db repository.DBConn, logger zerolog.Logger) *operatorYieldExport {
 	return &operatorYieldExport{repo: repo, db: db, logger: logger}
 }
 

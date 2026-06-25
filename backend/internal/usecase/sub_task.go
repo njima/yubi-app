@@ -3,8 +3,6 @@ package usecase
 import (
 	"context"
 
-	"github.com/uptrace/bun"
-
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
@@ -46,16 +44,17 @@ type subtask struct {
 	repo   repository.SubTask
 	rt     repository.Task
 	tvRepo repository.TaskVersion
-	db     *bun.DB
+	db     repository.DBConn
+	tx     repository.TxRunner
 }
 
-func NewSubTask(repo repository.SubTask, rt repository.Task, tvRepo repository.TaskVersion, db *bun.DB) *subtask {
-	return &subtask{repo: repo, rt: rt, tvRepo: tvRepo, db: db}
+func NewSubTask(repo repository.SubTask, rt repository.Task, tvRepo repository.TaskVersion, db repository.DBConn, txRunner repository.TxRunner) *subtask {
+	return &subtask{repo: repo, rt: rt, tvRepo: tvRepo, db: db, tx: txRunner}
 }
 
 func (s *subtask) Create(ctx context.Context, input SubTaskCreateInput) (model.SubTask, error) {
 	var cst model.SubTask
-	err := s.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err := s.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		tv, err := s.tvRepo.GetByIDForUpdate(ctx, tx, input.TaskVersionID)
 		if err != nil {
 			return err
@@ -136,7 +135,7 @@ func (s *subtask) Update(ctx context.Context, input SubTaskUpdateInput) (model.S
 
 func (s *subtask) Reorder(ctx context.Context, input SubTaskReorderInput) (model.SubTasks, error) {
 	var result model.SubTasks
-	err := s.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err := s.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		tv, err := s.tvRepo.GetByIDForUpdate(ctx, tx, input.TaskVersionID)
 		if err != nil {
 			return err

@@ -12,7 +12,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog"
-	"github.com/uptrace/bun"
 )
 
 type StartEpisodeInput struct {
@@ -81,7 +80,8 @@ type episode struct {
 	taskRepo        repository.Task
 	locRepo         repository.Location
 	siteRepo        repository.Site
-	db              *bun.DB
+	db              repository.DBConn
+	tx              repository.TxRunner
 
 	// bus and robotBus are notified after database transactions commit so
 	// SSE subscribers can refetch updated state. Because the notification
@@ -108,7 +108,8 @@ type EpisodeDependencies struct {
 	TaskRepository           repository.Task
 	LocationRepository       repository.Location
 	SiteRepository           repository.Site
-	DB                       *bun.DB
+	DB                       repository.DBConn
+	TxRunner                 repository.TxRunner
 	EventBus                 *event.Bus
 	RobotEventBus            *event.Bus
 	ListEventBus             *event.Bus
@@ -130,6 +131,7 @@ func NewEpisode(deps EpisodeDependencies) *episode {
 		locRepo:         deps.LocationRepository,
 		siteRepo:        deps.SiteRepository,
 		db:              deps.DB,
+		tx:              deps.TxRunner,
 		bus:             deps.EventBus,
 		robotBus:        deps.RobotEventBus,
 		listBus:         deps.ListEventBus,
@@ -193,7 +195,7 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 	}
 
 	episodes := make(model.Episodes, 0, count)
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		allEpisodeSubTasks := make([]model.EpisodeSubTask, 0, len(subtasks)*count)
 
 		for i := 0; i < count; i++ {
@@ -418,7 +420,7 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 		return err
 	}
 
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.repo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err
@@ -487,7 +489,7 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 		return err
 	}
 
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.repo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err
@@ -614,7 +616,7 @@ func (e *episode) Cancel(ctx context.Context, input CancelEpisodeInput) error {
 		return err
 	}
 
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.repo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err

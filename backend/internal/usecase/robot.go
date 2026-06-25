@@ -9,7 +9,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 type RobotUsecase interface {
@@ -48,10 +47,10 @@ type robot struct {
 	repo            repository.Robot
 	robotStatusRepo repository.RobotStatusRepository
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository
-	db              *bun.DB
+	db              repository.DBConn
 }
 
-func NewRobot(repo repository.Robot, robotStatusRepo repository.RobotStatusRepository, uptimeDeltaRepo repository.RobotUptimeDeltaRepository, db *bun.DB) *robot {
+func NewRobot(repo repository.Robot, robotStatusRepo repository.RobotStatusRepository, uptimeDeltaRepo repository.RobotUptimeDeltaRepository, db repository.DBConn) *robot {
 	return &robot{repo: repo, robotStatusRepo: robotStatusRepo, uptimeDeltaRepo: uptimeDeltaRepo, db: db}
 }
 

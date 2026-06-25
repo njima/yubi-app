@@ -7,7 +7,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 type SubTaskActionInput struct {
@@ -23,7 +22,8 @@ type EpisodeSubTaskUsecase interface {
 type episodeSubTask struct {
 	episodeRepo        repository.Episode
 	episodeSubTaskRepo repository.EpisodeSubTask
-	db                 *bun.DB
+	db                 repository.DBConn
+	tx                 repository.TxRunner
 	bus                *event.Bus
 	robotBus           *event.Bus
 	listBus            *event.Bus
@@ -32,7 +32,8 @@ type episodeSubTask struct {
 func NewEpisodeSubTask(
 	episodeRepo repository.Episode,
 	episodeSubTaskRepo repository.EpisodeSubTask,
-	db *bun.DB,
+	db repository.DBConn,
+	txRunner repository.TxRunner,
 	bus *event.Bus,
 	robotBus *event.Bus,
 	listBus *event.Bus,
@@ -41,6 +42,7 @@ func NewEpisodeSubTask(
 		episodeRepo:        episodeRepo,
 		episodeSubTaskRepo: episodeSubTaskRepo,
 		db:                 db,
+		tx:                 txRunner,
 		bus:                bus,
 		robotBus:           robotBus,
 		listBus:            listBus,
@@ -53,7 +55,7 @@ func (e *episodeSubTask) Complete(ctx context.Context, input SubTaskActionInput)
 		return err
 	}
 
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err
@@ -98,7 +100,7 @@ func (e *episodeSubTask) Skip(ctx context.Context, input SubTaskActionInput) err
 		return err
 	}
 
-	err = e.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
 		if err != nil {
 			return err

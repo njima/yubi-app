@@ -6,8 +6,6 @@ import (
 	"encoding/csv"
 	"time"
 
-	"github.com/uptrace/bun"
-
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
@@ -20,10 +18,10 @@ type EpisodeExportUsecase interface {
 
 type episodeExport struct {
 	episodeRepo repository.Episode
-	db          *bun.DB
+	db          repository.DBConn
 }
 
-func NewEpisodeExport(episodeRepo repository.Episode, db *bun.DB) *episodeExport {
+func NewEpisodeExport(episodeRepo repository.Episode, db repository.DBConn) *episodeExport {
 	return &episodeExport{episodeRepo: episodeRepo, db: db}
 }
 

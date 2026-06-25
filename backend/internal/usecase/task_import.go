@@ -10,8 +10,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/uptrace/bun"
-
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
@@ -66,11 +64,12 @@ type TaskImportRowError struct {
 type taskImport struct {
 	taskRepo repository.Task
 	tagRepo  repository.TaskTag
-	db       *bun.DB
+	db       repository.DBConn
+	tx       repository.TxRunner
 }
 
-func NewTaskImport(taskRepo repository.Task, tagRepo repository.TaskTag, db *bun.DB) *taskImport {
-	return &taskImport{taskRepo: taskRepo, tagRepo: tagRepo, db: db}
+func NewTaskImport(taskRepo repository.Task, tagRepo repository.TaskTag, db repository.DBConn, txRunner repository.TxRunner) *taskImport {
+	return &taskImport{taskRepo: taskRepo, tagRepo: tagRepo, db: db, tx: txRunner}
 }
 
 // expectedHeaders defines the required CSV column order.
@@ -249,7 +248,7 @@ func (u *taskImport) Import(ctx context.Context, csvContent string) (TaskImportR
 
 	// Bulk create in transaction
 	var createdTasks []model.Task
-	err = u.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err = u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
 		var err error
 		createdTasks, err = u.taskRepo.BulkCreate(ctx, tx, items)
 		if err != nil {

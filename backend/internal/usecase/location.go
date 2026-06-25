@@ -6,7 +6,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/uptrace/bun"
 )
 
 type LocationUsecase interface {
@@ -30,10 +29,10 @@ type LocationUpdateInput struct {
 
 type location struct {
 	locRepo repository.Location
-	db      *bun.DB
+	db      repository.DBConn
 }
 
-func NewLocation(locRepo repository.Location, db *bun.DB) *location {
+func NewLocation(locRepo repository.Location, db repository.DBConn) *location {
 	return &location{locRepo: locRepo, db: db}
 }
 
