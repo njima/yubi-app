@@ -58,6 +58,17 @@ func TestRepositoryInterfacesDoNotDependOnImplementations(t *testing.T) {
 	})
 }
 
+func TestAuthzDoesNotDependOnHTTPBoundary(t *testing.T) {
+	assertNoForbiddenImports(t, "internal/authz", []string{
+		"internal/ccontext",
+		"internal/gen",
+		"internal/interfaces",
+	})
+	assertNoForbiddenExternalImports(t, "internal/authz", []string{
+		"github.com/gin-gonic/gin",
+	})
+}
+
 func assertNoForbiddenImports(t *testing.T, packageDir string, forbiddenPrefixes []string) {
 	t.Helper()
 
@@ -103,6 +114,52 @@ func assertNoForbiddenImports(t *testing.T, packageDir string, forbiddenPrefixes
 	}
 	if len(violations) > 0 {
 		t.Fatalf("%s must not import forbidden outer layers: %s", packageDir, strings.Join(violations, ", "))
+	}
+}
+
+func assertNoForbiddenExternalImports(t *testing.T, packageDir string, forbiddenImports []string) {
+	t.Helper()
+
+	backendRoot := filepath.Clean("../..")
+	root := filepath.Join(backendRoot, packageDir)
+
+	forbidden := make(map[string]struct{}, len(forbiddenImports))
+	for _, importPath := range forbiddenImports {
+		forbidden[importPath] = struct{}{}
+	}
+
+	var violations []string
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) != ".go" {
+			return nil
+		}
+
+		imports, err := parseImports(path)
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(backendRoot, path)
+		if err != nil {
+			return err
+		}
+		for _, importPath := range imports {
+			if _, ok := forbidden[importPath]; ok {
+				violations = append(violations, rel+" imports "+importPath)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walk %s: %v", packageDir, err)
+	}
+	if len(violations) > 0 {
+		t.Fatalf("%s must not import forbidden HTTP boundary packages: %s", packageDir, strings.Join(violations, ", "))
 	}
 }
 
