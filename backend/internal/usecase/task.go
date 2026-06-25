@@ -82,15 +82,16 @@ func (t *task) Create(ctx context.Context, input TaskCreateInput) (model.Task, e
 
 	var result model.Task
 	err = t.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		conn := txData.Conn()
 		var txErr error
-		result, txErr = t.repo.Create(ctx, txData.Conn(), tk)
+		result, txErr = t.repo.Create(ctx, conn, tk)
 		if txErr != nil {
 			return txErr
 		}
-		if err := t.tagRepo.SetTaskTags(ctx, txData.Conn(), result.IDNatural, input.TagIDs); err != nil {
+		if err := t.tagRepo.SetTaskTags(ctx, conn, result.IDNatural, input.TagIDs); err != nil {
 			return err
 		}
-		tags, err := t.tagRepo.GetTagsByTaskID(ctx, txData.Conn(), result.IDNatural)
+		tags, err := t.tagRepo.GetTagsByTaskID(ctx, conn, result.IDNatural)
 		if err != nil {
 			return err
 		}
@@ -190,6 +191,7 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 
 	var result model.Task
 	err := t.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		conn := txData.Conn()
 		// Handle status change inside transaction
 		if input.Status != nil {
 			if *input.Status == model.TaskStatusCanceled {
@@ -199,17 +201,17 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 				}
 			} else {
 				// Check if uncanceling
-				currentTask, err := t.repo.GetByID(ctx, txData.Conn(), input.ID)
+				currentTask, err := t.repo.GetByID(ctx, conn, input.ID)
 				if err != nil {
 					return err
 				}
 				if currentTask.Status != nil && *currentTask.Status == model.TaskStatusCanceled {
 					// Canceled → non-Canceled: auto-determine correct status
-					actual, err := t.episodeRepo.SumDurationByTaskID(ctx, txData.Conn(), currentTask.IDNatural)
+					actual, err := t.episodeRepo.SumDurationByTaskID(ctx, conn, currentTask.IDNatural)
 					if err != nil {
 						return err
 					}
-					target, err := t.tvRepo.SumTargetByTaskID(ctx, txData.Conn(), currentTask.IDNatural)
+					target, err := t.tvRepo.SumTargetByTaskID(ctx, conn, currentTask.IDNatural)
 					if err != nil {
 						return err
 					}
@@ -227,16 +229,16 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 		}
 
 		var txErr error
-		result, txErr = t.repo.Update(ctx, txData.Conn(), tk)
+		result, txErr = t.repo.Update(ctx, conn, tk)
 		if txErr != nil {
 			return txErr
 		}
 		if input.TagIDs != nil {
-			if err := t.tagRepo.SetTaskTags(ctx, txData.Conn(), result.IDNatural, *input.TagIDs); err != nil {
+			if err := t.tagRepo.SetTaskTags(ctx, conn, result.IDNatural, *input.TagIDs); err != nil {
 				return err
 			}
 		}
-		tags, err := t.tagRepo.GetTagsByTaskID(ctx, txData.Conn(), result.IDNatural)
+		tags, err := t.tagRepo.GetTagsByTaskID(ctx, conn, result.IDNatural)
 		if err != nil {
 			return err
 		}
