@@ -17,6 +17,14 @@ const (
 	SubTaskCollectionStatusCancelled  SubTaskCollectionStatus = 4
 )
 
+type TaskResult int
+
+const (
+	TaskResultUndetermined TaskResult = 0
+	TaskResultSuccess      TaskResult = 1
+	TaskResultFailed       TaskResult = 2
+)
+
 type EpisodeSubTask struct {
 	ID               int64
 	IDNatural        string

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/uptrace/bun"
 )
 
@@ -21,7 +20,7 @@ type EpisodeSubTask struct {
 	EpisodeID        string                        `bun:"episode_id,type:varchar(36),notnull"`               // FK to episode
 	SubTaskID        string                        `bun:"sub_task_id,type:varchar(36),notnull"`              // FK to subtask
 	CollectionStatus model.SubTaskCollectionStatus `bun:"collection_status,type:smallint,notnull,default:0"` // 0:ready, 1:in_progress, 2:completed, 3:skipped, 4:cancelled
-	TaskResult       openapi.SubTaskTaskResult     `bun:"task_result,type:smallint,notnull,default:0"`       // 0:undetermined, 1:success, 2:failed
+	TaskResult       model.TaskResult              `bun:"task_result,type:smallint,notnull,default:0"`       // 0:undetermined, 1:success, 2:failed
 
 	// relations
 	Organization *Organization              `bun:"rel:belongs-to,join:organization_id=id_natural"`
