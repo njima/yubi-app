@@ -21,19 +21,19 @@ type TaskTagCreateInput struct {
 
 type taskTag struct {
 	repo repository.TaskTag
-	db   repository.DBConn
+	data repository.DataAccess
 }
 
-func NewTaskTag(repo repository.TaskTag, db repository.DBConn) *taskTag {
-	return &taskTag{repo: repo, db: db}
+func NewTaskTag(repo repository.TaskTag, data repository.DataAccess) *taskTag {
+	return &taskTag{repo: repo, data: data}
 }
 
 func (t *taskTag) ListCategoryTypes(ctx context.Context) (model.TaskCategoryTypes, error) {
-	return t.repo.ListCategoryTypes(ctx, t.db)
+	return t.repo.ListCategoryTypes(ctx, t.data.Conn())
 }
 
 func (t *taskTag) ListTags(ctx context.Context, categoryTypeID *string) (model.TaskTags, error) {
-	return t.repo.ListTags(ctx, t.db, categoryTypeID)
+	return t.repo.ListTags(ctx, t.data.Conn(), categoryTypeID)
 }
 
 func (t *taskTag) CreateTag(ctx context.Context, input TaskTagCreateInput) (model.TaskTag, error) {
@@ -46,9 +46,9 @@ func (t *taskTag) CreateTag(ctx context.Context, input TaskTagCreateInput) (mode
 		Name:           input.Name,
 		CategoryTypeID: input.CategoryTypeID,
 	}
-	return t.repo.CreateTag(ctx, t.db, tag)
+	return t.repo.CreateTag(ctx, t.data.Conn(), tag)
 }
 
 func (t *taskTag) GetAvailableTags(ctx context.Context, robotTypes []string, categoryTypeID *string) (model.TaskTags, error) {
-	return t.repo.GetAvailableTags(ctx, t.db, robotTypes, categoryTypeID)
+	return t.repo.GetAvailableTags(ctx, t.data.Conn(), robotTypes, categoryTypeID)
 }

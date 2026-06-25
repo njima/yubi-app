@@ -40,8 +40,7 @@ type episodeExecution struct {
 	episodeRepo        repository.Episode
 	episodeSubTaskRepo repository.EpisodeSubTask
 	executionRepo      repository.EpisodeSubTaskExecution
-	db                 repository.DBConn
-	tx                 repository.TxRunner
+	data               repository.DataAccess
 	bus                *event.Bus
 	robotBus           *event.Bus
 	listBus            *event.Bus
@@ -51,8 +50,7 @@ func NewEpisodeExecution(
 	episodeRepo repository.Episode,
 	episodeSubTaskRepo repository.EpisodeSubTask,
 	executionRepo repository.EpisodeSubTaskExecution,
-	db repository.DBConn,
-	txRunner repository.TxRunner,
+	data repository.DataAccess,
 	bus *event.Bus,
 	robotBus *event.Bus,
 	listBus *event.Bus,
@@ -61,8 +59,7 @@ func NewEpisodeExecution(
 		episodeRepo:        episodeRepo,
 		episodeSubTaskRepo: episodeSubTaskRepo,
 		executionRepo:      executionRepo,
-		db:                 db,
-		tx:                 txRunner,
+		data:               data,
 		bus:                bus,
 		robotBus:           robotBus,
 		listBus:            listBus,
@@ -81,8 +78,8 @@ func (e *episodeExecution) Create(ctx context.Context, input CreateExecutionInpu
 	}
 
 	var executionID string
-	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
+	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		episode, err := e.episodeRepo.GetByID(ctx, txData.Conn(), input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -91,7 +88,7 @@ func (e *episodeExecution) Create(ctx context.Context, input CreateExecutionInpu
 			return apperror.NewError(apperror.NewMessage(apperror.CodeForbidden, "robot is not authorized to operate this episode"))
 		}
 
-		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, tx, input.SubTaskID)
+		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, txData.Conn(), input.SubTaskID)
 		if err != nil {
 			return err
 		}
@@ -103,7 +100,7 @@ func (e *episodeExecution) Create(ctx context.Context, input CreateExecutionInpu
 		if err := subtask.StartProgress(); err != nil {
 			return err
 		}
-		if err := e.episodeSubTaskRepo.Update(ctx, tx, subtask); err != nil {
+		if err := e.episodeSubTaskRepo.Update(ctx, txData.Conn(), subtask); err != nil {
 			return err
 		}
 
@@ -112,7 +109,7 @@ func (e *episodeExecution) Create(ctx context.Context, input CreateExecutionInpu
 			return err
 		}
 
-		created, err := e.executionRepo.Create(ctx, tx, execution)
+		created, err := e.executionRepo.Create(ctx, txData.Conn(), execution)
 		if err != nil {
 			return err
 		}
@@ -137,8 +134,8 @@ func (e *episodeExecution) Start(ctx context.Context, input ExecutionActionInput
 		return err
 	}
 
-	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
+	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		episode, err := e.episodeRepo.GetByID(ctx, txData.Conn(), input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -147,12 +144,12 @@ func (e *episodeExecution) Start(ctx context.Context, input ExecutionActionInput
 			return apperror.NewError(apperror.NewMessage(apperror.CodeForbidden, "robot is not authorized to operate this episode"))
 		}
 
-		execution, err := e.executionRepo.GetByID(ctx, tx, input.ExecutionID)
+		execution, err := e.executionRepo.GetByID(ctx, txData.Conn(), input.ExecutionID)
 		if err != nil {
 			return err
 		}
 
-		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, tx, input.SubTaskID)
+		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, txData.Conn(), input.SubTaskID)
 		if err != nil {
 			return err
 		}
@@ -164,7 +161,7 @@ func (e *episodeExecution) Start(ctx context.Context, input ExecutionActionInput
 			return apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "execution does not belong to the subtask"))
 		}
 
-		count, err := e.executionRepo.CountStartedBySubTaskID(ctx, tx, input.SubTaskID)
+		count, err := e.executionRepo.CountStartedBySubTaskID(ctx, txData.Conn(), input.SubTaskID)
 		if err != nil {
 			return err
 		}
@@ -176,7 +173,7 @@ func (e *episodeExecution) Start(ctx context.Context, input ExecutionActionInput
 			return err
 		}
 
-		if err := e.executionRepo.Update(ctx, tx, execution); err != nil {
+		if err := e.executionRepo.Update(ctx, txData.Conn(), execution); err != nil {
 			return err
 		}
 
@@ -198,8 +195,8 @@ func (e *episodeExecution) Finish(ctx context.Context, input ExecutionActionInpu
 		return err
 	}
 
-	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
+	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		episode, err := e.episodeRepo.GetByID(ctx, txData.Conn(), input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -208,12 +205,12 @@ func (e *episodeExecution) Finish(ctx context.Context, input ExecutionActionInpu
 			return apperror.NewError(apperror.NewMessage(apperror.CodeForbidden, "robot is not authorized to operate this episode"))
 		}
 
-		execution, err := e.executionRepo.GetByID(ctx, tx, input.ExecutionID)
+		execution, err := e.executionRepo.GetByID(ctx, txData.Conn(), input.ExecutionID)
 		if err != nil {
 			return err
 		}
 
-		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, tx, input.SubTaskID)
+		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, txData.Conn(), input.SubTaskID)
 		if err != nil {
 			return err
 		}
@@ -229,7 +226,7 @@ func (e *episodeExecution) Finish(ctx context.Context, input ExecutionActionInpu
 			return err
 		}
 
-		if err := e.executionRepo.Update(ctx, tx, execution); err != nil {
+		if err := e.executionRepo.Update(ctx, txData.Conn(), execution); err != nil {
 			return err
 		}
 
@@ -251,8 +248,8 @@ func (e *episodeExecution) Cancel(ctx context.Context, input CancelExecutionInpu
 		return err
 	}
 
-	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		episode, err := e.episodeRepo.GetByID(ctx, tx, input.EpisodeID)
+	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		episode, err := e.episodeRepo.GetByID(ctx, txData.Conn(), input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -261,12 +258,12 @@ func (e *episodeExecution) Cancel(ctx context.Context, input CancelExecutionInpu
 			return apperror.NewError(apperror.NewMessage(apperror.CodeForbidden, "robot is not authorized to operate this episode"))
 		}
 
-		execution, err := e.executionRepo.GetByID(ctx, tx, input.ExecutionID)
+		execution, err := e.executionRepo.GetByID(ctx, txData.Conn(), input.ExecutionID)
 		if err != nil {
 			return err
 		}
 
-		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, tx, input.SubTaskID)
+		subtask, err := e.episodeSubTaskRepo.GetByID(ctx, txData.Conn(), input.SubTaskID)
 		if err != nil {
 			return err
 		}
@@ -282,7 +279,7 @@ func (e *episodeExecution) Cancel(ctx context.Context, input CancelExecutionInpu
 			return err
 		}
 
-		if err := e.executionRepo.Update(ctx, tx, execution); err != nil {
+		if err := e.executionRepo.Update(ctx, txData.Conn(), execution); err != nil {
 			return err
 		}
 

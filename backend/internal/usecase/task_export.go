@@ -20,11 +20,11 @@ type TaskExportUsecase interface {
 type taskExport struct {
 	taskRepo repository.Task
 	tagRepo  repository.TaskTag
-	db       repository.DBConn
+	data     repository.DataAccess
 }
 
-func NewTaskExport(taskRepo repository.Task, tagRepo repository.TaskTag, db repository.DBConn) *taskExport {
-	return &taskExport{taskRepo: taskRepo, tagRepo: tagRepo, db: db}
+func NewTaskExport(taskRepo repository.Task, tagRepo repository.TaskTag, data repository.DataAccess) *taskExport {
+	return &taskExport{taskRepo: taskRepo, tagRepo: tagRepo, data: data}
 }
 
 // exportHeaders must match expectedHeaders in task_import.go exactly so that
@@ -40,7 +40,7 @@ var exportHeaders = []string{
 }
 
 func (u *taskExport) Export(ctx context.Context, filter repository.TaskListFilter) ([]byte, error) {
-	rows, err := u.taskRepo.Export(ctx, u.db, filter)
+	rows, err := u.taskRepo.Export(ctx, u.data.Conn(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (u *taskExport) Export(ctx context.Context, filter repository.TaskListFilte
 		taskIDs = append(taskIDs, r.IDNatural)
 	}
 
-	tagsByTaskID, err := u.tagRepo.GetTagsByTaskIDs(ctx, u.db, taskIDs)
+	tagsByTaskID, err := u.tagRepo.GetTagsByTaskIDs(ctx, u.data.Conn(), taskIDs)
 	if err != nil {
 		return nil, err
 	}

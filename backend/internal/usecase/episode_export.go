@@ -18,11 +18,11 @@ type EpisodeExportUsecase interface {
 
 type episodeExport struct {
 	episodeRepo repository.Episode
-	db          repository.DBConn
+	data        repository.DataAccess
 }
 
-func NewEpisodeExport(episodeRepo repository.Episode, db repository.DBConn) *episodeExport {
-	return &episodeExport{episodeRepo: episodeRepo, db: db}
+func NewEpisodeExport(episodeRepo repository.Episode, data repository.DataAccess) *episodeExport {
+	return &episodeExport{episodeRepo: episodeRepo, data: data}
 }
 
 var episodeExportHeaders = []string{
@@ -31,7 +31,7 @@ var episodeExportHeaders = []string{
 }
 
 func (u *episodeExport) Export(ctx context.Context, filter repository.EpisodeExportFilter) ([]byte, error) {
-	rows, err := u.episodeRepo.Export(ctx, u.db, filter)
+	rows, err := u.episodeRepo.Export(ctx, u.data.Conn(), filter)
 	if err != nil {
 		return nil, err
 	}

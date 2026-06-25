@@ -64,12 +64,11 @@ type TaskImportRowError struct {
 type taskImport struct {
 	taskRepo repository.Task
 	tagRepo  repository.TaskTag
-	db       repository.DBConn
-	tx       repository.TxRunner
+	data     repository.DataAccess
 }
 
-func NewTaskImport(taskRepo repository.Task, tagRepo repository.TaskTag, db repository.DBConn, txRunner repository.TxRunner) *taskImport {
-	return &taskImport{taskRepo: taskRepo, tagRepo: tagRepo, db: db, tx: txRunner}
+func NewTaskImport(taskRepo repository.Task, tagRepo repository.TaskTag, data repository.DataAccess) *taskImport {
+	return &taskImport{taskRepo: taskRepo, tagRepo: tagRepo, data: data}
 }
 
 // expectedHeaders defines the required CSV column order.
@@ -93,14 +92,14 @@ func (u *taskImport) validateInternal(
 	for _, r := range rows {
 		names = append(names, r.Name)
 	}
-	existingNames, err := u.taskRepo.FindExistingNames(ctx, u.db, names)
+	existingNames, err := u.taskRepo.FindExistingNames(ctx, u.data.Conn(), names)
 	if err != nil {
 		return TaskImportValidationResult{}, nil, err
 	}
 
 	// Fetch only the tag names actually referenced in the CSV (not all tags)
 	tagNames := collectTagNames(rows)
-	allTags, err := u.tagRepo.GetTagsByNames(ctx, u.db, tagNames)
+	allTags, err := u.tagRepo.GetTagsByNames(ctx, u.data.Conn(), tagNames)
 	if err != nil {
 		return TaskImportValidationResult{}, nil, err
 	}
@@ -248,15 +247,15 @@ func (u *taskImport) Import(ctx context.Context, csvContent string) (TaskImportR
 
 	// Bulk create in transaction
 	var createdTasks []model.Task
-	err = u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
+	err = u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		var err error
-		createdTasks, err = u.taskRepo.BulkCreate(ctx, tx, items)
+		createdTasks, err = u.taskRepo.BulkCreate(ctx, txData.Conn(), items)
 		if err != nil {
 			return err
 		}
 		for _, tk := range createdTasks {
 			if ids, ok := tagIDsByTask[tk.IDNatural]; ok {
-				if err := u.tagRepo.SetTaskTags(ctx, tx, tk.IDNatural, ids); err != nil {
+				if err := u.tagRepo.SetTaskTags(ctx, txData.Conn(), tk.IDNatural, ids); err != nil {
 					return err
 				}
 			}

@@ -80,8 +80,7 @@ type episode struct {
 	taskRepo        repository.Task
 	locRepo         repository.Location
 	siteRepo        repository.Site
-	db              repository.DBConn
-	tx              repository.TxRunner
+	data            repository.DataAccess
 
 	// bus and robotBus are notified after database transactions commit so
 	// SSE subscribers can refetch updated state. Because the notification
@@ -108,8 +107,7 @@ type EpisodeDependencies struct {
 	TaskRepository           repository.Task
 	LocationRepository       repository.Location
 	SiteRepository           repository.Site
-	DB                       repository.DBConn
-	TxRunner                 repository.TxRunner
+	DataAccess               repository.DataAccess
 	EventBus                 *event.Bus
 	RobotEventBus            *event.Bus
 	ListEventBus             *event.Bus
@@ -130,8 +128,7 @@ func NewEpisode(deps EpisodeDependencies) *episode {
 		taskRepo:        deps.TaskRepository,
 		locRepo:         deps.LocationRepository,
 		siteRepo:        deps.SiteRepository,
-		db:              deps.DB,
-		tx:              deps.TxRunner,
+		data:            deps.DataAccess,
 		bus:             deps.EventBus,
 		robotBus:        deps.RobotEventBus,
 		listBus:         deps.ListEventBus,
@@ -163,7 +160,7 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 		err error
 	)
 	if input.TaskVersionID != nil {
-		tv, err = e.tvRepo.GetByID(ctx, e.db, *input.TaskVersionID)
+		tv, err = e.tvRepo.GetByID(ctx, e.data.Conn(), *input.TaskVersionID)
 		if err != nil {
 			return nil, err
 		}
@@ -174,14 +171,14 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 			return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "task_version is not approved"))
 		}
 	} else {
-		tv, err = e.tvRepo.GetLatestApprovedByTaskID(ctx, e.db, input.TaskID)
+		tv, err = e.tvRepo.GetLatestApprovedByTaskID(ctx, e.data.Conn(), input.TaskID)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	// Validate that location_id matches the robot's location
-	robot, err := e.rr.GetByID(ctx, e.db, input.RobotID)
+	robot, err := e.rr.GetByID(ctx, e.data.Conn(), input.RobotID)
 	if err != nil {
 		return nil, err
 	}
@@ -189,13 +186,13 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "location_id does not match robot's location"))
 	}
 
-	subtasks, err := e.sr.GetByTaskVersionID(ctx, e.db, tv.IDNatural)
+	subtasks, err := e.sr.GetByTaskVersionID(ctx, e.data.Conn(), tv.IDNatural)
 	if err != nil {
 		return nil, err
 	}
 
 	episodes := make(model.Episodes, 0, count)
-	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
+	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		allEpisodeSubTasks := make([]model.EpisodeSubTask, 0, len(subtasks)*count)
 
 		for i := 0; i < count; i++ {
@@ -214,7 +211,7 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 			}
 			inep.ParameterValues = paramValues
 
-			ep, err := e.repo.Create(ctx, tx, inep)
+			ep, err := e.repo.Create(ctx, txData.Conn(), inep)
 			if err != nil {
 				return err
 			}
@@ -235,7 +232,7 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 			}
 		}
 
-		if err := e.estr.BulkCreate(ctx, tx, allEpisodeSubTasks); err != nil {
+		if err := e.estr.BulkCreate(ctx, txData.Conn(), allEpisodeSubTasks); err != nil {
 			return err
 		}
 
@@ -251,7 +248,7 @@ func (e *episode) BulkCreate(ctx context.Context, input EpisodeCreateInput, coun
 }
 
 func (e *episode) GetByID(ctx context.Context, id string) (model.Episode, error) {
-	ep, err := e.repo.GetByID(ctx, e.db, id)
+	ep, err := e.repo.GetByID(ctx, e.data.Conn(), id)
 	if err != nil {
 		return model.Episode{}, err
 	}
@@ -260,7 +257,7 @@ func (e *episode) GetByID(ctx context.Context, id string) (model.Episode, error)
 }
 
 func (e *episode) GetCurrentRobotEpisode(ctx context.Context, robotID string) (*model.Episode, error) {
-	ep, err := e.repo.GetCurrentRobotEpisode(ctx, e.db, robotID)
+	ep, err := e.repo.GetCurrentRobotEpisode(ctx, e.data.Conn(), robotID)
 	if err != nil {
 		return nil, err
 	}
@@ -272,12 +269,12 @@ func (e *episode) GetCurrentRobotEpisode(ctx context.Context, robotID string) (*
 }
 
 func (e *episode) GetSubTasksByEpisodeID(ctx context.Context, episodeID string, taskVersionID string) (model.SubTasks, model.EpisodeSubTasks, model.EpisodeSubTaskExecutions, error) {
-	subtasks, err := e.sr.GetByTaskVersionID(ctx, e.db, taskVersionID)
+	subtasks, err := e.sr.GetByTaskVersionID(ctx, e.data.Conn(), taskVersionID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	records, err := e.estr.GetByEpisodeID(ctx, e.db, episodeID)
+	records, err := e.estr.GetByEpisodeID(ctx, e.data.Conn(), episodeID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -291,7 +288,7 @@ func (e *episode) GetSubTasksByEpisodeID(ctx context.Context, episodeID string, 
 		subTaskIDs = append(subTaskIDs, r.IDNatural)
 	}
 
-	executions, err := e.execr.GetByEpisodeSubTaskIDs(ctx, e.db, subTaskIDs)
+	executions, err := e.execr.GetByEpisodeSubTaskIDs(ctx, e.data.Conn(), subTaskIDs)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -301,7 +298,7 @@ func (e *episode) GetSubTasksByEpisodeID(ctx context.Context, episodeID string, 
 
 func (e *episode) List(ctx context.Context, filter repository.EpisodeListFilter, page, limit int) (model.Episodes, int, error) {
 	if filter.TaskID != nil && filter.TaskVersionID != nil {
-		tv, err := e.tvRepo.GetByID(ctx, e.db, *filter.TaskVersionID)
+		tv, err := e.tvRepo.GetByID(ctx, e.data.Conn(), *filter.TaskVersionID)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -317,7 +314,7 @@ func (e *episode) List(ctx context.Context, filter repository.EpisodeListFilter,
 		page = 1
 	}
 	offset := (page - 1) * limit
-	episodes, total, err := e.repo.List(ctx, e.db, filter, limit, offset)
+	episodes, total, err := e.repo.List(ctx, e.data.Conn(), filter, limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -339,7 +336,7 @@ func (e *episode) mergeGradeAggregates(ctx context.Context, episodes model.Episo
 		ids = append(ids, ep.IDNatural)
 	}
 
-	aggMap, err := e.gradeRepo.GetAverageMap(ctx, e.db, ids)
+	aggMap, err := e.gradeRepo.GetAverageMap(ctx, e.data.Conn(), ids)
 	if err != nil {
 		e.logger.Warn().Err(err).Int("episode_count", len(episodes)).Msg("episode: grade aggregate fetch failed, returning episodes without grades")
 		return
@@ -355,7 +352,7 @@ func (e *episode) mergeGradeAggregates(ctx context.Context, episodes model.Episo
 }
 
 func (e *episode) Update(ctx context.Context, input EpisodeUpdateInput) (model.Episode, error) {
-	ep, err := e.repo.GetByID(ctx, e.db, input.ID)
+	ep, err := e.repo.GetByID(ctx, e.data.Conn(), input.ID)
 	if err != nil {
 		return model.Episode{}, err
 	}
@@ -365,7 +362,7 @@ func (e *episode) Update(ctx context.Context, input EpisodeUpdateInput) (model.E
 		return model.Episode{}, err
 	}
 
-	result, err := e.repo.Update(ctx, e.db, ep)
+	result, err := e.repo.Update(ctx, e.data.Conn(), ep)
 	if err != nil {
 		return model.Episode{}, err
 	}
@@ -407,7 +404,7 @@ func (e *episode) update(ctx context.Context, ep model.Episode, input EpisodeUpd
 }
 
 func (e *episode) Delete(ctx context.Context, id string) error {
-	return e.repo.Delete(ctx, e.db, id)
+	return e.repo.Delete(ctx, e.data.Conn(), id)
 }
 
 func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
@@ -420,8 +417,8 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 		return err
 	}
 
-	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		episode, err := e.repo.GetByID(ctx, tx, input.EpisodeID)
+	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		episode, err := e.repo.GetByID(ctx, txData.Conn(), input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -434,7 +431,7 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 			return err
 		}
 
-		robot, err := e.rr.GetByID(ctx, tx, robotID)
+		robot, err := e.rr.GetByID(ctx, txData.Conn(), robotID)
 		if err != nil {
 			return err
 		}
@@ -463,11 +460,11 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 			return err
 		}
 
-		if _, err := e.repo.Update(ctx, tx, episode); err != nil {
+		if _, err := e.repo.Update(ctx, txData.Conn(), episode); err != nil {
 			return err
 		}
 
-		if _, err := e.rr.Update(ctx, tx, robot); err != nil {
+		if _, err := e.rr.Update(ctx, txData.Conn(), robot); err != nil {
 			return err
 		}
 
@@ -489,8 +486,8 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 		return err
 	}
 
-	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		episode, err := e.repo.GetByID(ctx, tx, input.EpisodeID)
+	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		episode, err := e.repo.GetByID(ctx, txData.Conn(), input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -503,7 +500,7 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 			return err
 		}
 
-		robot, err := e.rr.GetByID(ctx, tx, robotID)
+		robot, err := e.rr.GetByID(ctx, txData.Conn(), robotID)
 		if err != nil {
 			return err
 		}
@@ -512,24 +509,24 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 			return err
 		}
 
-		if _, err := e.repo.Update(ctx, tx, episode); err != nil {
+		if _, err := e.repo.Update(ctx, txData.Conn(), episode); err != nil {
 			return err
 		}
 
-		if _, err := e.rr.Update(ctx, tx, robot); err != nil {
+		if _, err := e.rr.Update(ctx, txData.Conn(), robot); err != nil {
 			return err
 		}
 
 		// Auto-update task status based on collection progress
-		actual, err := e.repo.SumDurationByTaskID(ctx, tx, episode.TaskID)
+		actual, err := e.repo.SumDurationByTaskID(ctx, txData.Conn(), episode.TaskID)
 		if err != nil {
 			return err
 		}
-		target, err := e.tvRepo.SumTargetByTaskID(ctx, tx, episode.TaskID)
+		target, err := e.tvRepo.SumTargetByTaskID(ctx, txData.Conn(), episode.TaskID)
 		if err != nil {
 			return err
 		}
-		tk, err := e.taskRepo.GetByID(ctx, tx, episode.TaskID)
+		tk, err := e.taskRepo.GetByID(ctx, txData.Conn(), episode.TaskID)
 		if err != nil {
 			return err
 		}
@@ -544,7 +541,7 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 		if err := updateTask.SetStatus(&newStatus); err != nil {
 			return err
 		}
-		if _, err := e.taskRepo.Update(ctx, tx, updateTask); err != nil {
+		if _, err := e.taskRepo.Update(ctx, txData.Conn(), updateTask); err != nil {
 			return err
 		}
 
@@ -566,7 +563,7 @@ func (e *episode) RepeatLast(ctx context.Context) (model.Episode, error) {
 		return model.Episode{}, err
 	}
 
-	robot, err := e.rr.GetByID(ctx, e.db, robotID)
+	robot, err := e.rr.GetByID(ctx, e.data.Conn(), robotID)
 	if err != nil {
 		return model.Episode{}, err
 	}
@@ -587,7 +584,7 @@ func (e *episode) RepeatLast(ctx context.Context) (model.Episode, error) {
 		repository.EpisodeStatusCompleted,
 		repository.EpisodeStatusCancel,
 	}
-	eps, _, err := e.repo.List(ctx, e.db, repository.EpisodeListFilter{
+	eps, _, err := e.repo.List(ctx, e.data.Conn(), repository.EpisodeListFilter{
 		RobotID:  &robotID,
 		Statuses: statuses,
 	}, 1, 0)
@@ -616,8 +613,8 @@ func (e *episode) Cancel(ctx context.Context, input CancelEpisodeInput) error {
 		return err
 	}
 
-	err = e.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		episode, err := e.repo.GetByID(ctx, tx, input.EpisodeID)
+	err = e.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		episode, err := e.repo.GetByID(ctx, txData.Conn(), input.EpisodeID)
 		if err != nil {
 			return err
 		}
@@ -630,7 +627,7 @@ func (e *episode) Cancel(ctx context.Context, input CancelEpisodeInput) error {
 			return err
 		}
 
-		robot, err := e.rr.GetByID(ctx, tx, robotID)
+		robot, err := e.rr.GetByID(ctx, txData.Conn(), robotID)
 		if err != nil {
 			return err
 		}
@@ -639,19 +636,19 @@ func (e *episode) Cancel(ctx context.Context, input CancelEpisodeInput) error {
 			return err
 		}
 
-		if err := e.estr.BulkCancelByEpisodeID(ctx, tx, input.EpisodeID); err != nil {
+		if err := e.estr.BulkCancelByEpisodeID(ctx, txData.Conn(), input.EpisodeID); err != nil {
 			return err
 		}
 
-		if err := e.execr.BulkCancelByEpisodeID(ctx, tx, input.EpisodeID); err != nil {
+		if err := e.execr.BulkCancelByEpisodeID(ctx, txData.Conn(), input.EpisodeID); err != nil {
 			return err
 		}
 
-		if _, err := e.repo.Update(ctx, tx, episode); err != nil {
+		if _, err := e.repo.Update(ctx, txData.Conn(), episode); err != nil {
 			return err
 		}
 
-		if _, err := e.rr.Update(ctx, tx, robot); err != nil {
+		if _, err := e.rr.Update(ctx, txData.Conn(), robot); err != nil {
 			return err
 		}
 
@@ -672,17 +669,17 @@ func (e *episode) buildPreviewPath(ctx context.Context, ep model.Episode) (model
 		return model.EpisodePreviewPath{}, apperror.NewError(apperror.NewMessage(apperror.CodeInternal, "episode has no started_at"))
 	}
 
-	robot, err := e.rr.GetByID(ctx, e.db, ep.RobotID)
+	robot, err := e.rr.GetByID(ctx, e.data.Conn(), ep.RobotID)
 	if err != nil {
 		return model.EpisodePreviewPath{}, err
 	}
 
-	loc, err := e.locRepo.GetByID(ctx, e.db, ep.LocationID)
+	loc, err := e.locRepo.GetByID(ctx, e.data.Conn(), ep.LocationID)
 	if err != nil {
 		return model.EpisodePreviewPath{}, err
 	}
 
-	site, err := e.siteRepo.GetByID(ctx, e.db, loc.SiteID)
+	site, err := e.siteRepo.GetByID(ctx, e.data.Conn(), loc.SiteID)
 	if err != nil {
 		return model.EpisodePreviewPath{}, err
 	}
@@ -704,7 +701,7 @@ func (e *episode) buildPreviewPath(ctx context.Context, ep model.Episode) (model
 }
 
 func (e *episode) GetRecordings(ctx context.Context, episodeID string) (map[string]string, error) {
-	ep, err := e.repo.GetByID(ctx, e.db, episodeID)
+	ep, err := e.repo.GetByID(ctx, e.data.Conn(), episodeID)
 	if err != nil {
 		return nil, err
 	}
@@ -716,7 +713,7 @@ func (e *episode) GetRecordings(ctx context.Context, episodeID string) (map[stri
 }
 
 func (e *episode) GetStats(ctx context.Context, episodeID string) (model.EpisodeRecordingStats, error) {
-	ep, err := e.repo.GetByID(ctx, e.db, episodeID)
+	ep, err := e.repo.GetByID(ctx, e.data.Conn(), episodeID)
 	if err != nil {
 		return nil, err
 	}

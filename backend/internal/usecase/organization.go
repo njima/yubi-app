@@ -36,13 +36,13 @@ type OrganizationUpdateInput struct {
 
 type organization struct {
 	orgRepo repository.Organization
-	db      repository.DBConn
+	data    repository.DataAccess
 }
 
-func NewOrganization(orgRepo repository.Organization, db repository.DBConn) *organization {
+func NewOrganization(orgRepo repository.Organization, data repository.DataAccess) *organization {
 	return &organization{
 		orgRepo: orgRepo,
-		db:      db,
+		data:    data,
 	}
 }
 
@@ -52,7 +52,7 @@ func (o *organization) Create(ctx context.Context, input OrganizationCreateInput
 		return model.Organization{}, err
 	}
 
-	uorg, err := o.orgRepo.Create(ctx, o.db, org)
+	uorg, err := o.orgRepo.Create(ctx, o.data.Conn(), org)
 	if err != nil {
 		return model.Organization{}, err
 	}
@@ -61,7 +61,7 @@ func (o *organization) Create(ctx context.Context, input OrganizationCreateInput
 }
 
 func (o *organization) GetByNaturalID(ctx context.Context, idNatural string) (model.Organization, error) {
-	return o.orgRepo.GetByNaturalID(ctx, o.db, idNatural)
+	return o.orgRepo.GetByNaturalID(ctx, o.data.Conn(), idNatural)
 }
 
 func (o *organization) List(ctx context.Context, page, limit int) (model.Organizations, int, error) {
@@ -72,11 +72,11 @@ func (o *organization) List(ctx context.Context, page, limit int) (model.Organiz
 		page = 1
 	}
 	offset := (page - 1) * limit
-	return o.orgRepo.List(ctx, o.db, limit, offset)
+	return o.orgRepo.List(ctx, o.data.Conn(), limit, offset)
 }
 
 func (o *organization) Update(ctx context.Context, input OrganizationUpdateInput) (model.Organization, error) {
-	org, err := o.orgRepo.GetByNaturalID(ctx, o.db, input.OrganizationID)
+	org, err := o.orgRepo.GetByNaturalID(ctx, o.data.Conn(), input.OrganizationID)
 	if err != nil {
 		return model.Organization{}, err
 	}
@@ -86,7 +86,7 @@ func (o *organization) Update(ctx context.Context, input OrganizationUpdateInput
 		return model.Organization{}, err
 	}
 
-	updatedOrg, err := o.orgRepo.Update(ctx, o.db, uorg)
+	updatedOrg, err := o.orgRepo.Update(ctx, o.data.Conn(), uorg)
 	if err != nil {
 		return model.Organization{}, err
 	}
@@ -109,5 +109,5 @@ func (o *organization) update(ctx context.Context, org model.Organization, input
 }
 
 func (o *organization) Delete(ctx context.Context, idNatural string) error {
-	return o.orgRepo.Delete(ctx, o.db, idNatural)
+	return o.orgRepo.Delete(ctx, o.data.Conn(), idNatural)
 }

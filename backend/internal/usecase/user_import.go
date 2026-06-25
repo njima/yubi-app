@@ -81,18 +81,18 @@ type UserImportRowError struct {
 
 type userImport struct {
 	userRepo repository.User
-	db       repository.DBConn
+	data     repository.DataAccess
 	logger   zerolog.Logger
 }
 
 func NewUserImport(
 	userRepo repository.User,
-	db repository.DBConn,
+	data repository.DataAccess,
 	logger zerolog.Logger,
 ) UserImportUsecase {
 	return &userImport{
 		userRepo: userRepo,
-		db:       db,
+		data:     data,
 		logger:   logger,
 	}
 }
@@ -138,7 +138,7 @@ func (u *userImport) Import(ctx context.Context, csvContent string) (UserImportR
 			continue
 		}
 
-		if _, err := u.userRepo.Create(ctx, u.db, nu); err != nil {
+		if _, err := u.userRepo.Create(ctx, u.data.Conn(), nu); err != nil {
 			u.logger.Error().Err(err).Str("email", row.Email).Int("row", row.RowNumber).Msg("failed to create user in database")
 			importErrors = append(importErrors, UserImportRowError{
 				RowNumber: row.RowNumber,
@@ -175,7 +175,7 @@ func (u *userImport) validateInternal(
 		}
 	}
 
-	existingEmails, err := u.userRepo.ExistsByEmails(ctx, u.db, emails)
+	existingEmails, err := u.userRepo.ExistsByEmails(ctx, u.data.Conn(), emails)
 	if err != nil {
 		return UserImportValidationResult{}, err
 	}
