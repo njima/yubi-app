@@ -15,6 +15,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/log"
+	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -77,8 +78,9 @@ func run(ctx context.Context) error {
 	robotRepo := persistence.NewRobot()
 	robotUptimeDeltaRepo := cache.NewRobotUptimeDelta(redisClient)
 	robotUptimeMetricsRepo := persistence.NewRobotUptimeMetrics()
+	dataAccess := repository.NewDataAccess(db, persistence.NewTxRunner(db))
 
-	writer := usecase.NewRobotUptimeMetricsWriter(robotRepo, robotUptimeDeltaRepo, robotUptimeMetricsRepo, db, logger)
+	writer := usecase.NewRobotUptimeMetricsWriter(robotRepo, robotUptimeDeltaRepo, robotUptimeMetricsRepo, dataAccess, logger)
 
 	logger.Info().Msg("robot uptime metrics writer started")
 	writer.Run(ctx)

@@ -24,11 +24,11 @@ type EpisodeGradeUpsertInput struct {
 
 type episodeGrade struct {
 	repo repository.EpisodeGrade
-	db   repository.DBConn
+	data repository.DataAccess
 }
 
-func NewEpisodeGrade(repo repository.EpisodeGrade, db repository.DBConn) *episodeGrade {
-	return &episodeGrade{repo: repo, db: db}
+func NewEpisodeGrade(repo repository.EpisodeGrade, data repository.DataAccess) *episodeGrade {
+	return &episodeGrade{repo: repo, data: data}
 }
 
 func (u *episodeGrade) Upsert(ctx context.Context, input EpisodeGradeUpsertInput) (model.EpisodeGrade, error) {
@@ -37,11 +37,11 @@ func (u *episodeGrade) Upsert(ctx context.Context, input EpisodeGradeUpsertInput
 		return model.EpisodeGrade{}, err
 	}
 
-	return u.repo.Upsert(ctx, u.db, grade)
+	return u.repo.Upsert(ctx, u.data.Conn(), grade)
 }
 
 func (u *episodeGrade) GetMyGrade(ctx context.Context, episodeID, userID string) (*model.EpisodeGrade, error) {
-	return u.repo.GetMyGrade(ctx, u.db, episodeID, userID)
+	return u.repo.GetMyGrade(ctx, u.data.Conn(), episodeID, userID)
 }
 
 func (u *episodeGrade) List(ctx context.Context, episodeID string, page, limit int) ([]repository.EpisodeGradeListItem, int, error) {
@@ -52,5 +52,5 @@ func (u *episodeGrade) List(ctx context.Context, episodeID string, page, limit i
 		page = 1
 	}
 	offset := (page - 1) * limit
-	return u.repo.ListByEpisodeID(ctx, u.db, episodeID, limit, offset)
+	return u.repo.ListByEpisodeID(ctx, u.data.Conn(), episodeID, limit, offset)
 }

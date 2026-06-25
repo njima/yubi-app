@@ -53,12 +53,11 @@ type task struct {
 	tagRepo     repository.TaskTag
 	episodeRepo repository.Episode
 	tvRepo      repository.TaskVersion
-	db          repository.DBConn
-	tx          repository.TxRunner
+	data        repository.DataAccess
 }
 
-func NewTask(repo repository.Task, tagRepo repository.TaskTag, episodeRepo repository.Episode, tvRepo repository.TaskVersion, db repository.DBConn, txRunner repository.TxRunner) *task {
-	return &task{repo: repo, tagRepo: tagRepo, episodeRepo: episodeRepo, tvRepo: tvRepo, db: db, tx: txRunner}
+func NewTask(repo repository.Task, tagRepo repository.TaskTag, episodeRepo repository.Episode, tvRepo repository.TaskVersion, data repository.DataAccess) *task {
+	return &task{repo: repo, tagRepo: tagRepo, episodeRepo: episodeRepo, tvRepo: tvRepo, data: data}
 }
 
 func deduplicateTagIDs(tagIDs []string) []string {
@@ -82,16 +81,16 @@ func (t *task) Create(ctx context.Context, input TaskCreateInput) (model.Task, e
 	input.TagIDs = deduplicateTagIDs(input.TagIDs)
 
 	var result model.Task
-	err = t.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
+	err = t.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		var txErr error
-		result, txErr = t.repo.Create(ctx, tx, tk)
+		result, txErr = t.repo.Create(ctx, txData.Conn(), tk)
 		if txErr != nil {
 			return txErr
 		}
-		if err := t.tagRepo.SetTaskTags(ctx, tx, result.IDNatural, input.TagIDs); err != nil {
+		if err := t.tagRepo.SetTaskTags(ctx, txData.Conn(), result.IDNatural, input.TagIDs); err != nil {
 			return err
 		}
-		tags, err := t.tagRepo.GetTagsByTaskID(ctx, tx, result.IDNatural)
+		tags, err := t.tagRepo.GetTagsByTaskID(ctx, txData.Conn(), result.IDNatural)
 		if err != nil {
 			return err
 		}
@@ -107,11 +106,11 @@ func (t *task) Create(ctx context.Context, input TaskCreateInput) (model.Task, e
 }
 
 func (t *task) GetByID(ctx context.Context, id string) (model.Task, error) {
-	tk, err := t.repo.GetByID(ctx, t.db, id)
+	tk, err := t.repo.GetByID(ctx, t.data.Conn(), id)
 	if err != nil {
 		return model.Task{}, err
 	}
-	tags, err := t.tagRepo.GetTagsByTaskID(ctx, t.db, tk.IDNatural)
+	tags, err := t.tagRepo.GetTagsByTaskID(ctx, t.data.Conn(), tk.IDNatural)
 	if err != nil {
 		return model.Task{}, err
 	}
@@ -120,7 +119,7 @@ func (t *task) GetByID(ctx context.Context, id string) (model.Task, error) {
 }
 
 func (t *task) ListByIDs(ctx context.Context, ids []string) (model.Tasks, error) {
-	return t.repo.ListByIDs(ctx, t.db, ids)
+	return t.repo.ListByIDs(ctx, t.data.Conn(), ids)
 }
 
 func (t *task) List(ctx context.Context, filter repository.TaskListFilter, page, limit int) (model.Tasks, int, error) {
@@ -131,7 +130,7 @@ func (t *task) List(ctx context.Context, filter repository.TaskListFilter, page,
 		page = 1
 	}
 	offset := (page - 1) * limit
-	tasks, total, err := t.repo.List(ctx, t.db, filter, limit, offset)
+	tasks, total, err := t.repo.List(ctx, t.data.Conn(), filter, limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -142,7 +141,7 @@ func (t *task) List(ctx context.Context, filter repository.TaskListFilter, page,
 	for _, tk := range tasks {
 		ids = append(ids, tk.IDNatural)
 	}
-	tagsByTask, err := t.tagRepo.GetTagsByTaskIDs(ctx, t.db, ids)
+	tagsByTask, err := t.tagRepo.GetTagsByTaskIDs(ctx, t.data.Conn(), ids)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -190,7 +189,7 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 	}
 
 	var result model.Task
-	err := t.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
+	err := t.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		// Handle status change inside transaction
 		if input.Status != nil {
 			if *input.Status == model.TaskStatusCanceled {
@@ -200,17 +199,17 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 				}
 			} else {
 				// Check if uncanceling
-				currentTask, err := t.repo.GetByID(ctx, tx, input.ID)
+				currentTask, err := t.repo.GetByID(ctx, txData.Conn(), input.ID)
 				if err != nil {
 					return err
 				}
 				if currentTask.Status != nil && *currentTask.Status == model.TaskStatusCanceled {
 					// Canceled → non-Canceled: auto-determine correct status
-					actual, err := t.episodeRepo.SumDurationByTaskID(ctx, tx, currentTask.IDNatural)
+					actual, err := t.episodeRepo.SumDurationByTaskID(ctx, txData.Conn(), currentTask.IDNatural)
 					if err != nil {
 						return err
 					}
-					target, err := t.tvRepo.SumTargetByTaskID(ctx, tx, currentTask.IDNatural)
+					target, err := t.tvRepo.SumTargetByTaskID(ctx, txData.Conn(), currentTask.IDNatural)
 					if err != nil {
 						return err
 					}
@@ -228,16 +227,16 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 		}
 
 		var txErr error
-		result, txErr = t.repo.Update(ctx, tx, tk)
+		result, txErr = t.repo.Update(ctx, txData.Conn(), tk)
 		if txErr != nil {
 			return txErr
 		}
 		if input.TagIDs != nil {
-			if err := t.tagRepo.SetTaskTags(ctx, tx, result.IDNatural, *input.TagIDs); err != nil {
+			if err := t.tagRepo.SetTaskTags(ctx, txData.Conn(), result.IDNatural, *input.TagIDs); err != nil {
 				return err
 			}
 		}
-		tags, err := t.tagRepo.GetTagsByTaskID(ctx, tx, result.IDNatural)
+		tags, err := t.tagRepo.GetTagsByTaskID(ctx, txData.Conn(), result.IDNatural)
 		if err != nil {
 			return err
 		}
@@ -251,12 +250,12 @@ func (t *task) Update(ctx context.Context, input TaskUpdateInput) (model.Task, e
 }
 
 func (t *task) Delete(ctx context.Context, id string) error {
-	return t.repo.Delete(ctx, t.db, id)
+	return t.repo.Delete(ctx, t.data.Conn(), id)
 }
 
 func (t *task) GetSummary(ctx context.Context, filter repository.TaskSummaryFilter) (model.TaskSummary, error) {
 	// Step 1: Get filtered tasks
-	tasks, err := t.repo.GetFilteredTasks(ctx, t.db, filter)
+	tasks, err := t.repo.GetFilteredTasks(ctx, t.data.Conn(), filter)
 	if err != nil {
 		return model.TaskSummary{}, err
 	}
@@ -266,7 +265,7 @@ func (t *task) GetSummary(ctx context.Context, filter repository.TaskSummaryFilt
 
 	// Step 2: Get targets
 	taskIDs := extractTaskIDs(tasks)
-	targets, err := t.repo.GetTargetsByTaskIDs(ctx, t.db, taskIDs)
+	targets, err := t.repo.GetTargetsByTaskIDs(ctx, t.data.Conn(), taskIDs)
 	if err != nil {
 		return model.TaskSummary{}, err
 	}
@@ -282,7 +281,7 @@ func (t *task) GetSummary(ctx context.Context, filter repository.TaskSummaryFilt
 
 func (t *task) GetCompletionTrend(ctx context.Context, filter repository.TaskSummaryFilter, groupBy string, from, to time.Time, interval string) (model.TaskCompletionTrend, error) {
 	// Step 1: Get filtered tasks
-	tasks, err := t.repo.GetFilteredTasks(ctx, t.db, filter)
+	tasks, err := t.repo.GetFilteredTasks(ctx, t.data.Conn(), filter)
 	if err != nil {
 		return model.TaskCompletionTrend{}, err
 	}
@@ -293,19 +292,19 @@ func (t *task) GetCompletionTrend(ctx context.Context, filter repository.TaskSum
 	taskIDs := extractTaskIDs(tasks)
 
 	// Step 2: Get targets per task
-	targets, err := t.repo.GetTargetsByTaskIDs(ctx, t.db, taskIDs)
+	targets, err := t.repo.GetTargetsByTaskIDs(ctx, t.data.Conn(), taskIDs)
 	if err != nil {
 		return model.TaskCompletionTrend{}, err
 	}
 
 	// Step 3: Get actuals per task
-	actuals, err := t.repo.GetActualsByTaskIDs(ctx, t.db, taskIDs)
+	actuals, err := t.repo.GetActualsByTaskIDs(ctx, t.data.Conn(), taskIDs)
 	if err != nil {
 		return model.TaskCompletionTrend{}, err
 	}
 
 	// Step 4: Get tags per task (for category grouping, using existing tagRepo)
-	tagsByTask, err := t.tagRepo.GetTagsByTaskIDs(ctx, t.db, taskIDs)
+	tagsByTask, err := t.tagRepo.GetTagsByTaskIDs(ctx, t.data.Conn(), taskIDs)
 	if err != nil {
 		return model.TaskCompletionTrend{}, err
 	}

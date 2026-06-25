@@ -33,7 +33,7 @@ type robotDevice struct {
 	robotRepo       repository.Robot
 	robotStatusRepo repository.RobotStatusRepository
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository
-	db              repository.DBConn
+	data            repository.DataAccess
 	logger          zerolog.Logger
 	statusBus       *event.Bus
 }
@@ -42,7 +42,7 @@ func NewRobotDevice(
 	robotRepo repository.Robot,
 	robotStatusRepo repository.RobotStatusRepository,
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository,
-	db repository.DBConn,
+	data repository.DataAccess,
 	logger zerolog.Logger,
 	statusBus *event.Bus,
 ) *robotDevice {
@@ -50,7 +50,7 @@ func NewRobotDevice(
 		robotRepo:       robotRepo,
 		robotStatusRepo: robotStatusRepo,
 		uptimeDeltaRepo: uptimeDeltaRepo,
-		db:              db,
+		data:            data,
 		logger:          logger,
 		statusBus:       statusBus,
 	}
@@ -95,7 +95,7 @@ func (r *robotDevice) GetRobotStatus(ctx context.Context, robotID string) (*repo
 }
 
 func (r *robotDevice) RobotExists(ctx context.Context, robotID string) (bool, error) {
-	robot, err := r.robotRepo.GetByID(ctx, r.db, robotID)
+	robot, err := r.robotRepo.GetByID(ctx, r.data.Conn(), robotID)
 	if err != nil {
 		if apperror.SameKind(err, apperror.KindNotFound) {
 			return false, nil

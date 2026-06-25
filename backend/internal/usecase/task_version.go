@@ -47,24 +47,23 @@ type taskVersion struct {
 	taskRepo    repository.Task
 	subtaskRepo repository.SubTask
 	episodeRepo repository.Episode
-	db          repository.DBConn
-	tx          repository.TxRunner
+	data        repository.DataAccess
 }
 
-func NewTaskVersion(repo repository.TaskVersion, taskRepo repository.Task, subtaskRepo repository.SubTask, episodeRepo repository.Episode, db repository.DBConn, txRunner repository.TxRunner) TaskVersionUsecase {
-	return &taskVersion{repo: repo, taskRepo: taskRepo, subtaskRepo: subtaskRepo, episodeRepo: episodeRepo, db: db, tx: txRunner}
+func NewTaskVersion(repo repository.TaskVersion, taskRepo repository.Task, subtaskRepo repository.SubTask, episodeRepo repository.Episode, data repository.DataAccess) TaskVersionUsecase {
+	return &taskVersion{repo: repo, taskRepo: taskRepo, subtaskRepo: subtaskRepo, episodeRepo: episodeRepo, data: data}
 }
 
 func (u *taskVersion) GetByID(ctx context.Context, id string) (model.TaskVersion, error) {
-	return u.repo.GetByID(ctx, u.db, id)
+	return u.repo.GetByID(ctx, u.data.Conn(), id)
 }
 
 func (u *taskVersion) ListByIDs(ctx context.Context, ids []string) (model.TaskVersions, error) {
-	return u.repo.ListByIDs(ctx, u.db, ids)
+	return u.repo.ListByIDs(ctx, u.data.Conn(), ids)
 }
 
 func (u *taskVersion) ListByTaskID(ctx context.Context, taskID string) (model.TaskVersions, error) {
-	exists, err := u.taskRepo.Exists(ctx, u.db, taskID)
+	exists, err := u.taskRepo.Exists(ctx, u.data.Conn(), taskID)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +71,7 @@ func (u *taskVersion) ListByTaskID(ctx context.Context, taskID string) (model.Ta
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeTaskNotFound, "task not found: id=%s", taskID))
 	}
 
-	versions, err := u.repo.ListByTaskID(ctx, u.db, taskID)
+	versions, err := u.repo.ListByTaskID(ctx, u.data.Conn(), taskID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +88,7 @@ func (u *taskVersion) ListByTaskID(ctx context.Context, taskID string) (model.Ta
 }
 
 func (u *taskVersion) Create(ctx context.Context, input TaskVersionCreateInput) (model.TaskVersion, error) {
-	exists, err := u.taskRepo.Exists(ctx, u.db, input.TaskID)
+	exists, err := u.taskRepo.Exists(ctx, u.data.Conn(), input.TaskID)
 	if err != nil {
 		return model.TaskVersion{}, err
 	}
@@ -98,9 +97,9 @@ func (u *taskVersion) Create(ctx context.Context, input TaskVersionCreateInput) 
 	}
 
 	var result model.TaskVersion
-	err = u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
+	err = u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		// Get all versions for this task (includes OrganizationID)
-		versions, err := u.repo.ListByTaskID(ctx, tx, input.TaskID)
+		versions, err := u.repo.ListByTaskID(ctx, txData.Conn(), input.TaskID)
 		if err != nil {
 			return err
 		}
@@ -134,13 +133,13 @@ func (u *taskVersion) Create(ctx context.Context, input TaskVersionCreateInput) 
 		if err != nil {
 			return err
 		}
-		result, err = u.repo.Create(ctx, tx, tv)
+		result, err = u.repo.Create(ctx, txData.Conn(), tv)
 		if err != nil {
 			return err
 		}
 
 		// Copy subtasks from base version
-		baseSubtasks, err := u.subtaskRepo.GetByTaskVersionID(ctx, tx, input.BaseTaskVersionID)
+		baseSubtasks, err := u.subtaskRepo.GetByTaskVersionID(ctx, txData.Conn(), input.BaseTaskVersionID)
 		if err != nil {
 			return err
 		}
@@ -149,7 +148,7 @@ func (u *taskVersion) Create(ctx context.Context, input TaskVersionCreateInput) 
 			if err != nil {
 				return err
 			}
-			if _, err := u.subtaskRepo.Create(ctx, tx, newSt); err != nil {
+			if _, err := u.subtaskRepo.Create(ctx, txData.Conn(), newSt); err != nil {
 				return err
 			}
 		}
@@ -165,7 +164,7 @@ func (u *taskVersion) Create(ctx context.Context, input TaskVersionCreateInput) 
 }
 
 func (u *taskVersion) Update(ctx context.Context, taskID string, input TaskVersionUpdateInput) (model.TaskVersion, error) {
-	tv, err := u.repo.GetByID(ctx, u.db, input.ID)
+	tv, err := u.repo.GetByID(ctx, u.data.Conn(), input.ID)
 	if err != nil {
 		return model.TaskVersion{}, err
 	}
@@ -189,12 +188,12 @@ func (u *taskVersion) Update(ctx context.Context, taskID string, input TaskVersi
 		tv.DisplayName = input.DisplayName
 	}
 
-	return u.repo.Update(ctx, u.db, tv)
+	return u.repo.Update(ctx, u.data.Conn(), tv)
 }
 
 func (u *taskVersion) Approve(ctx context.Context, taskID, versionID string) (model.TaskVersion, error) {
 	// Validate the version exists and belongs to this task
-	tv, err := u.repo.GetByID(ctx, u.db, versionID)
+	tv, err := u.repo.GetByID(ctx, u.data.Conn(), versionID)
 	if err != nil {
 		return model.TaskVersion{}, err
 	}
@@ -206,23 +205,23 @@ func (u *taskVersion) Approve(ctx context.Context, taskID, versionID string) (mo
 	}
 
 	var result model.TaskVersion
-	err = u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
+	err = u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		var txErr error
-		result, txErr = u.repo.Approve(ctx, tx, versionID)
+		result, txErr = u.repo.Approve(ctx, txData.Conn(), versionID)
 		if txErr != nil {
 			return txErr
 		}
 
 		// Auto-update task status based on collection progress
-		actual, err := u.episodeRepo.SumDurationByTaskID(ctx, tx, taskID)
+		actual, err := u.episodeRepo.SumDurationByTaskID(ctx, txData.Conn(), taskID)
 		if err != nil {
 			return err
 		}
-		target, err := u.repo.SumTargetByTaskID(ctx, tx, taskID)
+		target, err := u.repo.SumTargetByTaskID(ctx, txData.Conn(), taskID)
 		if err != nil {
 			return err
 		}
-		tk, err := u.taskRepo.GetByID(ctx, tx, taskID)
+		tk, err := u.taskRepo.GetByID(ctx, txData.Conn(), taskID)
 		if err != nil {
 			return err
 		}
@@ -237,7 +236,7 @@ func (u *taskVersion) Approve(ctx context.Context, taskID, versionID string) (mo
 		if err := updateTask.SetStatus(&newStatus); err != nil {
 			return err
 		}
-		if _, err := u.taskRepo.Update(ctx, tx, updateTask); err != nil {
+		if _, err := u.taskRepo.Update(ctx, txData.Conn(), updateTask); err != nil {
 			return err
 		}
 
@@ -252,7 +251,7 @@ func (u *taskVersion) Approve(ctx context.Context, taskID, versionID string) (mo
 }
 
 func (u *taskVersion) UpdateParameters(ctx context.Context, input TaskVersionUpdateParametersInput) (model.TaskVersion, error) {
-	tv, err := u.repo.GetByID(ctx, u.db, input.VersionID)
+	tv, err := u.repo.GetByID(ctx, u.data.Conn(), input.VersionID)
 	if err != nil {
 		return model.TaskVersion{}, err
 	}
@@ -267,7 +266,7 @@ func (u *taskVersion) UpdateParameters(ctx context.Context, input TaskVersionUpd
 		return model.TaskVersion{}, err
 	}
 
-	result, err := u.repo.UpdateParameters(ctx, u.db, input.VersionID, input.Parameters)
+	result, err := u.repo.UpdateParameters(ctx, u.data.Conn(), input.VersionID, input.Parameters)
 	if err != nil {
 		return model.TaskVersion{}, err
 	}

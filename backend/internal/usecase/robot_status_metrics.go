@@ -21,7 +21,7 @@ type RobotUptimeMetricsWriter struct {
 	robotRepo       repository.Robot
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository
 	metricsRepo     repository.RobotUptimeMetricsRepository
-	db              repository.DBConn
+	data            repository.DataAccess
 	logger          zerolog.Logger
 }
 
@@ -29,14 +29,14 @@ func NewRobotUptimeMetricsWriter(
 	robotRepo repository.Robot,
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository,
 	metricsRepo repository.RobotUptimeMetricsRepository,
-	db repository.DBConn,
+	data repository.DataAccess,
 	logger zerolog.Logger,
 ) *RobotUptimeMetricsWriter {
 	return &RobotUptimeMetricsWriter{
 		robotRepo:       robotRepo,
 		uptimeDeltaRepo: uptimeDeltaRepo,
 		metricsRepo:     metricsRepo,
-		db:              db,
+		data:            data,
 		logger:          logger,
 	}
 }
@@ -66,7 +66,7 @@ func (w *RobotUptimeMetricsWriter) Run(ctx context.Context) {
 // WriteBatch failure leaves the buffer intact for the next flush cycle.
 func (w *RobotUptimeMetricsWriter) flush(ctx context.Context) error {
 	// limit=0 means no LIMIT clause in bun — fetches all robots.
-	robots, _, err := w.robotRepo.List(ctx, w.db, repository.RobotListFilter{}, 0, 0)
+	robots, _, err := w.robotRepo.List(ctx, w.data.Conn(), repository.RobotListFilter{}, 0, 0)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (w *RobotUptimeMetricsWriter) flush(ctx context.Context) error {
 		return nil
 	}
 
-	if err := w.metricsRepo.WriteBatch(ctx, w.db, metrics); err != nil {
+	if err := w.metricsRepo.WriteBatch(ctx, w.data.Conn(), metrics); err != nil {
 		return err
 	}
 

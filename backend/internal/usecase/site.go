@@ -28,13 +28,13 @@ type SiteUpdateInput struct {
 
 type siteUsecase struct {
 	siteRepo repository.Site
-	db       repository.DBConn
+	data     repository.DataAccess
 }
 
-func NewSite(siteRepo repository.Site, db repository.DBConn) *siteUsecase {
+func NewSite(siteRepo repository.Site, data repository.DataAccess) *siteUsecase {
 	return &siteUsecase{
 		siteRepo: siteRepo,
-		db:       db,
+		data:     data,
 	}
 }
 
@@ -44,7 +44,7 @@ func (s *siteUsecase) Create(ctx context.Context, input SiteCreateInput) (model.
 		return model.Site{}, err
 	}
 
-	created, err := s.siteRepo.Create(ctx, s.db, si)
+	created, err := s.siteRepo.Create(ctx, s.data.Conn(), si)
 	if err != nil {
 		return model.Site{}, err
 	}
@@ -53,7 +53,7 @@ func (s *siteUsecase) Create(ctx context.Context, input SiteCreateInput) (model.
 }
 
 func (s *siteUsecase) GetByID(ctx context.Context, id string) (model.Site, error) {
-	return s.siteRepo.GetByID(ctx, s.db, id)
+	return s.siteRepo.GetByID(ctx, s.data.Conn(), id)
 }
 
 func (s *siteUsecase) List(ctx context.Context, filter repository.SiteListFilter, page, limit int) (model.Sites, int, error) {
@@ -64,11 +64,11 @@ func (s *siteUsecase) List(ctx context.Context, filter repository.SiteListFilter
 		page = 1
 	}
 	offset := (page - 1) * limit
-	return s.siteRepo.List(ctx, s.db, filter, limit, offset)
+	return s.siteRepo.List(ctx, s.data.Conn(), filter, limit, offset)
 }
 
 func (s *siteUsecase) Update(ctx context.Context, input SiteUpdateInput) (model.Site, error) {
-	si, err := s.siteRepo.GetByID(ctx, s.db, input.ID)
+	si, err := s.siteRepo.GetByID(ctx, s.data.Conn(), input.ID)
 	if err != nil {
 		return model.Site{}, err
 	}
@@ -77,7 +77,7 @@ func (s *siteUsecase) Update(ctx context.Context, input SiteUpdateInput) (model.
 		return model.Site{}, err
 	}
 
-	updated, err := s.siteRepo.Update(ctx, s.db, si)
+	updated, err := s.siteRepo.Update(ctx, s.data.Conn(), si)
 	if err != nil {
 		return model.Site{}, err
 	}
@@ -86,5 +86,5 @@ func (s *siteUsecase) Update(ctx context.Context, input SiteUpdateInput) (model.
 }
 
 func (s *siteUsecase) Delete(ctx context.Context, id string) error {
-	return s.siteRepo.Delete(ctx, s.db, id)
+	return s.siteRepo.Delete(ctx, s.data.Conn(), id)
 }

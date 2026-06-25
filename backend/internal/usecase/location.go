@@ -29,11 +29,11 @@ type LocationUpdateInput struct {
 
 type location struct {
 	locRepo repository.Location
-	db      repository.DBConn
+	data    repository.DataAccess
 }
 
-func NewLocation(locRepo repository.Location, db repository.DBConn) *location {
-	return &location{locRepo: locRepo, db: db}
+func NewLocation(locRepo repository.Location, data repository.DataAccess) *location {
+	return &location{locRepo: locRepo, data: data}
 }
 
 func (l *location) Create(ctx context.Context, input LocationCreateInput) (model.Location, error) {
@@ -42,7 +42,7 @@ func (l *location) Create(ctx context.Context, input LocationCreateInput) (model
 		return model.Location{}, err
 	}
 
-	ulo, err := l.locRepo.Create(ctx, l.db, lo)
+	ulo, err := l.locRepo.Create(ctx, l.data.Conn(), lo)
 	if err != nil {
 		return model.Location{}, err
 	}
@@ -51,7 +51,7 @@ func (l *location) Create(ctx context.Context, input LocationCreateInput) (model
 }
 
 func (l *location) GetByID(ctx context.Context, id string) (model.Location, error) {
-	return l.locRepo.GetByID(ctx, l.db, id)
+	return l.locRepo.GetByID(ctx, l.data.Conn(), id)
 }
 
 func (l *location) List(ctx context.Context, filter repository.LocationListFilter, page, limit int) (model.Locations, int, error) {
@@ -62,11 +62,11 @@ func (l *location) List(ctx context.Context, filter repository.LocationListFilte
 		page = 1
 	}
 	offset := (page - 1) * limit
-	return l.locRepo.List(ctx, l.db, filter, limit, offset)
+	return l.locRepo.List(ctx, l.data.Conn(), filter, limit, offset)
 }
 
 func (l *location) Update(ctx context.Context, input LocationUpdateInput) (model.Location, error) {
-	lo, err := l.locRepo.GetByID(ctx, l.db, input.ID)
+	lo, err := l.locRepo.GetByID(ctx, l.data.Conn(), input.ID)
 	if err != nil {
 		return model.Location{}, err
 	}
@@ -75,7 +75,7 @@ func (l *location) Update(ctx context.Context, input LocationUpdateInput) (model
 		return model.Location{}, err
 	}
 
-	ulo, err := l.locRepo.Update(ctx, l.db, lo)
+	ulo, err := l.locRepo.Update(ctx, l.data.Conn(), lo)
 	if err != nil {
 		return model.Location{}, err
 	}
@@ -84,5 +84,5 @@ func (l *location) Update(ctx context.Context, input LocationUpdateInput) (model
 }
 
 func (l *location) Delete(ctx context.Context, id string) error {
-	return l.locRepo.Delete(ctx, l.db, id)
+	return l.locRepo.Delete(ctx, l.data.Conn(), id)
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/storage"
 	"github.com/airoa-org/yubi-app/backend/internal/log"
+	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 
 	"github.com/getsentry/sentry-go"
@@ -107,6 +108,7 @@ func newApplication(ctx context.Context) (*application, error) {
 		db.AddQueryHook(ddtrace.NewBunHook(conf.AppName + "-db"))
 	}
 	txRunner := persistence.NewTxRunner(db)
+	dataAccess := repository.NewDataAccess(db, txRunner)
 
 	eventBuses := newEventBuses()
 	app.robotStatusBus = eventBuses.RobotStatus
@@ -114,19 +116,19 @@ func newApplication(ctx context.Context) (*application, error) {
 	app.robotEpisodeBus = eventBuses.RobotEpisode
 	app.episodeListBus = eventBuses.EpisodeList
 
-	app.userUsecase = usecase.NewUser(repos.User, repos.UserLocation, repos.UserSite, db, txRunner, logger)
-	app.userImportUsecase = usecase.NewUserImport(repos.User, db, logger)
-	app.organizationUsecase = usecase.NewOrganization(repos.Organization, db)
-	app.siteUsecase = usecase.NewSite(repos.Site, db)
-	app.locationUsecase = usecase.NewLocation(repos.Location, db)
-	app.robotUsecase = usecase.NewRobot(repos.Robot, repos.RobotStatus, repos.RobotUptimeDelta, db)
-	app.robotDeviceUsecase = usecase.NewRobotDevice(repos.Robot, repos.RobotStatus, repos.RobotUptimeDelta, db, logger, app.robotStatusBus)
-	app.taskTagUsecase = usecase.NewTaskTag(repos.TaskTag, db)
-	app.taskImportUsecase = usecase.NewTaskImport(repos.Task, repos.TaskTag, db, txRunner)
-	app.taskExportUsecase = usecase.NewTaskExport(repos.Task, repos.TaskTag, db)
-	app.taskUsecase = usecase.NewTask(repos.Task, repos.TaskTag, repos.Episode, repos.TaskVersion, db, txRunner)
-	app.taskVersionUsecase = usecase.NewTaskVersion(repos.TaskVersion, repos.Task, repos.SubTask, repos.Episode, db, txRunner)
-	app.subtaskUsecase = usecase.NewSubTask(repos.SubTask, repos.Task, repos.TaskVersion, db, txRunner)
+	app.userUsecase = usecase.NewUser(repos.User, repos.UserLocation, repos.UserSite, dataAccess, logger)
+	app.userImportUsecase = usecase.NewUserImport(repos.User, dataAccess, logger)
+	app.organizationUsecase = usecase.NewOrganization(repos.Organization, dataAccess)
+	app.siteUsecase = usecase.NewSite(repos.Site, dataAccess)
+	app.locationUsecase = usecase.NewLocation(repos.Location, dataAccess)
+	app.robotUsecase = usecase.NewRobot(repos.Robot, repos.RobotStatus, repos.RobotUptimeDelta, dataAccess)
+	app.robotDeviceUsecase = usecase.NewRobotDevice(repos.Robot, repos.RobotStatus, repos.RobotUptimeDelta, dataAccess, logger, app.robotStatusBus)
+	app.taskTagUsecase = usecase.NewTaskTag(repos.TaskTag, dataAccess)
+	app.taskImportUsecase = usecase.NewTaskImport(repos.Task, repos.TaskTag, dataAccess)
+	app.taskExportUsecase = usecase.NewTaskExport(repos.Task, repos.TaskTag, dataAccess)
+	app.taskUsecase = usecase.NewTask(repos.Task, repos.TaskTag, repos.Episode, repos.TaskVersion, dataAccess)
+	app.taskVersionUsecase = usecase.NewTaskVersion(repos.TaskVersion, repos.Task, repos.SubTask, repos.Episode, dataAccess)
+	app.subtaskUsecase = usecase.NewSubTask(repos.SubTask, repos.Task, repos.TaskVersion, dataAccess)
 	app.episodeUsecase = usecase.NewEpisode(usecase.EpisodeDependencies{
 		Repository:               repos.Episode,
 		GradeRepository:          repos.EpisodeGrade,
@@ -141,20 +143,19 @@ func newApplication(ctx context.Context) (*application, error) {
 		TaskRepository:           repos.Task,
 		LocationRepository:       repos.Location,
 		SiteRepository:           repos.Site,
-		DB:                       db,
-		TxRunner:                 txRunner,
+		DataAccess:               dataAccess,
 		EventBus:                 app.episodeBus,
 		RobotEventBus:            app.robotEpisodeBus,
 		ListEventBus:             app.episodeListBus,
 	})
-	app.episodeGradeUsecase = usecase.NewEpisodeGrade(repos.EpisodeGrade, db)
-	app.episodeExportUsecase = usecase.NewEpisodeExport(repos.Episode, db)
-	app.operatorYieldExportUsecase = usecase.NewOperatorYieldExport(repos.OperatorYield, db, logger)
-	app.episodeSubTaskUsecase = usecase.NewEpisodeSubTask(repos.Episode, repos.EpisodeSubTask, db, txRunner, app.episodeBus, app.robotEpisodeBus, app.episodeListBus)
-	app.episodeExecutionUsecase = usecase.NewEpisodeExecution(repos.Episode, repos.EpisodeSubTask, repos.EpisodeSubTaskExecution, db, txRunner, app.episodeBus, app.robotEpisodeBus, app.episodeListBus)
-	app.fleetUsecase = usecase.NewFleet(repos.Fleet, db)
+	app.episodeGradeUsecase = usecase.NewEpisodeGrade(repos.EpisodeGrade, dataAccess)
+	app.episodeExportUsecase = usecase.NewEpisodeExport(repos.Episode, dataAccess)
+	app.operatorYieldExportUsecase = usecase.NewOperatorYieldExport(repos.OperatorYield, dataAccess, logger)
+	app.episodeSubTaskUsecase = usecase.NewEpisodeSubTask(repos.Episode, repos.EpisodeSubTask, dataAccess, app.episodeBus, app.robotEpisodeBus, app.episodeListBus)
+	app.episodeExecutionUsecase = usecase.NewEpisodeExecution(repos.Episode, repos.EpisodeSubTask, repos.EpisodeSubTaskExecution, dataAccess, app.episodeBus, app.robotEpisodeBus, app.episodeListBus)
+	app.fleetUsecase = usecase.NewFleet(repos.Fleet, dataAccess)
 	app.robotOperatorUsecase = usecase.NewRobotOperator(repos.RobotOperator)
-	app.apiKeyUsecase = usecase.NewAPIKey(repos.APIKey, repos.User, repos.Robot, db, logger)
+	app.apiKeyUsecase = usecase.NewAPIKey(repos.APIKey, repos.User, repos.Robot, dataAccess, logger)
 
 	return app, nil
 }

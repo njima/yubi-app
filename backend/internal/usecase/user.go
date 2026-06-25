@@ -46,8 +46,7 @@ type user struct {
 	userRepo         repository.User
 	userLocationRepo repository.UserLocation
 	userSiteRepo     repository.UserSite
-	db               repository.DBConn
-	tx               repository.TxRunner
+	data             repository.DataAccess
 	logger           zerolog.Logger
 }
 
@@ -55,22 +54,20 @@ func NewUser(
 	userRepo repository.User,
 	userLocationRepo repository.UserLocation,
 	userSiteRepo repository.UserSite,
-	db repository.DBConn,
-	txRunner repository.TxRunner,
+	data repository.DataAccess,
 	logger zerolog.Logger,
 ) *user {
 	return &user{
 		userRepo:         userRepo,
 		userLocationRepo: userLocationRepo,
 		userSiteRepo:     userSiteRepo,
-		db:               db,
-		tx:               txRunner,
+		data:             data,
 		logger:           logger,
 	}
 }
 
 func (u *user) Create(ctx context.Context, input CreateInput) (model.User, error) {
-	exists, err := u.userRepo.ExistsByEmail(ctx, u.db, input.Email)
+	exists, err := u.userRepo.ExistsByEmail(ctx, u.data.Conn(), input.Email)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -84,16 +81,16 @@ func (u *user) Create(ctx context.Context, input CreateInput) (model.User, error
 	}
 
 	var cu model.User
-	if err := u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
+	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		var err error
-		cu, err = u.userRepo.Create(ctx, tx, nu)
+		cu, err = u.userRepo.Create(ctx, txData.Conn(), nu)
 		if err != nil {
 			return err
 		}
-		if err := u.userLocationRepo.SetUserLocations(ctx, tx, cu.IDNatural, cu.OrganizationID, input.LocationIDs); err != nil {
+		if err := u.userLocationRepo.SetUserLocations(ctx, txData.Conn(), cu.IDNatural, cu.OrganizationID, input.LocationIDs); err != nil {
 			return err
 		}
-		return u.userSiteRepo.SetUserSites(ctx, tx, cu.IDNatural, cu.OrganizationID, input.SiteIDs)
+		return u.userSiteRepo.SetUserSites(ctx, txData.Conn(), cu.IDNatural, cu.OrganizationID, input.SiteIDs)
 	}); err != nil {
 		return model.User{}, err
 	}
@@ -102,7 +99,7 @@ func (u *user) Create(ctx context.Context, input CreateInput) (model.User, error
 }
 
 func (u *user) Update(ctx context.Context, input UserUpdateInput) (model.User, error) {
-	existing, err := u.userRepo.GetByNaturalID(ctx, u.db, input.UserID)
+	existing, err := u.userRepo.GetByNaturalID(ctx, u.data.Conn(), input.UserID)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -126,7 +123,7 @@ func (u *user) Update(ctx context.Context, input UserUpdateInput) (model.User, e
 		return existing, nil
 	}
 
-	updatedUser, err := u.userRepo.Update(ctx, u.db, existing)
+	updatedUser, err := u.userRepo.Update(ctx, u.data.Conn(), existing)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -135,37 +132,37 @@ func (u *user) Update(ctx context.Context, input UserUpdateInput) (model.User, e
 }
 
 func (u *user) SetLocations(ctx context.Context, userID string, locationIDs []string) (model.User, error) {
-	existing, err := u.userRepo.GetByNaturalID(ctx, u.db, userID)
+	existing, err := u.userRepo.GetByNaturalID(ctx, u.data.Conn(), userID)
 	if err != nil {
 		return model.User{}, err
 	}
 
-	if err := u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		return u.userLocationRepo.SetUserLocations(ctx, tx, existing.IDNatural, existing.OrganizationID, locationIDs)
+	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		return u.userLocationRepo.SetUserLocations(ctx, txData.Conn(), existing.IDNatural, existing.OrganizationID, locationIDs)
 	}); err != nil {
 		return model.User{}, err
 	}
 
-	return u.userRepo.GetByNaturalID(ctx, u.db, userID)
+	return u.userRepo.GetByNaturalID(ctx, u.data.Conn(), userID)
 }
 
 func (u *user) SetSites(ctx context.Context, userID string, siteIDs []string) (model.User, error) {
-	existing, err := u.userRepo.GetByNaturalID(ctx, u.db, userID)
+	existing, err := u.userRepo.GetByNaturalID(ctx, u.data.Conn(), userID)
 	if err != nil {
 		return model.User{}, err
 	}
 
-	if err := u.tx.RunInTx(ctx, func(ctx context.Context, tx repository.DBConn) error {
-		return u.userSiteRepo.SetUserSites(ctx, tx, existing.IDNatural, existing.OrganizationID, siteIDs)
+	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		return u.userSiteRepo.SetUserSites(ctx, txData.Conn(), existing.IDNatural, existing.OrganizationID, siteIDs)
 	}); err != nil {
 		return model.User{}, err
 	}
 
-	return u.userRepo.GetByNaturalID(ctx, u.db, userID)
+	return u.userRepo.GetByNaturalID(ctx, u.data.Conn(), userID)
 }
 
 func (u *user) UpdateRole(ctx context.Context, input UserRoleUpdateInput) (model.User, error) {
-	user, err := u.userRepo.GetByNaturalID(ctx, u.db, input.UserID)
+	user, err := u.userRepo.GetByNaturalID(ctx, u.data.Conn(), input.UserID)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -174,7 +171,7 @@ func (u *user) UpdateRole(ctx context.Context, input UserRoleUpdateInput) (model
 		return model.User{}, err
 	}
 
-	updatedUser, err := u.userRepo.UpdateRole(ctx, u.db, user.IDNatural, user.Role)
+	updatedUser, err := u.userRepo.UpdateRole(ctx, u.data.Conn(), user.IDNatural, user.Role)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -183,7 +180,7 @@ func (u *user) UpdateRole(ctx context.Context, input UserRoleUpdateInput) (model
 }
 
 func (u *user) GetByNaturalID(ctx context.Context, idNatural string) (model.User, error) {
-	user, err := u.userRepo.GetByNaturalID(ctx, u.db, idNatural)
+	user, err := u.userRepo.GetByNaturalID(ctx, u.data.Conn(), idNatural)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -198,7 +195,7 @@ func (u *user) List(ctx context.Context, filter repository.UserListFilter, page,
 		page = 1
 	}
 	offset := (page - 1) * limit
-	users, total, err := u.userRepo.List(ctx, u.db, filter, limit, offset)
+	users, total, err := u.userRepo.List(ctx, u.data.Conn(), filter, limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -206,7 +203,7 @@ func (u *user) List(ctx context.Context, filter repository.UserListFilter, page,
 }
 
 func (u *user) Delete(ctx context.Context, idNatural string) error {
-	if err := u.userRepo.Delete(ctx, u.db, idNatural); err != nil {
+	if err := u.userRepo.Delete(ctx, u.data.Conn(), idNatural); err != nil {
 		return err
 	}
 	return nil

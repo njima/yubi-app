@@ -17,15 +17,15 @@ type FleetUsecase interface {
 
 type fleetUsecase struct {
 	repo repository.Fleet
-	db   repository.DBConn
+	data repository.DataAccess
 }
 
-func NewFleet(repo repository.Fleet, db repository.DBConn) *fleetUsecase {
-	return &fleetUsecase{repo: repo, db: db}
+func NewFleet(repo repository.Fleet, data repository.DataAccess) *fleetUsecase {
+	return &fleetUsecase{repo: repo, data: data}
 }
 
 func (f *fleetUsecase) GetSummary(ctx context.Context) ([]model.FleetSiteSummary, error) {
-	rows, err := f.repo.GetSummary(ctx, f.db)
+	rows, err := f.repo.GetSummary(ctx, f.data.Conn())
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +36,12 @@ func (f *fleetUsecase) GetSummary(ctx context.Context) ([]model.FleetSiteSummary
 func (f *fleetUsecase) GetStats(ctx context.Context, from, to time.Time) ([]model.FleetSiteStats, error) {
 	filter := repository.FleetStatsFilter{From: from, To: to}
 
-	rows, err := f.repo.GetStats(ctx, f.db, filter)
+	rows, err := f.repo.GetStats(ctx, f.data.Conn(), filter)
 	if err != nil {
 		return nil, err
 	}
 
-	uptimeRows, err := f.repo.GetUptimeStats(ctx, f.db, filter)
+	uptimeRows, err := f.repo.GetUptimeStats(ctx, f.data.Conn(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (f *fleetUsecase) GetStats(ctx context.Context, from, to time.Time) ([]mode
 }
 
 func (f *fleetUsecase) GetCollectionTrend(ctx context.Context, granularity model.FleetTrendGranularity, from, to time.Time) (model.CollectionTrend, error) {
-	rows, err := f.repo.GetCollectionTrend(ctx, f.db, repository.FleetTrendFilter{
+	rows, err := f.repo.GetCollectionTrend(ctx, f.data.Conn(), repository.FleetTrendFilter{
 		Granularity: granularity,
 		From:        from,
 		To:          to,

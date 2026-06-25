@@ -12,7 +12,7 @@ import (
 )
 
 func newTestUsecase(repo repository.OperatorYield) *operatorYieldExport {
-	return NewOperatorYieldExport(repo, nil, zerolog.Nop())
+	return NewOperatorYieldExport(repo, repository.DataAccess{}, zerolog.Nop())
 }
 
 type stubOperatorYieldRepo struct {

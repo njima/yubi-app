@@ -20,12 +20,12 @@ type OperatorYieldExportUsecase interface {
 
 type operatorYieldExport struct {
 	repo   repository.OperatorYield
-	db     repository.DBConn
+	data   repository.DataAccess
 	logger zerolog.Logger
 }
 
-func NewOperatorYieldExport(repo repository.OperatorYield, db repository.DBConn, logger zerolog.Logger) *operatorYieldExport {
-	return &operatorYieldExport{repo: repo, db: db, logger: logger}
+func NewOperatorYieldExport(repo repository.OperatorYield, data repository.DataAccess, logger zerolog.Logger) *operatorYieldExport {
+	return &operatorYieldExport{repo: repo, data: data, logger: logger}
 }
 
 var operatorYieldExportHeaders = []string{
@@ -58,7 +58,7 @@ func (u *operatorYieldExport) Export(ctx context.Context, filter repository.Oper
 	}
 
 	start := time.Now()
-	rows, err := u.repo.Export(ctx, u.db, filter)
+	rows, err := u.repo.Export(ctx, u.data.Conn(), filter)
 	if err != nil {
 		return nil, err
 	}

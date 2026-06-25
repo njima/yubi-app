@@ -61,7 +61,7 @@ type apiKey struct {
 	repo      repository.APIKey
 	userRepo  repository.User
 	robotRepo repository.Robot
-	db        repository.DBConn
+	data      repository.DataAccess
 	logger    zerolog.Logger
 
 	mu            sync.Mutex
@@ -74,14 +74,14 @@ func NewAPIKey(
 	repo repository.APIKey,
 	userRepo repository.User,
 	robotRepo repository.Robot,
-	db repository.DBConn,
+	data repository.DataAccess,
 	logger zerolog.Logger,
 ) *apiKey {
 	return &apiKey{
 		repo:          repo,
 		userRepo:      userRepo,
 		robotRepo:     robotRepo,
-		db:            db,
+		data:          data,
 		logger:        logger,
 		lastUsedFlush: make(map[int64]time.Time),
 		flushInterval: lastUsedFlushInterval,
@@ -95,7 +95,7 @@ func (a *apiKey) Authenticate(ctx context.Context, rawKey string) (APIKeyAuthRes
 	}
 
 	hash := model.HashAPIKey(rawKey)
-	k, err := a.repo.FindActiveByHash(ctx, a.db, hash, a.now())
+	k, err := a.repo.FindActiveByHash(ctx, a.data.Conn(), hash, a.now())
 	if err != nil {
 		// Log the failure with the non-sensitive hint so an operator can
 		// correlate 401s with the key actually in flight, without leaking the
@@ -166,7 +166,7 @@ func (a *apiKey) MarkUsed(apiKeyID int64) {
 		// Detach from request context: this runs after the response is sent.
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		if err := a.repo.TouchLastUsedAt(ctx, a.db, apiKeyID, now); err != nil {
+		if err := a.repo.TouchLastUsedAt(ctx, a.data.Conn(), apiKeyID, now); err != nil {
 			a.logger.Warn().Err(err).Int64("api_key_id", apiKeyID).Msg("failed to flush last_used_at")
 		}
 	}()
@@ -180,7 +180,7 @@ func (a *apiKey) List(ctx context.Context, filter repository.APIKeyListFilter, p
 	if page > 1 {
 		offset = (page - 1) * limit
 	}
-	return a.repo.List(ctx, a.db, filter, limit, offset)
+	return a.repo.List(ctx, a.data.Conn(), filter, limit, offset)
 }
 
 func (a *apiKey) Create(ctx context.Context, input APIKeyCreateInput) (APIKeyCreateResult, error) {
@@ -202,7 +202,7 @@ func (a *apiKey) Create(ctx context.Context, input APIKeyCreateInput) (APIKeyCre
 	}
 	// Verify the robot exists in the caller's organization. The OrgScoped hook
 	// filters by org automatically, so a not-found error here means cross-org access too.
-	if _, err := a.robotRepo.GetByID(ctx, a.db, input.RobotID); err != nil {
+	if _, err := a.robotRepo.GetByID(ctx, a.data.Conn(), input.RobotID); err != nil {
 		return APIKeyCreateResult{}, err
 	}
 
@@ -218,13 +218,13 @@ func (a *apiKey) Create(ctx context.Context, input APIKeyCreateInput) (APIKeyCre
 		return APIKeyCreateResult{}, err
 	}
 
-	if _, err := a.repo.Create(ctx, a.db, domainKey); err != nil {
+	if _, err := a.repo.Create(ctx, a.data.Conn(), domainKey); err != nil {
 		return APIKeyCreateResult{}, err
 	}
 
 	// Reload with relations so user_name / robot_name are populated for the
 	// response. Create itself does not load relations.
-	created, err := a.repo.GetByNaturalID(ctx, a.db, domainKey.IDNatural)
+	created, err := a.repo.GetByNaturalID(ctx, a.data.Conn(), domainKey.IDNatural)
 	if err != nil {
 		return APIKeyCreateResult{}, err
 	}
@@ -234,11 +234,11 @@ func (a *apiKey) Create(ctx context.Context, input APIKeyCreateInput) (APIKeyCre
 }
 
 func (a *apiKey) Get(ctx context.Context, idNatural string) (model.APIKey, error) {
-	return a.repo.GetByNaturalID(ctx, a.db, idNatural)
+	return a.repo.GetByNaturalID(ctx, a.data.Conn(), idNatural)
 }
 
 func (a *apiKey) Update(ctx context.Context, input APIKeyUpdateInput) (model.APIKey, error) {
-	existing, err := a.repo.GetByNaturalID(ctx, a.db, input.IDNatural)
+	existing, err := a.repo.GetByNaturalID(ctx, a.data.Conn(), input.IDNatural)
 	if err != nil {
 		return model.APIKey{}, err
 	}
@@ -254,10 +254,10 @@ func (a *apiKey) Update(ctx context.Context, input APIKeyUpdateInput) (model.API
 		existing.SetExpiresAt(input.ExpiresAt)
 	}
 
-	return a.repo.Update(ctx, a.db, existing)
+	return a.repo.Update(ctx, a.data.Conn(), existing)
 }
 
 func (a *apiKey) Revoke(ctx context.Context, idNatural string) error {
-	_, err := a.repo.Revoke(ctx, a.db, idNatural, a.now())
+	_, err := a.repo.Revoke(ctx, a.data.Conn(), idNatural, a.now())
 	return err
 }

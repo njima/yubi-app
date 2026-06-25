@@ -47,11 +47,11 @@ type robot struct {
 	repo            repository.Robot
 	robotStatusRepo repository.RobotStatusRepository
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository
-	db              repository.DBConn
+	data            repository.DataAccess
 }
 
-func NewRobot(repo repository.Robot, robotStatusRepo repository.RobotStatusRepository, uptimeDeltaRepo repository.RobotUptimeDeltaRepository, db repository.DBConn) *robot {
-	return &robot{repo: repo, robotStatusRepo: robotStatusRepo, uptimeDeltaRepo: uptimeDeltaRepo, db: db}
+func NewRobot(repo repository.Robot, robotStatusRepo repository.RobotStatusRepository, uptimeDeltaRepo repository.RobotUptimeDeltaRepository, data repository.DataAccess) *robot {
+	return &robot{repo: repo, robotStatusRepo: robotStatusRepo, uptimeDeltaRepo: uptimeDeltaRepo, data: data}
 }
 
 func (r *robot) Create(ctx context.Context, input RobotCreateInput) (model.Robot, error) {
@@ -64,7 +64,7 @@ func (r *robot) Create(ctx context.Context, input RobotCreateInput) (model.Robot
 		ro.SetLeaderStatus(input.LeaderStatus)
 	}
 
-	cro, err := r.repo.Create(ctx, r.db, ro)
+	cro, err := r.repo.Create(ctx, r.data.Conn(), ro)
 	if err != nil {
 		return model.Robot{}, err
 	}
@@ -73,7 +73,7 @@ func (r *robot) Create(ctx context.Context, input RobotCreateInput) (model.Robot
 }
 
 func (r *robot) GetByID(ctx context.Context, id string) (model.Robot, error) {
-	rob, err := r.repo.GetByID(ctx, r.db, id)
+	rob, err := r.repo.GetByID(ctx, r.data.Conn(), id)
 	if err != nil {
 		return model.Robot{}, err
 	}
@@ -115,7 +115,7 @@ func (r *robot) List(ctx context.Context, filter repository.RobotListFilter, pag
 		}
 	}
 
-	robs, total, err := r.repo.List(ctx, r.db, dbFilter, limit, offset)
+	robs, total, err := r.repo.List(ctx, r.data.Conn(), dbFilter, limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -133,7 +133,7 @@ func (r *robot) List(ctx context.Context, filter repository.RobotListFilter, pag
 }
 
 func (r *robot) Update(ctx context.Context, input RobotUpdateInput) (model.Robot, error) {
-	rob, err := r.repo.GetByID(ctx, r.db, input.ID)
+	rob, err := r.repo.GetByID(ctx, r.data.Conn(), input.ID)
 	if err != nil {
 		return model.Robot{}, err
 	}
@@ -143,7 +143,7 @@ func (r *robot) Update(ctx context.Context, input RobotUpdateInput) (model.Robot
 		return model.Robot{}, err
 	}
 
-	urob, err := r.repo.Update(ctx, r.db, rob)
+	urob, err := r.repo.Update(ctx, r.data.Conn(), rob)
 	if err != nil {
 		return model.Robot{}, err
 	}
@@ -252,18 +252,18 @@ func (r *robot) ListTypes(ctx context.Context, filter repository.RobotTypeFilter
 			filter.ExcludeOnline = true
 		}
 	}
-	return r.repo.ListTypes(ctx, r.db, filter)
+	return r.repo.ListTypes(ctx, r.data.Conn(), filter)
 }
 
 func (r *robot) Delete(ctx context.Context, id string) error {
-	rob, err := r.repo.GetByID(ctx, r.db, id)
+	rob, err := r.repo.GetByID(ctx, r.data.Conn(), id)
 	if err != nil {
 		return err
 	}
 	if rob.Status == model.RobotStatusBusy {
 		return apperror.NewError(apperror.NewMessage(apperror.CodeConflict, "cannot delete robot while it is Busy"))
 	}
-	if err := r.repo.Delete(ctx, r.db, id); err != nil {
+	if err := r.repo.Delete(ctx, r.data.Conn(), id); err != nil {
 		return err
 	}
 	// Clean up Redis keys for the deleted robot. Best-effort: a failure here leaves
