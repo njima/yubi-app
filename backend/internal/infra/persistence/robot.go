@@ -129,39 +129,7 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 		Limit(limit).
 		Offset(offset)
 
-	if filter.SiteID != nil && *filter.SiteID != "" {
-		sel = sel.Where(`EXISTS (
-			SELECT 1 FROM location l
-			WHERE l.id_natural = r.location_id AND l.site_id = ?
-		)`, *filter.SiteID)
-	}
-	if filter.LocationID != nil {
-		sel = sel.Where("r.location_id = ?", *filter.LocationID)
-	}
-	if filter.Status != nil {
-		sel = sel.Where("r.status = ?", *filter.Status)
-	}
-	if filter.RobotType != nil {
-		sel = sel.Where("r.robot_type = ?", *filter.RobotType)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		sel = sel.Where("r.name ILIKE ?", "%"+escaped+"%")
-	}
-	if filter.OnlineRobotIDs != nil {
-		ids := *filter.OnlineRobotIDs
-		sel = sel.Where("r.status IN (?)", bun.In([]model.RobotStatus{
-			model.RobotStatusReady, model.RobotStatusOnline,
-		}))
-		if filter.ExcludeOnline {
-			if len(ids) > 0 {
-				sel = sel.Where("r.id_natural NOT IN (?)", bun.In(ids))
-			}
-		} else {
-			sel = sel.Where("r.id_natural IN (?)", bun.In(ids))
-		}
-	}
-
+	sel = applyRobotListFilters(sel, filter)
 	sel = applyRobotSortOrder(sel, filter.SortBy, filter.SortOrder)
 
 	if err := sel.Scan(ctx); err != nil {
@@ -173,38 +141,7 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 		Model((*entity.Robot)(nil)).
 		ColumnExpr("COUNT(*)")
 
-	if filter.SiteID != nil && *filter.SiteID != "" {
-		countSel = countSel.Where(`EXISTS (
-			SELECT 1 FROM location l
-			WHERE l.id_natural = r.location_id AND l.site_id = ?
-		)`, *filter.SiteID)
-	}
-	if filter.LocationID != nil {
-		countSel = countSel.Where("r.location_id = ?", *filter.LocationID)
-	}
-	if filter.Status != nil {
-		countSel = countSel.Where("r.status = ?", *filter.Status)
-	}
-	if filter.RobotType != nil {
-		countSel = countSel.Where("r.robot_type = ?", *filter.RobotType)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		countSel = countSel.Where("r.name ILIKE ?", "%"+escaped+"%")
-	}
-	if filter.OnlineRobotIDs != nil {
-		ids := *filter.OnlineRobotIDs
-		countSel = countSel.Where("r.status IN (?)", bun.In([]model.RobotStatus{
-			model.RobotStatusReady, model.RobotStatusOnline,
-		}))
-		if filter.ExcludeOnline {
-			if len(ids) > 0 {
-				countSel = countSel.Where("r.id_natural NOT IN (?)", bun.In(ids))
-			}
-		} else {
-			countSel = countSel.Where("r.id_natural IN (?)", bun.In(ids))
-		}
-	}
+	countSel = applyRobotListFilters(countSel, filter)
 
 	if err := countSel.Scan(ctx, &total); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to count robots: %v", err))

@@ -130,12 +130,7 @@ func (s *subtask) List(ctx context.Context, conn repository.DBConn, filter repos
 		Limit(limit).
 		Offset(offset)
 
-	// TaskVersionID takes precedence over TaskID
-	if filter.TaskVersionID != nil && *filter.TaskVersionID != "" {
-		sel = sel.Where("task_version_id = ?", *filter.TaskVersionID)
-	} else if filter.TaskID != nil && *filter.TaskID != "" {
-		sel = sel.Where("task_version_id IN (SELECT id_natural FROM task_version WHERE task_id = ?)", *filter.TaskID)
-	}
+	sel = applySubTaskListFilters(sel, filter)
 
 	if err := sel.Scan(ctx); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to list subtasks: %v", err))
@@ -143,12 +138,7 @@ func (s *subtask) List(ctx context.Context, conn repository.DBConn, filter repos
 
 	var total int
 	countSel := conn.NewSelect().Model((*entity.SubTask)(nil)).ColumnExpr("COUNT(*)")
-	// TaskVersionID takes precedence over TaskID for count as well
-	if filter.TaskVersionID != nil && *filter.TaskVersionID != "" {
-		countSel = countSel.Where("task_version_id = ?", *filter.TaskVersionID)
-	} else if filter.TaskID != nil && *filter.TaskID != "" {
-		countSel = countSel.Where("task_version_id IN (SELECT id_natural FROM task_version WHERE task_id = ?)", *filter.TaskID)
-	}
+	countSel = applySubTaskListFilters(countSel, filter)
 	if err := countSel.Scan(ctx, &total); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to count subtasks: %v", err))
 	}
