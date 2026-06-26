@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/rs/zerolog"
@@ -24,9 +25,41 @@ import (
 const robotSessionThreshold = 2 * time.Minute
 
 type RobotDeviceUsecase interface {
-	UpdateRobotStatus(ctx context.Context, status repository.RobotStatus) error
-	GetRobotStatus(ctx context.Context, robotID string) (*repository.RobotStatus, error)
+	UpdateRobotStatus(ctx context.Context, status RobotDeviceStatus) error
+	GetRobotStatus(ctx context.Context, robotID string) (*RobotDeviceStatus, error)
 	RobotExists(ctx context.Context, robotID string) (bool, error)
+}
+
+type RobotDeviceStatus struct {
+	RobotID    string
+	RobotType  string
+	ReportedAt time.Time
+	Status     RobotDeviceStatusDetail
+}
+
+type RobotDeviceStatusDetail struct {
+	Battery        RobotBatteryStatus
+	Connection     RobotConnectionStatus
+	UptimeSec      float64
+	Metrics        []RobotMetric
+	GateConditions *model.GateConditionStatus
+}
+
+type RobotBatteryStatus struct {
+	Pct      int
+	Charging bool
+}
+
+type RobotConnectionStatus struct {
+	QualityPct int
+}
+
+type RobotMetric struct {
+	Name   string
+	Type   string
+	Unit   string
+	Value  any
+	Labels map[string]string
 }
 
 type robotDevice struct {
@@ -56,10 +89,11 @@ func NewRobotDevice(
 	}
 }
 
-func (r *robotDevice) UpdateRobotStatus(ctx context.Context, status repository.RobotStatus) error {
-	r.accumulateUptimeDelta(ctx, status)
+func (r *robotDevice) UpdateRobotStatus(ctx context.Context, status RobotDeviceStatus) error {
+	repoStatus := status.repositoryStatus()
+	r.accumulateUptimeDelta(ctx, repoStatus)
 
-	if err := r.robotStatusRepo.Save(ctx, status); err != nil {
+	if err := r.robotStatusRepo.Save(ctx, repoStatus); err != nil {
 		return err
 	}
 	r.statusBus.Notify(status.RobotID)
@@ -90,8 +124,12 @@ func (r *robotDevice) accumulateUptimeDelta(ctx context.Context, status reposito
 	}
 }
 
-func (r *robotDevice) GetRobotStatus(ctx context.Context, robotID string) (*repository.RobotStatus, error) {
-	return r.robotStatusRepo.GetByRobotID(ctx, robotID)
+func (r *robotDevice) GetRobotStatus(ctx context.Context, robotID string) (*RobotDeviceStatus, error) {
+	status, err := r.robotStatusRepo.GetByRobotID(ctx, robotID)
+	if err != nil || status == nil {
+		return nil, err
+	}
+	return robotDeviceStatus(status), nil
 }
 
 func (r *robotDevice) RobotExists(ctx context.Context, robotID string) (bool, error) {
@@ -103,4 +141,66 @@ func (r *robotDevice) RobotExists(ctx context.Context, robotID string) (bool, er
 		return false, err
 	}
 	return robot.ID != 0, nil
+}
+
+func (s RobotDeviceStatus) repositoryStatus() repository.RobotStatus {
+	metrics := make([]repository.RobotMetric, len(s.Status.Metrics))
+	for i, metric := range s.Status.Metrics {
+		metrics[i] = repository.RobotMetric{
+			Name:   metric.Name,
+			Type:   metric.Type,
+			Unit:   metric.Unit,
+			Value:  metric.Value,
+			Labels: metric.Labels,
+		}
+	}
+
+	return repository.RobotStatus{
+		RobotID:    s.RobotID,
+		RobotType:  s.RobotType,
+		ReportedAt: s.ReportedAt,
+		Status: repository.RobotStatusDetail{
+			Battery: repository.BatteryStatus{
+				Pct:      s.Status.Battery.Pct,
+				Charging: s.Status.Battery.Charging,
+			},
+			Connection: repository.ConnectionStatus{
+				QualityPct: s.Status.Connection.QualityPct,
+			},
+			UptimeSec:      s.Status.UptimeSec,
+			Metrics:        metrics,
+			GateConditions: s.Status.GateConditions,
+		},
+	}
+}
+
+func robotDeviceStatus(status *repository.RobotStatus) *RobotDeviceStatus {
+	metrics := make([]RobotMetric, len(status.Status.Metrics))
+	for i, metric := range status.Status.Metrics {
+		metrics[i] = RobotMetric{
+			Name:   metric.Name,
+			Type:   metric.Type,
+			Unit:   metric.Unit,
+			Value:  metric.Value,
+			Labels: metric.Labels,
+		}
+	}
+
+	return &RobotDeviceStatus{
+		RobotID:    status.RobotID,
+		RobotType:  status.RobotType,
+		ReportedAt: status.ReportedAt,
+		Status: RobotDeviceStatusDetail{
+			Battery: RobotBatteryStatus{
+				Pct:      status.Status.Battery.Pct,
+				Charging: status.Status.Battery.Charging,
+			},
+			Connection: RobotConnectionStatus{
+				QualityPct: status.Status.Connection.QualityPct,
+			},
+			UptimeSec:      status.Status.UptimeSec,
+			Metrics:        metrics,
+			GateConditions: status.Status.GateConditions,
+		},
+	}
 }
