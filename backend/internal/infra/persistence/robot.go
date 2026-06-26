@@ -124,31 +124,11 @@ func (r *robot) ListTypes(ctx context.Context, conn repository.Conn, filter repo
 		ColumnExpr("DISTINCT robot_type").
 		Where("robot_type != ''")
 
-	if filter.SiteID != nil && *filter.SiteID != "" {
-		sel = sel.Where(`EXISTS (
-			SELECT 1 FROM location l
-			WHERE l.id_natural = r.location_id AND l.site_id = ?
-		)`, *filter.SiteID)
-	}
-	if filter.LocationID != nil {
-		sel = sel.Where("r.location_id = ?", *filter.LocationID)
-	}
+	sel = applyRobotScopeFilters(sel, filter.SiteID, filter.LocationID)
 	if filter.Status != nil {
 		sel = sel.Where("r.status = ?", *filter.Status)
 	}
-	if filter.OnlineRobotIDs != nil {
-		ids := *filter.OnlineRobotIDs
-		sel = sel.Where("r.status IN (?)", bun.In([]model.RobotStatus{
-			model.RobotStatusReady, model.RobotStatusOnline,
-		}))
-		if filter.ExcludeOnline {
-			if len(ids) > 0 {
-				sel = sel.Where("r.id_natural NOT IN (?)", bun.In(ids))
-			}
-		} else {
-			sel = sel.Where("r.id_natural IN (?)", bun.In(ids))
-		}
-	}
+	sel = applyRobotConnectionStateFilter(sel, filter.OnlineRobotIDs, filter.ExcludeOnline)
 
 	sel = sel.OrderExpr("robot_type ASC")
 

@@ -14,22 +14,19 @@ backend/
 │   ├── aggregate-episode-stats/ # stats aggregation batch
 │   └── write-robot-status-metrics/ # metrics batch
 ├── internal/
-│   ├── apperror/               # application error definitions
-│   ├── authz/                  # Role-based access control (RBAC)
-│   ├── ccontext/               # request context helpers
-│   ├── config/                 # configuration management
-│   ├── database/               # schema, migrations, entities, seeders
 │   ├── domain/                 # domain models and business rules
-│   ├── event/                  # real-time updates 用 event bus (SSE)
-│   ├── gateway/                # repository implementations
+│   │   ├── authz/              # authorization policy
+│   │   └── model/              # domain entities and status policies
 │   ├── gen/                    # generated code (OpenAPI)
-│   ├── interfaces/             # HTTP controllers and middleware
-│   ├── log/                    # logging utilities
-│   ├── pagination/             # pagination helpers
-│   ├── redis/                  # Redis client
+│   ├── infra/                  # external adapters
+│   │   ├── cache/              # Redis-backed adapters
+│   │   ├── database/           # Bun connection, entities, schema, migrations
+│   │   ├── persistence/        # repository implementations
+│   │   └── storage/            # S3-backed adapters
+│   ├── interfaces/             # HTTP controllers, middleware, SSE handlers
+│   ├── platform/               # runtime config and logging
 │   ├── repository/             # repository interfaces
-│   ├── s3/                     # S3 client
-│   ├── stack/                  # stack trace utilities
+│   ├── shared/                 # errors, request context などの cross-cutting helpers
 │   └── usecase/                # application business logic
 ├── openapi.yaml                # oapi-codegen configuration
 ├── atlas.hcl                   # Atlas migration configuration
@@ -49,10 +46,10 @@ interfaces/ (controllers, middleware)
 usecase/ (business logic)
     │
     ▼
-repository/ (interfaces)  ←──  gateway/ (implementations)
+repository/ (interfaces)  ←──  infra/persistence, infra/cache, infra/storage
     │
     ▼
-database/ (entities, ORM)
+infra/database (entities, ORM)
 ```
 
 | Layer | 説明 |
@@ -60,13 +57,18 @@ database/ (entities, ORM)
 | **domain** | 中核となる business entities と validation rules |
 | **usecase** | application-specific business logic。domain objects を orchestrate する |
 | **repository** | data access interface definitions (ports) |
-| **gateway** | repository interfaces の concrete implementations (adapters) |
+| **infra** | repository interfaces の concrete implementations (adapters) |
 | **interfaces** | HTTP controllers, middleware, SSE handlers |
+| **platform** | runtime configuration と logging |
+| **shared** | business rules を持たない cross-cutting helpers |
 
 ### 基本方針
 
 - **Dependency direction**: outer layers が inner layers に依存し、逆方向には依存しない
 - **Domain models**: creation と validation には `Init*()` constructors、DB からの reconstruction には `New*()` を使う
+- **Status policy**: lifecycle/status の方針は domain model に置く。usecase は lifecycle state を直接変更せず、`Start`、`Finish`、`Cancel` などの helper を使う
+- **Usecase files**: 同じ usecase type を共有しつつ、episode lifecycle と recording/stat lookup のように workflow 単位でファイルを分ける
+- **HTTP stream presenters**: `interfaces/http/handler` 配下に置き、OpenAPI response construction を stream control flow から分離する
 - **Dual ID system**: `ID` (int64, internal PK) + `IDNatural` (UUID, API に公開)
 - **Organization scoping**: `OrgScoped` entity hook が request context の `organization_id` で queries を自動 filter する
 
@@ -105,10 +107,10 @@ production robot deployments では API key authentication を推奨します。
 
 ### Migration Workflow
 
-1. `internal/database/entity/` の entity を編集する
+1. `internal/infra/database/entity/` の entity を編集する
 2. `make be-schema-gen` — entities から `schema.up.sql` を生成
 3. `make be-migrate-diff NAME=description` — migration SQL を生成
-4. `internal/database/migrate/` の SQL を確認する
+4. `internal/infra/database/migrate/` の SQL を確認する
 5. `make migrate` — migration を適用する
 
 ### 手動編集が必要な Migration

@@ -14,22 +14,19 @@ backend/
 │   ├── aggregate-episode-stats/ # Stats aggregation batch
 │   └── write-robot-status-metrics/ # Metrics batch
 ├── internal/
-│   ├── apperror/               # Application error definitions
-│   ├── authz/                  # Role-based access control (RBAC)
-│   ├── ccontext/               # Request context helpers
-│   ├── config/                 # Configuration management
-│   ├── database/               # Schema, migrations, entities, seeders
 │   ├── domain/                 # Domain models and business rules
-│   ├── event/                  # Event bus for real-time updates (SSE)
-│   ├── gateway/                # Repository implementations
+│   │   ├── authz/              # Authorization policy
+│   │   └── model/              # Domain entities and status policies
 │   ├── gen/                    # Generated code (OpenAPI)
-│   ├── interfaces/             # HTTP controllers and middleware
-│   ├── log/                    # Logging utilities
-│   ├── pagination/             # Pagination helpers
-│   ├── redis/                  # Redis client
+│   ├── infra/                  # External adapters
+│   │   ├── cache/              # Redis-backed adapters
+│   │   ├── database/           # Bun connection, entities, schema, migrations
+│   │   ├── persistence/        # Repository implementations
+│   │   └── storage/            # S3-backed adapters
+│   ├── interfaces/             # HTTP controllers, middleware, SSE handlers
+│   ├── platform/               # Runtime config and logging
 │   ├── repository/             # Repository interfaces
-│   ├── s3/                     # S3 client
-│   ├── stack/                  # Stack trace utilities
+│   ├── shared/                 # Cross-cutting helpers (errors, request context)
 │   └── usecase/                # Application business logic
 ├── openapi.yaml                # oapi-codegen configuration
 ├── atlas.hcl                   # Atlas migration configuration
@@ -49,10 +46,10 @@ interfaces/ (controllers, middleware)
 usecase/ (business logic)
     │
     ▼
-repository/ (interfaces)  ←──  gateway/ (implementations)
+repository/ (interfaces)  ←──  infra/persistence, infra/cache, infra/storage
     │
     ▼
-database/ (entities, ORM)
+infra/database (entities, ORM)
 ```
 
 | Layer | Description |
@@ -60,13 +57,18 @@ database/ (entities, ORM)
 | **domain** | Core business entities and validation rules |
 | **usecase** | Application-specific business logic, orchestrates domain objects |
 | **repository** | Data access interface definitions (ports) |
-| **gateway** | Concrete implementations of repository interfaces (adapters) |
+| **infra** | Concrete implementations of repository interfaces (adapters) |
 | **interfaces** | HTTP controllers, middleware, SSE handlers |
+| **platform** | Runtime configuration and logging |
+| **shared** | Cross-cutting helpers that do not own business rules |
 
 ### Key Principles
 
 - **Dependency direction**: Outer layers depend on inner layers, never the reverse
 - **Domain models** use `Init*()` constructors for creation with validation, `New*()` for reconstruction from DB
+- **Status policy** belongs in domain models; usecases should call lifecycle helpers such as `Start`, `Finish`, and `Cancel` instead of setting lifecycle state directly
+- **Usecase files** may be split by workflow (for example, episode lifecycle vs. recording/stat lookups) while sharing the same usecase type
+- **HTTP stream presenters** live under `interfaces/http/handler` and keep OpenAPI response construction out of stream control flow
 - **Dual ID system**: `ID` (int64, internal PK) + `IDNatural` (UUID, exposed via API)
 - **Organization scoping**: `OrgScoped` entity hook automatically filters queries by `organization_id` from request context
 
@@ -105,10 +107,10 @@ The `authz` middleware checks user role against operation permissions defined pe
 
 ### Migration Workflow
 
-1. Edit entity in `internal/database/entity/`
+1. Edit entity in `internal/infra/database/entity/`
 2. `make be-schema-gen` — generates `schema.up.sql` from entities
 3. `make be-migrate-diff NAME=description` — generates migration SQL
-4. Review SQL in `internal/database/migrate/`
+4. Review SQL in `internal/infra/database/migrate/`
 5. `make migrate` — apply migration
 
 ### Hand-edited Migrations
