@@ -548,6 +548,77 @@ func TestEpisode_SetStatus(t *testing.T) {
 	}
 }
 
+func TestEpisodeStatusPolicy(t *testing.T) {
+	tests := []struct {
+		name                 string
+		status               EpisodeStatus
+		wantTerminal         bool
+		wantSuccessfulFinish bool
+	}{
+		{
+			name:                 "ready is not terminal",
+			status:               EpisodeStatusReady,
+			wantTerminal:         false,
+			wantSuccessfulFinish: false,
+		},
+		{
+			name:                 "recording is not terminal",
+			status:               EpisodeStatusRecording,
+			wantTerminal:         false,
+			wantSuccessfulFinish: false,
+		},
+		{
+			name:                 "cancel is terminal but not successful",
+			status:               EpisodeStatusCancel,
+			wantTerminal:         true,
+			wantSuccessfulFinish: false,
+		},
+		{
+			name:                 "completed is terminal and successful",
+			status:               EpisodeStatusCompleted,
+			wantTerminal:         true,
+			wantSuccessfulFinish: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.status.IsTerminal(); got != tt.wantTerminal {
+				t.Errorf("EpisodeStatus.IsTerminal() = %v, want %v", got, tt.wantTerminal)
+			}
+			if got := tt.status.IsSuccessfulCompletion(); got != tt.wantSuccessfulFinish {
+				t.Errorf("EpisodeStatus.IsSuccessfulCompletion() = %v, want %v", got, tt.wantSuccessfulFinish)
+			}
+
+			ep := newEpisodeWithStatus(tt.status)
+			if got := ep.IsTerminal(); got != tt.wantTerminal {
+				t.Errorf("Episode.IsTerminal() = %v, want %v", got, tt.wantTerminal)
+			}
+			if got := ep.IsSuccessfulCompletion(); got != tt.wantSuccessfulFinish {
+				t.Errorf("Episode.IsSuccessfulCompletion() = %v, want %v", got, tt.wantSuccessfulFinish)
+			}
+		})
+	}
+}
+
+func TestEpisode_CanApplyStatusUpdate(t *testing.T) {
+	t.Run("allows no-op status update", func(t *testing.T) {
+		ep := newEpisodeWithStatus(EpisodeStatusRecording)
+
+		if err := ep.CanApplyStatusUpdate(EpisodeStatusRecording); err != nil {
+			t.Fatalf("Episode.CanApplyStatusUpdate() error = %v, want nil", err)
+		}
+	})
+
+	t.Run("rejects lifecycle status change", func(t *testing.T) {
+		ep := newEpisodeWithStatus(EpisodeStatusReady)
+
+		if err := ep.CanApplyStatusUpdate(EpisodeStatusRecording); err == nil {
+			t.Fatal("Episode.CanApplyStatusUpdate() error = nil, want error")
+		}
+	})
+}
+
 func TestEpisode_SetErrorDetails(t *testing.T) {
 	tests := []struct {
 		name         string

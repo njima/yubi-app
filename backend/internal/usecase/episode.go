@@ -380,7 +380,7 @@ func (e *episode) update(ctx context.Context, ep model.Episode, input EpisodeUpd
 		}
 	}
 	if input.Status != nil {
-		if err := ep.SetStatus(*input.Status); err != nil {
+		if err := ep.CanApplyStatusUpdate(*input.Status); err != nil {
 			return model.Episode{}, err
 		}
 	}

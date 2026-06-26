@@ -135,6 +135,31 @@ func (e *Episode) SetStatus(status EpisodeStatus) error {
 	return e.validate()
 }
 
+func (s EpisodeStatus) IsTerminal() bool {
+	return s == EpisodeStatusCompleted || s == EpisodeStatusCancel
+}
+
+func (s EpisodeStatus) IsSuccessfulCompletion() bool {
+	return s == EpisodeStatusCompleted
+}
+
+func (e Episode) IsTerminal() bool {
+	return e.Status.IsTerminal()
+}
+
+func (e Episode) IsSuccessfulCompletion() bool {
+	return e.Status.IsSuccessfulCompletion()
+}
+
+func (e Episode) CanApplyStatusUpdate(status EpisodeStatus) error {
+	if e.Status == status {
+		return nil
+	}
+	return apperror.NewError(
+		apperror.NewMessage(apperror.CodeBadRequest, "episode status changes must use lifecycle actions, current: %d, requested: %d", e.Status, status),
+	)
+}
+
 func (e *Episode) SetErrorDetails(errorDetails string) error {
 	e.ErrorDetails = &errorDetails
 	return e.validate()
