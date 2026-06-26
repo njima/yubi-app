@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
+	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 )
 
 func TestLocationResponse(t *testing.T) {
@@ -66,5 +67,47 @@ func TestOrganizationResponse(t *testing.T) {
 	}
 	if got.CreatedAt == nil || !got.CreatedAt.Equal(createdAt) {
 		t.Errorf("CreatedAt = %v, want %v", got.CreatedAt, createdAt)
+	}
+}
+
+func TestUserResponse(t *testing.T) {
+	createdAt := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
+	updatedAt := createdAt.Add(time.Hour)
+	user := model.User{
+		IDNatural:        "user-1",
+		OrganizationID:   "org-1",
+		OrganizationName: "Airoa",
+		Name:             "Operator",
+		Email:            "operator@example.com",
+		Role:             model.UserRoleOperator,
+		CreatedAt:        createdAt,
+		UpdatedAt:        &updatedAt,
+		Locations: []model.LocationSummary{
+			{LocationID: "loc-1", Name: "Dock"},
+		},
+		Sites: []model.SiteSummary{
+			{SiteID: "site-1", Name: "Tokyo"},
+		},
+	}
+
+	got := userResponse(user)
+
+	if got.UserId != user.IDNatural || got.Email != user.Email || got.DisplayName != user.Name {
+		t.Fatalf("userResponse() = %+v, want values from %+v", got, user)
+	}
+	if got.OrganizationId != user.OrganizationID || got.OrganizationName != user.OrganizationName {
+		t.Errorf("organization fields = (%q, %q), want (%q, %q)", got.OrganizationId, got.OrganizationName, user.OrganizationID, user.OrganizationName)
+	}
+	if got.Role == nil || *got.Role != openapi.Operator {
+		t.Errorf("Role = %v, want operator", got.Role)
+	}
+	if !got.CreatedAt.Equal(createdAt) || got.UpdatedAt == nil || !got.UpdatedAt.Equal(updatedAt) {
+		t.Errorf("timestamps = (%v, %v), want (%v, %v)", got.CreatedAt, got.UpdatedAt, createdAt, updatedAt)
+	}
+	if len(got.Locations) != 1 || got.Locations[0].LocationId != "loc-1" {
+		t.Errorf("Locations = %+v, want loc-1", got.Locations)
+	}
+	if len(got.Sites) != 1 || got.Sites[0].SiteId != "site-1" {
+		t.Errorf("Sites = %+v, want site-1", got.Sites)
 	}
 }
