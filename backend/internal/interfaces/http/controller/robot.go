@@ -37,40 +37,14 @@ func (c *controller) ListRobots(ctx context.Context, request openapi.ListRobotsR
 		return nil, err
 	}
 
-	robots := make([]openapi.Robot, 0, len(robs))
-	for _, r := range robs {
-		status, leaderStatus := robotResponseFields(r)
-		robot := openapi.Robot{
-			Id:                         r.IDNatural,
-			OrganizationId:             &r.OrganizationID,
-			OrganizationName:           &r.OrganizationName,
-			SiteId:                     &r.SiteID,
-			SiteName:                   &r.SiteName,
-			LocationId:                 &r.LocationID,
-			LocationName:               &r.LocationName,
-			Name:                       r.Name,
-			RobotType:                  r.RobotType,
-			Status:                     &status,
-			LeaderStatus:               leaderStatus,
-			ConsecutiveFaultDays:       r.ConsecutiveFaultDays(),
-			LeaderConsecutiveFaultDays: r.LeaderConsecutiveFaultDays(),
-			LeaderFaultStartedAt:       r.LeaderFaultStartedAt,
-			LastHeartbeatAt:            r.LastHeartbeatAt,
-			OfflineReason:              r.OfflineReason,
-			RobotConfig:                mapPtrFromRawMessagePtr(r.RobotConfig),
-			ActiveEpisodeId:            r.ActiveEpisodeID,
-			ActiveUserId:               r.ActiveUserID,
-		}
+	robots := robotResponses(robs)
+	for i, r := range robs {
 		if op, err := c.robotOperatorUsecase.Get(ctx, r.IDNatural); err != nil {
 			c.logger.Warn().Err(err).Str("robot_id", r.IDNatural).Msg("failed to get operator for robot list")
 		} else if op != nil {
-			robot.ActiveOperator = &openapi.RobotOperator{
-				UserId:           op.UserID,
-				DisplayName:      op.DisplayName,
-				OrganizationName: op.OrganizationName,
-			}
+			operator := robotOperatorResponse(*op)
+			robots[i].ActiveOperator = &operator
 		}
-		robots = append(robots, robot)
 	}
 
 	return openapi.ListRobots200JSONResponse{
@@ -131,26 +105,7 @@ func (c *controller) CreateRobot(ctx context.Context, request openapi.CreateRobo
 		return nil, err
 	}
 
-	status, leaderStatus := robotResponseFields(&rob)
-	return openapi.CreateRobot201JSONResponse{
-		Id:                         rob.IDNatural,
-		OrganizationId:             &rob.OrganizationID,
-		OrganizationName:           &rob.OrganizationName,
-		SiteId:                     &rob.SiteID,
-		SiteName:                   &rob.SiteName,
-		LocationId:                 &rob.LocationID,
-		LocationName:               &rob.LocationName,
-		Name:                       rob.Name,
-		RobotType:                  rob.RobotType,
-		Status:                     &status,
-		LeaderStatus:               leaderStatus,
-		ConsecutiveFaultDays:       rob.ConsecutiveFaultDays(),
-		LeaderConsecutiveFaultDays: rob.LeaderConsecutiveFaultDays(),
-		LeaderFaultStartedAt:       rob.LeaderFaultStartedAt,
-		LastHeartbeatAt:            rob.LastHeartbeatAt,
-		OfflineReason:              rob.OfflineReason,
-		RobotConfig:                mapPtrFromRawMessagePtr(rob.RobotConfig),
-	}, nil
+	return openapi.CreateRobot201JSONResponse(robotResponse(rob)), nil
 }
 
 func (c *controller) DeleteRobotById(ctx context.Context, request openapi.DeleteRobotByIdRequestObject) (openapi.DeleteRobotByIdResponseObject, error) {
@@ -167,38 +122,14 @@ func (c *controller) GetRobotById(ctx context.Context, request openapi.GetRobotB
 		return nil, err
 	}
 
-	status, leaderStatus := robotResponseFields(&rob)
-	response := openapi.GetRobotById200JSONResponse{
-		Id:                         rob.IDNatural,
-		OrganizationId:             &rob.OrganizationID,
-		OrganizationName:           &rob.OrganizationName,
-		SiteId:                     &rob.SiteID,
-		SiteName:                   &rob.SiteName,
-		LocationId:                 &rob.LocationID,
-		LocationName:               &rob.LocationName,
-		Name:                       rob.Name,
-		RobotType:                  rob.RobotType,
-		Status:                     &status,
-		LeaderStatus:               leaderStatus,
-		ConsecutiveFaultDays:       rob.ConsecutiveFaultDays(),
-		LeaderConsecutiveFaultDays: rob.LeaderConsecutiveFaultDays(),
-		LeaderFaultStartedAt:       rob.LeaderFaultStartedAt,
-		LastHeartbeatAt:            rob.LastHeartbeatAt,
-		OfflineReason:              rob.OfflineReason,
-		RobotConfig:                mapPtrFromRawMessagePtr(rob.RobotConfig),
-		ActiveEpisodeId:            rob.ActiveEpisodeID,
-		ActiveUserId:               rob.ActiveUserID,
-	}
+	response := robotResponse(rob)
 	if op, err := c.robotOperatorUsecase.Get(ctx, rob.IDNatural); err != nil {
 		c.logger.Warn().Err(err).Str("robot_id", rob.IDNatural).Msg("failed to get operator for robot detail")
 	} else if op != nil {
-		response.ActiveOperator = &openapi.RobotOperator{
-			UserId:           op.UserID,
-			DisplayName:      op.DisplayName,
-			OrganizationName: op.OrganizationName,
-		}
+		operator := robotOperatorResponse(*op)
+		response.ActiveOperator = &operator
 	}
-	return response, nil
+	return openapi.GetRobotById200JSONResponse(response), nil
 }
 
 func (c *controller) UpdateRobotById(ctx context.Context, request openapi.UpdateRobotByIdRequestObject) (openapi.UpdateRobotByIdResponseObject, error) {
@@ -248,24 +179,5 @@ func (c *controller) UpdateRobotById(ctx context.Context, request openapi.Update
 		return nil, err
 	}
 
-	responseStatus, leaderStatus := robotResponseFields(&rob)
-	return openapi.UpdateRobotById200JSONResponse{
-		Id:                         rob.IDNatural,
-		OrganizationId:             &rob.OrganizationID,
-		OrganizationName:           &rob.OrganizationName,
-		SiteId:                     &rob.SiteID,
-		SiteName:                   &rob.SiteName,
-		LocationId:                 &rob.LocationID,
-		LocationName:               &rob.LocationName,
-		Name:                       rob.Name,
-		RobotType:                  rob.RobotType,
-		Status:                     &responseStatus,
-		LeaderStatus:               leaderStatus,
-		ConsecutiveFaultDays:       rob.ConsecutiveFaultDays(),
-		LeaderConsecutiveFaultDays: rob.LeaderConsecutiveFaultDays(),
-		LeaderFaultStartedAt:       rob.LeaderFaultStartedAt,
-		LastHeartbeatAt:            rob.LastHeartbeatAt,
-		OfflineReason:              rob.OfflineReason,
-		RobotConfig:                mapPtrFromRawMessagePtr(rob.RobotConfig),
-	}, nil
+	return openapi.UpdateRobotById200JSONResponse(robotResponse(rob)), nil
 }

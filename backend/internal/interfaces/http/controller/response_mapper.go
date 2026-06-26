@@ -34,6 +34,47 @@ func organizationResponse(org model.Organization) openapi.OrganizationResponse {
 	}
 }
 
+func robotResponse(robot model.Robot) openapi.Robot {
+	status, leaderStatus := robotResponseFields(&robot)
+	return openapi.Robot{
+		Id:                         robot.IDNatural,
+		OrganizationId:             &robot.OrganizationID,
+		OrganizationName:           &robot.OrganizationName,
+		SiteId:                     &robot.SiteID,
+		SiteName:                   &robot.SiteName,
+		LocationId:                 &robot.LocationID,
+		LocationName:               &robot.LocationName,
+		Name:                       robot.Name,
+		RobotType:                  robot.RobotType,
+		Status:                     &status,
+		LeaderStatus:               leaderStatus,
+		ConsecutiveFaultDays:       robot.ConsecutiveFaultDays(),
+		LeaderConsecutiveFaultDays: robot.LeaderConsecutiveFaultDays(),
+		LeaderFaultStartedAt:       robot.LeaderFaultStartedAt,
+		LastHeartbeatAt:            robot.LastHeartbeatAt,
+		OfflineReason:              robot.OfflineReason,
+		RobotConfig:                mapPtrFromRawMessagePtr(robot.RobotConfig),
+		ActiveEpisodeId:            robot.ActiveEpisodeID,
+		ActiveUserId:               robot.ActiveUserID,
+	}
+}
+
+func robotResponses(robots model.Robots) []openapi.Robot {
+	result := make([]openapi.Robot, 0, len(robots))
+	for _, robot := range robots {
+		result = append(result, robotResponse(*robot))
+	}
+	return result
+}
+
+func robotOperatorResponse(operator model.RobotOperator) openapi.RobotOperator {
+	return openapi.RobotOperator{
+		UserId:           operator.UserID,
+		DisplayName:      operator.DisplayName,
+		OrganizationName: operator.OrganizationName,
+	}
+}
+
 func userResponse(user model.User) openapi.UserResponse {
 	return openapi.UserResponse{
 		UserId:           user.IDNatural,
