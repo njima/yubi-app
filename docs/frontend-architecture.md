@@ -43,14 +43,17 @@ frontend/
 │   ├── lib/                    # Core libraries
 │   │   ├── api/                # API client configuration
 │   │   │   ├── client.ts       # Zodios client with interceptors
-│   │   │   ├── backend-client.ts # Server-side fetch (sends X-User-ID)
+│   │   │   ├── client-fetch.ts # Browser-side fetch/schema helpers
+│   │   │   ├── query-string.ts # Query string builder
+│   │   │   ├── backend-client.ts # Server-side re-export facade
+│   │   │   ├── backend-client/ # Server-side backend wrappers by endpoint group
 │   │   │   ├── config.ts       # API URL configuration
 │   │   │   └── generated/      # Auto-generated Zodios client
 │   │   └── auth/               # Session management
 │   │       └── session.ts      # getUserId(), getUserSession()
 │   │
 │   └── shared/                 # Shared code across features
-│       ├── components/         # Layout components (TopNav, UserMenu)
+│       ├── components/         # Shared renderers and reusable components
 │       ├── hooks/              # Shared hooks (status labels, etc.)
 │       ├── lib/                # Utilities (date, status constants)
 │       ├── providers/          # React providers (QueryProvider)
@@ -86,9 +89,22 @@ Backend API (http://backend:8000)
 
 ### Server Components vs Client Components
 
-- **Server Components** (`backend-client.ts`): Fetch data directly from backend with `X-User-ID` header. Used in layouts and initial page loads.
-- **Client Components**: Use TanStack Query hooks that call `/web/api/*` routes. These routes proxy requests to the backend via `backend-client.ts`.
+- **Server Components / Route Handlers** (`backend-client.ts`): Fetch data directly from backend with `X-User-ID` header. The facade re-exports endpoint-specific modules under `lib/api/backend-client/`.
+- **Client Components**: Use TanStack Query hooks that call `/web/api/*` routes. Prefer `client-fetch.ts` and `query-string.ts` for repeated fetch, schema parsing, and query string building.
 - **SSE Streams**: Proxied through `sse-proxy.ts` with `X-User-ID` header for real-time updates.
+
+### Dependency Rules
+
+Keep dependency direction explicit:
+
+```text
+app -> features -> shared
+app/api -> lib/api
+features -> lib/api, shared
+lib/api -> generated, auth
+```
+
+`shared` must not import concrete feature modules. If shared rendering needs feature-specific behavior, register it from the feature layer through a registry, as teleoperation layout components do. Cross-feature imports should go through a small public API from the target feature.
 
 ### API Code Generation
 
@@ -121,6 +137,12 @@ features/episodes/
 ├── schemas/             # Zod validation schemas (for forms)
 └── index.ts             # Public API (re-exports)
 ```
+
+Feature files should stay focused. Large feature-specific renderers can be split into local files such as `teleop-layout-components.tsx` while keeping registration or page wiring separate. Keep form ownership in the parent form unless a section has a stable prop contract.
+
+## Status Display Policy
+
+Status values live in `shared/lib/status-constants.ts`. Display metadata such as badge color, label key, terminal state, and successful completion lives in `shared/lib/status-display.ts`. Feature badge components can remain feature-specific, but they should consume shared display metadata instead of duplicating status maps.
 
 ## Authentication
 
