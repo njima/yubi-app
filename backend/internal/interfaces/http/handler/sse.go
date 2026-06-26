@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"runtime/debug"
 	"strings"
@@ -318,30 +317,13 @@ func (h *SSEHandler) fetchRobotStatusFrame(ctx context.Context, robotID string) 
 
 	var response openapi.RobotStatusStreamResponse
 	if status != nil {
-		detail := openapi.RobotStatusStreamDetail{
-			BatteryPct:    status.Status.Battery.Pct,
-			ConnectionPct: status.Status.Connection.QualityPct,
-			UptimeSec:     int(math.Round(status.Status.UptimeSec)),
-		}
-		if g := status.Status.GateConditions; g != nil {
-			oGate := convertGateToOpenAPI(g)
-			detail.GateConditions = &oGate
-		}
 		response = openapi.RobotStatusStreamResponse{
 			RobotId:   robotID,
 			RobotType: status.RobotType,
-			Status:    detail,
+			Status:    robotStatusStreamDetail(status.Status),
 		}
 	} else {
-		response = openapi.RobotStatusStreamResponse{
-			RobotId:   robotID,
-			RobotType: "",
-			Status: openapi.RobotStatusStreamDetail{
-				BatteryPct:    0,
-				ConnectionPct: 0,
-				UptimeSec:     0,
-			},
-		}
+		response = emptyRobotStatusStreamResponse(robotID)
 	}
 
 	data, err := json.Marshal(response)
@@ -520,37 +502,11 @@ func (h *SSEHandler) writeEpisodeSSE(ctx context.Context, c *gin.Context, ep *mo
 
 	subtasks := controller.BuildEpisodeSubTasks(subtaskMasters, records, executions, ep.ParameterValues)
 
-	var taskName, taskDescription *string
-	if task != nil {
-		taskName = &task.Name
-		taskDescription = task.Description
-	}
-
-	response := openapi.Episode{
-		Id:              ep.IDNatural,
-		LocationId:      ep.LocationID,
-		UserId:          ep.UserID,
-		RobotId:         ep.RobotID,
-		Status:          openapi.EpisodeCollectionStatus(ep.Status),
-		TaskId:          ep.TaskID,
-		TaskName:        taskName,
-		TaskDescription: taskDescription,
-		TaskVersionId:   ep.TaskVersionID,
-		StartedAt:       ep.StartedAt,
-		EndedAt:         ep.FinishedAt,
-		ErrorDetails:    ep.ErrorDetails,
-		Subtasks:        &subtasks,
-		CreatedAt:       ep.CreatedAt,
-		RecordedBy:      ep.RecordedByID,
-		AverageGrade:    ep.AverageGrade,
-		GradeCount:      &ep.GradeCount,
-	}
-	if len(ep.ParameterValues) > 0 {
-		response.ParameterValues = &ep.ParameterValues
-	}
+	var displayName *string
 	if resolved, ok := h.resolveTaskVersionDisplayName(ctx, ep.TaskID, ep.TaskVersionID); ok {
-		response.TaskVersionDisplayName = &resolved
+		displayName = &resolved
 	}
+	response := buildEpisodeStreamResponse(ep, subtasks, task, displayName)
 
 	data, err := json.Marshal(response)
 	if err != nil {
@@ -562,30 +518,6 @@ func (h *SSEHandler) writeEpisodeSSE(ctx context.Context, c *gin.Context, ep *mo
 	}
 	c.Writer.Flush()
 	return nil
-}
-
-func convertGateToOpenAPI(g *model.GateConditionStatus) openapi.GateConditionStatus {
-	groups := make(map[string]openapi.GateGroupStatus, len(g.Groups))
-	for name, grp := range g.Groups {
-		conditions := make([]openapi.GateCondition, len(grp.Conditions))
-		for i, c := range grp.Conditions {
-			conditions[i] = openapi.GateCondition{
-				Name:       c.Name,
-				Passed:     c.Passed,
-				Reason:     c.Reason,
-				Escalation: c.Escalation,
-			}
-		}
-		groups[name] = openapi.GateGroupStatus{
-			Level:      grp.Level,
-			Settled:    grp.Settled,
-			Conditions: conditions,
-		}
-	}
-	return openapi.GateConditionStatus{
-		GateLevel: g.GateLevel,
-		Groups:    groups,
-	}
 }
 
 // StreamRobotTeleop streams a consolidated teleop view for a robot over a

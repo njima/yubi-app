@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"sync"
 
 	"github.com/rs/zerolog"
@@ -218,18 +217,9 @@ func (tb *teleopBroadcaster) pushStatus(ctx context.Context, robotID string) {
 
 	var response openapi.RobotStatusStreamResponse
 	if status != nil {
-		detail := openapi.RobotStatusStreamDetail{
-			BatteryPct:    status.Status.Battery.Pct,
-			ConnectionPct: status.Status.Connection.QualityPct,
-			UptimeSec:     int(math.Round(status.Status.UptimeSec)),
-		}
-		if g := status.Status.GateConditions; g != nil {
-			oGate := convertGateToOpenAPI(g)
-			detail.GateConditions = &oGate
-		}
 		response = openapi.RobotStatusStreamResponse{
 			RobotType: status.RobotType,
-			Status:    detail,
+			Status:    robotStatusStreamDetail(status.Status),
 		}
 	}
 
@@ -267,27 +257,6 @@ func (tb *teleopBroadcaster) pushEpisodeAndMaybeTask(ctx context.Context, robotI
 	}
 	subtasks := controller.BuildEpisodeSubTasks(subtaskMasters, records, executions, ep.ParameterValues)
 
-	episodeResp := openapi.Episode{
-		Id:            ep.IDNatural,
-		LocationId:    ep.LocationID,
-		UserId:        ep.UserID,
-		RobotId:       ep.RobotID,
-		Status:        openapi.EpisodeCollectionStatus(ep.Status),
-		TaskId:        ep.TaskID,
-		TaskVersionId: ep.TaskVersionID,
-		StartedAt:     ep.StartedAt,
-		EndedAt:       ep.FinishedAt,
-		ErrorDetails:  ep.ErrorDetails,
-		Subtasks:      &subtasks,
-		CreatedAt:     ep.CreatedAt,
-		RecordedBy:    ep.RecordedByID,
-		AverageGrade:  ep.AverageGrade,
-		GradeCount:    &ep.GradeCount,
-	}
-	if len(ep.ParameterValues) > 0 {
-		episodeResp.ParameterValues = &ep.ParameterValues
-	}
-
 	var tk *model.Task
 	var tv *model.TaskVersion
 	if ep.TaskID != "" && ep.TaskVersionID != "" {
@@ -308,10 +277,12 @@ func (tb *teleopBroadcaster) pushEpisodeAndMaybeTask(ctx context.Context, robotI
 				Msg("teleop: pushTask GetByID(task_version) failed")
 		}
 	}
+	var displayName *string
 	if tk != nil && tv != nil {
 		resolved := tv.DisplayLabel(tk.Name)
-		episodeResp.TaskVersionDisplayName = &resolved
+		displayName = &resolved
 	}
+	episodeResp := buildEpisodeStreamResponse(ep, subtasks, nil, displayName)
 
 	data, err := json.Marshal(episodeResp)
 	if err != nil {
@@ -347,13 +318,7 @@ type teleopTaskMeta struct {
 // and task_version objects. Returns true if the frame was successfully
 // emitted so the caller can update its cached task_id.
 func (tb *teleopBroadcaster) pushTaskFrame(robotID string, task *model.Task, version *model.TaskVersion) bool {
-	meta := teleopTaskMeta{
-		Id:          task.IDNatural,
-		Name:        task.Name,
-		Description: task.Description,
-		ManualURL:   task.ManualURL,
-		Version:     version.Version,
-	}
+	meta := buildTeleopTaskMeta(task, version)
 	data, err := json.Marshal(meta)
 	if err != nil {
 		tb.logger.Warn().Err(err).
