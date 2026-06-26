@@ -93,13 +93,51 @@ func InitRobot(
 	return rob, nil
 }
 
-func NewRobot(idNatural, organizationID, locationID, name string) *Robot {
-	return &Robot{
-		IDNatural:      idNatural,
-		OrganizationID: organizationID,
-		LocationID:     locationID,
-		Name:           name,
-		CreatedAt:      time.Now(),
+func NewRobot(
+	id int64,
+	idNatural,
+	organizationID,
+	organizationName,
+	siteID,
+	siteName,
+	locationID,
+	locationName,
+	name string,
+	robotType *string,
+	status RobotStatus,
+	leaderStatus *LeaderStatus,
+	leaderFaultStartedAt *time.Time,
+	faultStartedAt *time.Time,
+	lastHeartbeatAt *time.Time,
+	offlineReason *string,
+	robotConfig *json.RawMessage,
+	activeEpisodeID *string,
+	activeUserID *string,
+	createdAt time.Time,
+	updatedAt *time.Time,
+) Robot {
+	return Robot{
+		ID:                   id,
+		IDNatural:            idNatural,
+		OrganizationID:       organizationID,
+		OrganizationName:     organizationName,
+		SiteID:               siteID,
+		SiteName:             siteName,
+		LocationID:           locationID,
+		LocationName:         locationName,
+		Name:                 name,
+		RobotType:            robotType,
+		Status:               status,
+		LeaderStatus:         leaderStatus,
+		LeaderFaultStartedAt: leaderFaultStartedAt,
+		FaultStartedAt:       faultStartedAt,
+		LastHeartbeatAt:      lastHeartbeatAt,
+		OfflineReason:        offlineReason,
+		RobotConfig:          robotConfig,
+		ActiveEpisodeID:      activeEpisodeID,
+		ActiveUserID:         activeUserID,
+		CreatedAt:            createdAt,
+		UpdatedAt:            updatedAt,
 	}
 }
 

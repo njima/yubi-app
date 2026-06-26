@@ -78,3 +78,45 @@ func organizationEntityToModel(org entity.Organization) model.Organization {
 		UpdatedAt:   updatedAtPtr(org.UpdatedAt),
 	}
 }
+
+func robotEntityToModel(robot entity.Robot) model.Robot {
+	orgName := ""
+	if robot.Organization != nil {
+		orgName = robot.Organization.Name
+	}
+
+	locName := ""
+	siteID := ""
+	siteName := ""
+	if robot.Location != nil {
+		locName = robot.Location.Name
+		siteID = robot.Location.SiteID
+		if robot.Location.Site != nil {
+			siteName = robot.Location.Site.Name
+		}
+	}
+
+	return model.NewRobot(
+		robot.ID,
+		robot.IDNatural,
+		robot.OrganizationID,
+		orgName,
+		siteID,
+		siteName,
+		robot.LocationID,
+		locName,
+		robot.Name,
+		&robot.RobotType,
+		model.RobotStatus(robot.Status),
+		leaderStatusToModel(robot.LeaderStatus),
+		robot.LeaderFaultStartedAt,
+		robot.FaultStartedAt,
+		robot.LastHeartbeatAt,
+		robot.OfflineReason,
+		robot.RobotConfig,
+		robot.ActiveEpisodeID,
+		robot.ActiveUserID,
+		robot.CreatedAt,
+		updatedAtPtr(robot.UpdatedAt),
+	)
+}

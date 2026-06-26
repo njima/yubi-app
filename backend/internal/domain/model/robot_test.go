@@ -126,42 +126,86 @@ func TestInitRobot(t *testing.T) {
 }
 
 func TestNewRobot(t *testing.T) {
-	tests := []struct {
-		name           string
-		idNatural      string
-		organizationID string
-		locationID     string
-		robotName      string
-	}{
-		{
-			name:           "create with all fields",
-			idNatural:      "550e8400-e29b-41d4-a716-446655440000",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			locationID:     "550e8400-e29b-41d4-a716-446655440002",
-			robotName:      "Test Robot",
-		},
+	createdAt := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
+	updatedAt := createdAt.Add(time.Hour)
+	robotType := "TestModel"
+	leaderStatus := LeaderStatusFaulted
+	leaderFaultStartedAt := createdAt.Add(30 * time.Minute)
+	faultStartedAt := createdAt.Add(45 * time.Minute)
+	lastHeartbeatAt := createdAt.Add(2 * time.Hour)
+	offlineReason := "network"
+	robotConfig := json.RawMessage(`{"mode":"test"}`)
+	activeEpisodeID := "episode-1"
+	activeUserID := "user-1"
+
+	got := NewRobot(
+		1,
+		"550e8400-e29b-41d4-a716-446655440000",
+		"550e8400-e29b-41d4-a716-446655440001",
+		"Org",
+		"site-1",
+		"Site",
+		"550e8400-e29b-41d4-a716-446655440002",
+		"Location",
+		"Test Robot",
+		&robotType,
+		RobotStatusBusy,
+		&leaderStatus,
+		&leaderFaultStartedAt,
+		&faultStartedAt,
+		&lastHeartbeatAt,
+		&offlineReason,
+		&robotConfig,
+		&activeEpisodeID,
+		&activeUserID,
+		createdAt,
+		&updatedAt,
+	)
+
+	if got.ID != 1 {
+		t.Errorf("NewRobot() ID = %v, want 1", got.ID)
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewRobot(tt.idNatural, tt.organizationID, tt.locationID, tt.robotName)
-
-			if got.IDNatural != tt.idNatural {
-				t.Errorf("NewRobot() IDNatural = %v, want %v", got.IDNatural, tt.idNatural)
-			}
-			if got.OrganizationID != tt.organizationID {
-				t.Errorf("NewRobot() OrganizationID = %v, want %v", got.OrganizationID, tt.organizationID)
-			}
-			if got.LocationID != tt.locationID {
-				t.Errorf("NewRobot() LocationID = %v, want %v", got.LocationID, tt.locationID)
-			}
-			if got.Name != tt.robotName {
-				t.Errorf("NewRobot() Name = %v, want %v", got.Name, tt.robotName)
-			}
-			if got.CreatedAt.IsZero() {
-				t.Errorf("NewRobot() CreatedAt is zero")
-			}
-		})
+	if got.IDNatural != "550e8400-e29b-41d4-a716-446655440000" {
+		t.Errorf("NewRobot() IDNatural = %v", got.IDNatural)
+	}
+	if got.OrganizationName != "Org" || got.SiteName != "Site" || got.LocationName != "Location" {
+		t.Errorf("NewRobot() relation names = org:%q site:%q location:%q", got.OrganizationName, got.SiteName, got.LocationName)
+	}
+	if got.RobotType == nil || *got.RobotType != robotType {
+		t.Errorf("NewRobot() RobotType = %v, want %q", got.RobotType, robotType)
+	}
+	if got.Status != RobotStatusBusy {
+		t.Errorf("NewRobot() Status = %v, want %v", got.Status, RobotStatusBusy)
+	}
+	if got.LeaderStatus == nil || *got.LeaderStatus != leaderStatus {
+		t.Errorf("NewRobot() LeaderStatus = %v, want %v", got.LeaderStatus, leaderStatus)
+	}
+	if got.LeaderFaultStartedAt == nil || !got.LeaderFaultStartedAt.Equal(leaderFaultStartedAt) {
+		t.Errorf("NewRobot() LeaderFaultStartedAt = %v, want %v", got.LeaderFaultStartedAt, leaderFaultStartedAt)
+	}
+	if got.FaultStartedAt == nil || !got.FaultStartedAt.Equal(faultStartedAt) {
+		t.Errorf("NewRobot() FaultStartedAt = %v, want %v", got.FaultStartedAt, faultStartedAt)
+	}
+	if got.LastHeartbeatAt == nil || !got.LastHeartbeatAt.Equal(lastHeartbeatAt) {
+		t.Errorf("NewRobot() LastHeartbeatAt = %v, want %v", got.LastHeartbeatAt, lastHeartbeatAt)
+	}
+	if got.OfflineReason == nil || *got.OfflineReason != offlineReason {
+		t.Errorf("NewRobot() OfflineReason = %v, want %q", got.OfflineReason, offlineReason)
+	}
+	if got.RobotConfig == nil || string(*got.RobotConfig) != string(robotConfig) {
+		t.Errorf("NewRobot() RobotConfig = %v, want %s", got.RobotConfig, robotConfig)
+	}
+	if got.ActiveEpisodeID == nil || *got.ActiveEpisodeID != activeEpisodeID {
+		t.Errorf("NewRobot() ActiveEpisodeID = %v, want %q", got.ActiveEpisodeID, activeEpisodeID)
+	}
+	if got.ActiveUserID == nil || *got.ActiveUserID != activeUserID {
+		t.Errorf("NewRobot() ActiveUserID = %v, want %q", got.ActiveUserID, activeUserID)
+	}
+	if !got.CreatedAt.Equal(createdAt) {
+		t.Errorf("NewRobot() CreatedAt = %v, want %v", got.CreatedAt, createdAt)
+	}
+	if got.UpdatedAt == nil || !got.UpdatedAt.Equal(updatedAt) {
+		t.Errorf("NewRobot() UpdatedAt = %v, want %v", got.UpdatedAt, updatedAt)
 	}
 }
 
