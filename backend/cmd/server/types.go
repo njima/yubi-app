@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/airoa-org/yubi-app/backend/internal/config"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
+	"github.com/airoa-org/yubi-app/backend/internal/platform/config"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 
 	"github.com/rs/zerolog"

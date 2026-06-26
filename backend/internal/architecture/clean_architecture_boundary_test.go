@@ -15,14 +15,14 @@ func TestDomainDoesNotDependOnOuterLayers(t *testing.T) {
 	assertNoForbiddenImports(t, "internal/domain", []string{
 		"internal/app",
 		"internal/authz",
-		"internal/config",
+		"internal/platform/config",
 		"internal/infra/database",
 		"internal/event",
 		"internal/gen",
 		"internal/infra",
 		"internal/interfaces",
 		"internal/log",
-		"internal/pagination",
+		"internal/usecase/pagination",
 		"internal/repository",
 		"internal/stack",
 		"internal/usecase",
@@ -33,7 +33,7 @@ func TestUsecaseDoesNotDependOnOuterLayers(t *testing.T) {
 	assertNoForbiddenImports(t, "internal/usecase", []string{
 		"internal/app",
 		"internal/authz",
-		"internal/config",
+		"internal/platform/config",
 		"internal/infra/database",
 		"internal/gen",
 		"internal/infra",
@@ -47,7 +47,7 @@ func TestRepositoryInterfacesDoNotDependOnImplementations(t *testing.T) {
 	assertNoForbiddenImports(t, "internal/repository", []string{
 		"internal/app",
 		"internal/authz",
-		"internal/config",
+		"internal/platform/config",
 		"internal/infra/database",
 		"internal/gen",
 		"internal/infra",
@@ -151,6 +151,28 @@ func TestDatabaseInfrastructureLivesUnderInfra(t *testing.T) {
 		t.Fatalf("database infrastructure must live under internal/infra/database, not internal/database")
 	} else if !os.IsNotExist(err) {
 		t.Fatalf("stat internal/database: %v", err)
+	}
+}
+
+func TestRuntimeConfigLivesUnderPlatform(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "config")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("runtime config must live under internal/platform/config, not internal/config")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/config: %v", err)
+	}
+}
+
+func TestPaginationRequestModelLivesUnderUsecase(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "pagination")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("pagination request model must live under internal/usecase/pagination, not internal/pagination")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/pagination: %v", err)
 	}
 }
 

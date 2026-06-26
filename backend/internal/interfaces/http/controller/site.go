@@ -5,8 +5,8 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )
 
 func (c *controller) ListSites(ctx context.Context, request openapi.ListSitesRequestObject) (openapi.ListSitesResponseObject, error) {
