@@ -74,46 +74,7 @@ func (r *robot) GetByID(ctx context.Context, conn repository.DBConn, id string) 
 		return model.Robot{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to get robot: %v", err))
 	}
 
-	orgName := ""
-	if dbRob.Organization != nil {
-		orgName = dbRob.Organization.Name
-	}
-	locName := ""
-	siteID := ""
-	siteName := ""
-	if dbRob.Location != nil {
-		locName = dbRob.Location.Name
-		siteID = dbRob.Location.SiteID
-		if dbRob.Location.Site != nil {
-			siteName = dbRob.Location.Site.Name
-		}
-	}
-
-	rob := model.Robot{
-		ID:                   dbRob.ID,
-		IDNatural:            dbRob.IDNatural,
-		OrganizationID:       dbRob.OrganizationID,
-		OrganizationName:     orgName,
-		LocationID:           dbRob.LocationID,
-		LocationName:         locName,
-		SiteID:               siteID,
-		SiteName:             siteName,
-		Name:                 dbRob.Name,
-		RobotType:            &dbRob.RobotType,
-		Status:               model.RobotStatus(dbRob.Status),
-		LeaderStatus:         leaderStatusToModel(dbRob.LeaderStatus),
-		LeaderFaultStartedAt: dbRob.LeaderFaultStartedAt,
-		FaultStartedAt:       dbRob.FaultStartedAt,
-		LastHeartbeatAt:      dbRob.LastHeartbeatAt,
-		OfflineReason:        dbRob.OfflineReason,
-		RobotConfig:          dbRob.RobotConfig,
-		ActiveEpisodeID:      dbRob.ActiveEpisodeID,
-		ActiveUserID:         dbRob.ActiveUserID,
-		CreatedAt:            dbRob.CreatedAt,
-		UpdatedAt:            &dbRob.UpdatedAt,
-	}
-
-	return rob, nil
+	return robotEntityToModel(dbRob), nil
 }
 
 func (r *robot) List(ctx context.Context, conn repository.DBConn, filter repository.RobotListFilter, limit, offset int) (model.Robots, int, error) {
@@ -149,47 +110,8 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 
 	res := make(model.Robots, 0, len(dbRobs))
 	for _, dr := range dbRobs {
-		orgN := ""
-		if dr.Organization != nil {
-			orgN = dr.Organization.Name
-		}
-		locName := ""
-		siteID := ""
-		siteName := ""
-		if dr.Location != nil {
-			locName = dr.Location.Name
-			siteID = dr.Location.SiteID
-			if dr.Location.Site != nil {
-				siteName = dr.Location.Site.Name
-			}
-		}
-		m := &model.Robot{
-			ID:                   dr.ID,
-			IDNatural:            dr.IDNatural,
-			OrganizationID:       dr.OrganizationID,
-			OrganizationName:     orgN,
-			LocationID:           dr.LocationID,
-			LocationName:         locName,
-			SiteID:               siteID,
-			SiteName:             siteName,
-			Name:                 dr.Name,
-			RobotType:            &dr.RobotType,
-			Status:               model.RobotStatus(dr.Status),
-			LeaderStatus:         leaderStatusToModel(dr.LeaderStatus),
-			LeaderFaultStartedAt: dr.LeaderFaultStartedAt,
-			FaultStartedAt:       dr.FaultStartedAt,
-			LastHeartbeatAt:      dr.LastHeartbeatAt,
-			OfflineReason:        dr.OfflineReason,
-			RobotConfig:          dr.RobotConfig,
-			ActiveEpisodeID:      dr.ActiveEpisodeID,
-			ActiveUserID:         dr.ActiveUserID,
-			CreatedAt:            dr.CreatedAt,
-		}
-		if !dr.UpdatedAt.IsZero() {
-			t := dr.UpdatedAt
-			m.UpdatedAt = &t
-		}
-		res = append(res, m)
+		m := robotEntityToModel(dr)
+		res = append(res, &m)
 	}
 
 	return res, total, nil

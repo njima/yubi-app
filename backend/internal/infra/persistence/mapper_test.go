@@ -1,9 +1,11 @@
 package persistence
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 )
 
@@ -79,5 +81,59 @@ func TestOrganizationEntityToModel(t *testing.T) {
 	}
 	if got.UpdatedAt != nil {
 		t.Errorf("UpdatedAt = %v, want nil for zero timestamp", got.UpdatedAt)
+	}
+}
+
+func TestRobotEntityToModel(t *testing.T) {
+	robotType := "arm"
+	leaderStatus := uint(model.LeaderStatusFaulted)
+	leaderFaultStartedAt := mapperTestTime.Add(30 * time.Minute)
+	faultStartedAt := mapperTestTime.Add(45 * time.Minute)
+	lastHeartbeatAt := mapperTestTime.Add(time.Hour)
+	offlineReason := "network"
+	robotConfig := json.RawMessage(`{"mode":"test"}`)
+	activeEpisodeID := "episode-1"
+	activeUserID := "user-1"
+	dbRobot := entity.Robot{
+		ID:                   1,
+		IDNatural:            "robot-1",
+		OrganizationID:       "org-1",
+		LocationID:           "loc-1",
+		Name:                 "Robot",
+		RobotType:            robotType,
+		Status:               uint(model.RobotStatusBusy),
+		LeaderStatus:         &leaderStatus,
+		LeaderFaultStartedAt: &leaderFaultStartedAt,
+		FaultStartedAt:       &faultStartedAt,
+		LastHeartbeatAt:      &lastHeartbeatAt,
+		OfflineReason:        &offlineReason,
+		RobotConfig:          &robotConfig,
+		ActiveEpisodeID:      &activeEpisodeID,
+		ActiveUserID:         &activeUserID,
+		Timestamp: entity.Timestamp{
+			CreatedAt: mapperTestTime,
+			UpdatedAt: mapperTestTime,
+		},
+		Organization: &entity.Organization{Name: "Org"},
+		Location: &entity.Location{
+			Name:   "Location",
+			SiteID: "site-1",
+			Site:   &entity.Site{Name: "Site"},
+		},
+	}
+
+	got := robotEntityToModel(dbRobot)
+
+	if got.IDNatural != dbRobot.IDNatural || got.OrganizationName != "Org" || got.SiteName != "Site" || got.LocationName != "Location" {
+		t.Fatalf("got robot %+v, want relation values from entity", got)
+	}
+	if got.LeaderStatus == nil || *got.LeaderStatus != model.LeaderStatusFaulted {
+		t.Errorf("LeaderStatus = %v, want faulted", got.LeaderStatus)
+	}
+	if got.RobotConfig == nil || string(*got.RobotConfig) != string(robotConfig) {
+		t.Errorf("RobotConfig = %v, want %s", got.RobotConfig, robotConfig)
+	}
+	if got.UpdatedAt == nil || !got.UpdatedAt.Equal(mapperTestTime) {
+		t.Errorf("UpdatedAt = %v, want %v", got.UpdatedAt, mapperTestTime)
 	}
 }
