@@ -23,7 +23,7 @@ type SiteCreateInput struct {
 
 type SiteUpdateInput struct {
 	ID   string
-	Name string
+	Name *string
 }
 
 type siteUsecase struct {
@@ -67,7 +67,11 @@ func (s *siteUsecase) Update(ctx context.Context, input SiteUpdateInput) (model.
 		return model.Site{}, err
 	}
 
-	if err := si.SetName(input.Name); err != nil {
+	if input.Name == nil {
+		return si, nil
+	}
+
+	if err := si.SetName(*input.Name); err != nil {
 		return model.Site{}, err
 	}
 

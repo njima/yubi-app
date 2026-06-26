@@ -89,13 +89,13 @@ func (c *controller) GetLocationById(ctx context.Context, request openapi.GetLoc
 }
 
 func (c *controller) UpdateLocationById(ctx context.Context, request openapi.UpdateLocationByIdRequestObject) (openapi.UpdateLocationByIdResponseObject, error) {
-	if request.Body == nil || request.Body.Name == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "name is required"))
+	if request.Body == nil {
+		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
 
 	input := usecase.LocationUpdateInput{
 		ID:   request.LocationId,
-		Name: *request.Body.Name,
+		Name: request.Body.Name,
 	}
 
 	loc, err := c.locationUsecase.Update(ctx, input)

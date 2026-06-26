@@ -86,10 +86,14 @@ func (c *controller) GetOrganizationById(ctx context.Context, request openapi.Ge
 }
 
 func (c *controller) UpdateOrganizationById(ctx context.Context, request openapi.UpdateOrganizationByIdRequestObject) (openapi.UpdateOrganizationByIdResponseObject, error) {
-	var displayName string
+	if request.Body == nil {
+		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	}
+
+	var displayName *string
 	var description *string
 	if request.Body.DisplayName != nil {
-		displayName = *request.Body.DisplayName
+		displayName = request.Body.DisplayName
 	}
 	if request.Body.Description != nil {
 		description = request.Body.Description

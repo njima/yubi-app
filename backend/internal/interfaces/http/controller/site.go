@@ -84,13 +84,13 @@ func (c *controller) GetSiteById(ctx context.Context, request openapi.GetSiteByI
 }
 
 func (c *controller) UpdateSiteById(ctx context.Context, request openapi.UpdateSiteByIdRequestObject) (openapi.UpdateSiteByIdResponseObject, error) {
-	if request.Body == nil || request.Body.Name == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "name is required"))
+	if request.Body == nil {
+		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
 
 	site, err := c.siteUsecase.Update(ctx, usecase.SiteUpdateInput{
 		ID:   request.SiteId,
-		Name: *request.Body.Name,
+		Name: request.Body.Name,
 	})
 	if err != nil {
 		return nil, err
