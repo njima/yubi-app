@@ -241,6 +241,51 @@ func TestEpisodeGradeResponse(t *testing.T) {
 	}
 }
 
+func TestEpisodeResponse(t *testing.T) {
+	startedAt := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
+	finishedAt := startedAt.Add(time.Hour)
+	createdAt := startedAt.Add(-time.Hour)
+	errorDetails := "arm disconnected"
+	recordedByID := "user-recorder"
+	averageGrade := 0.75
+	params := map[string]string{"color": "red"}
+	episode := model.Episode{
+		IDNatural:       "episode-1",
+		LocationID:      "loc-1",
+		UserID:          "user-1",
+		RobotID:         "robot-1",
+		Status:          model.EpisodeStatusCompleted,
+		TaskID:          "task-1",
+		TaskVersionID:   "version-1",
+		StartedAt:       &startedAt,
+		FinishedAt:      &finishedAt,
+		ErrorDetails:    &errorDetails,
+		CreatedAt:       createdAt,
+		RecordedByID:    &recordedByID,
+		AverageGrade:    &averageGrade,
+		GradeCount:      2,
+		ParameterValues: params,
+	}
+
+	got := episodeResponse(episode)
+
+	if got.Id != episode.IDNatural || got.LocationId != episode.LocationID || got.UserId != episode.UserID || got.RobotId != episode.RobotID {
+		t.Fatalf("episodeResponse() = %+v, want identity fields from %+v", got, episode)
+	}
+	if got.Status != openapi.EpisodeCollectionStatusCompleted {
+		t.Errorf("Status = %v, want completed", got.Status)
+	}
+	if got.TaskId != episode.TaskID || got.TaskVersionId != episode.TaskVersionID {
+		t.Errorf("task fields = (%q, %q), want (%q, %q)", got.TaskId, got.TaskVersionId, episode.TaskID, episode.TaskVersionID)
+	}
+	if got.ParameterValues == nil || (*got.ParameterValues)["color"] != "red" {
+		t.Errorf("ParameterValues = %+v, want color=red", got.ParameterValues)
+	}
+	if got.GradeCount == nil || *got.GradeCount != episode.GradeCount {
+		t.Errorf("GradeCount = %v, want %d", got.GradeCount, episode.GradeCount)
+	}
+}
+
 func TestTaskResponse(t *testing.T) {
 	description := "Move boxes"
 	priority := model.TaskPriorityHigh
