@@ -5,7 +5,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )
@@ -65,14 +64,15 @@ func (c *controller) ListApiKeys(ctx context.Context, request openapi.ListApiKey
 }
 
 func (c *controller) CreateApiKey(ctx context.Context, request openapi.CreateApiKeyRequestObject) (openapi.CreateApiKeyResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	out, err := c.apiKeyUsecase.Create(ctx, usecase.APIKeyCreateInput{
-		Name:      request.Body.Name,
-		RobotID:   request.Body.RobotId,
-		ExpiresAt: request.Body.ExpiresAt,
+		Name:      body.Name,
+		RobotID:   body.RobotId,
+		ExpiresAt: body.ExpiresAt,
 	})
 	if err != nil {
 		return nil, err
@@ -107,16 +107,17 @@ func (c *controller) GetApiKey(ctx context.Context, request openapi.GetApiKeyReq
 }
 
 func (c *controller) UpdateApiKey(ctx context.Context, request openapi.UpdateApiKeyRequestObject) (openapi.UpdateApiKeyResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	in := usecase.APIKeyUpdateInput{
 		IDNatural: request.ApiKeyId,
-		Name:      request.Body.Name,
-		ExpiresAt: request.Body.ExpiresAt,
+		Name:      body.Name,
+		ExpiresAt: body.ExpiresAt,
 	}
-	if request.Body.ClearExpiresAt != nil && *request.Body.ClearExpiresAt {
+	if body.ClearExpiresAt != nil && *body.ClearExpiresAt {
 		in.ClearExpiry = true
 	}
 

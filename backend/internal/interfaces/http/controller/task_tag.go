@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -37,13 +36,14 @@ func (c *controller) ListTaskTags(ctx context.Context, request openapi.ListTaskT
 }
 
 func (c *controller) CreateTaskTag(ctx context.Context, request openapi.CreateTaskTagRequestObject) (openapi.CreateTaskTagResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	tag, err := c.taskTagUsecase.CreateTag(ctx, usecase.TaskTagCreateInput{
-		Name:           request.Body.Name,
-		CategoryTypeID: request.Body.CategoryTypeId,
+		Name:           body.Name,
+		CategoryTypeID: body.CategoryTypeId,
 	})
 	if err != nil {
 		return nil, err

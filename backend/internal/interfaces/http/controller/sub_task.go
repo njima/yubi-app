@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -37,17 +36,18 @@ func (c *controller) ListSubTasks(ctx context.Context, request openapi.ListSubTa
 }
 
 func (c *controller) CreateSubTask(ctx context.Context, request openapi.CreateSubTaskRequestObject) (openapi.CreateSubTaskResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	st, err := c.subtaskUsecase.Create(ctx, usecase.SubTaskCreateInput{
-		OrganizationID:        request.Body.OrganizationId,
-		TaskID:                request.Body.TaskId,
-		TaskVersionID:         request.Body.TaskVersionId,
-		Name:                  request.Body.Name,
-		Description:           request.Body.Description,
-		TargetDurationSeconds: request.Body.TargetDurationSeconds,
+		OrganizationID:        body.OrganizationId,
+		TaskID:                body.TaskId,
+		TaskVersionID:         body.TaskVersionId,
+		Name:                  body.Name,
+		Description:           body.Description,
+		TargetDurationSeconds: body.TargetDurationSeconds,
 	})
 	if err != nil {
 		return nil, err
@@ -82,19 +82,20 @@ func (c *controller) GetSubTaskById(ctx context.Context, request openapi.GetSubT
 }
 
 func (c *controller) UpdateSubTaskById(ctx context.Context, request openapi.UpdateSubTaskByIdRequestObject) (openapi.UpdateSubTaskByIdResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.SubTaskUpdateInput{ID: request.SubtaskId}
-	if request.Body.Name != nil {
-		input.Name = request.Body.Name
+	if body.Name != nil {
+		input.Name = body.Name
 	}
-	if request.Body.Description != nil {
-		input.Description = request.Body.Description
+	if body.Description != nil {
+		input.Description = body.Description
 	}
-	if request.Body.TargetDurationSeconds != nil {
-		input.TargetDurationSeconds = request.Body.TargetDurationSeconds
+	if body.TargetDurationSeconds != nil {
+		input.TargetDurationSeconds = body.TargetDurationSeconds
 	}
 
 	st, err := c.subtaskUsecase.Update(ctx, input)
@@ -111,13 +112,14 @@ func (c *controller) UpdateSubTaskById(ctx context.Context, request openapi.Upda
 }
 
 func (c *controller) ReorderSubTasks(ctx context.Context, request openapi.ReorderSubTasksRequestObject) (openapi.ReorderSubTasksResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	sts, err := c.subtaskUsecase.Reorder(ctx, usecase.SubTaskReorderInput{
-		TaskVersionID: request.Body.TaskVersionId,
-		SubTaskIDs:    request.Body.SubtaskIds,
+		TaskVersionID: body.TaskVersionId,
+		SubTaskIDs:    body.SubtaskIds,
 	})
 	if err != nil {
 		return nil, err

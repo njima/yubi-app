@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )
@@ -40,14 +39,15 @@ func (c *controller) ListLocations(ctx context.Context, request openapi.ListLoca
 }
 
 func (c *controller) CreateLocation(ctx context.Context, request openapi.CreateLocationRequestObject) (openapi.CreateLocationResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	loc, err := c.locationUsecase.Create(ctx, usecase.LocationCreateInput{
-		OrganizationID: request.Body.OrganizationId,
-		SiteID:         request.Body.SiteId,
-		Name:           request.Body.Name,
+		OrganizationID: body.OrganizationId,
+		SiteID:         body.SiteId,
+		Name:           body.Name,
 	})
 	if err != nil {
 		return nil, err
@@ -74,13 +74,14 @@ func (c *controller) GetLocationById(ctx context.Context, request openapi.GetLoc
 }
 
 func (c *controller) UpdateLocationById(ctx context.Context, request openapi.UpdateLocationByIdRequestObject) (openapi.UpdateLocationByIdResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.LocationUpdateInput{
 		ID:   request.LocationId,
-		Name: request.Body.Name,
+		Name: body.Name,
 	}
 
 	loc, err := c.locationUsecase.Update(ctx, input)
