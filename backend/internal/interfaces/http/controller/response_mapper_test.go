@@ -111,3 +111,47 @@ func TestUserResponse(t *testing.T) {
 		t.Errorf("Sites = %+v, want site-1", got.Sites)
 	}
 }
+
+func TestRobotResponse(t *testing.T) {
+	robotType := "arm"
+	activeEpisodeID := "episode-1"
+	activeUserID := "user-1"
+	robot := model.Robot{
+		IDNatural:        "robot-1",
+		OrganizationID:   "org-1",
+		OrganizationName: "Airoa",
+		SiteID:           "site-1",
+		SiteName:         "Tokyo",
+		LocationID:       "loc-1",
+		LocationName:     "Dock",
+		Name:             "Yubi",
+		RobotType:        &robotType,
+		Status:           model.RobotStatusReady,
+		ActiveEpisodeID:  &activeEpisodeID,
+		ActiveUserID:     &activeUserID,
+	}
+
+	got := robotResponse(robot)
+
+	if got.Id != robot.IDNatural || got.Name != robot.Name {
+		t.Fatalf("robotResponse() = %+v, want values from %+v", got, robot)
+	}
+	if got.OrganizationId == nil || *got.OrganizationId != robot.OrganizationID {
+		t.Errorf("OrganizationId = %v, want %q", got.OrganizationId, robot.OrganizationID)
+	}
+	if got.SiteId == nil || *got.SiteId != robot.SiteID {
+		t.Errorf("SiteId = %v, want %q", got.SiteId, robot.SiteID)
+	}
+	if got.LocationId == nil || *got.LocationId != robot.LocationID {
+		t.Errorf("LocationId = %v, want %q", got.LocationId, robot.LocationID)
+	}
+	if got.Status == nil || *got.Status != openapi.RobotStatusReady {
+		t.Errorf("Status = %v, want ready", got.Status)
+	}
+	if got.ActiveEpisodeId == nil || *got.ActiveEpisodeId != activeEpisodeID {
+		t.Errorf("ActiveEpisodeId = %v, want %q", got.ActiveEpisodeId, activeEpisodeID)
+	}
+	if got.ActiveUserId == nil || *got.ActiveUserId != activeUserID {
+		t.Errorf("ActiveUserId = %v, want %q", got.ActiveUserId, activeUserID)
+	}
+}

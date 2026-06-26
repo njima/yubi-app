@@ -21,37 +21,17 @@ func (c *controller) GetRobotMe(ctx context.Context, request openapi.GetRobotMeR
 		return nil, err
 	}
 
-	status := openAPIRobotStatus(rob.Status)
-	resp := openapi.GetRobotMe200JSONResponse{
-		Id:               rob.IDNatural,
-		OrganizationId:   &rob.OrganizationID,
-		OrganizationName: &rob.OrganizationName,
-		SiteId:           &rob.SiteID,
-		SiteName:         &rob.SiteName,
-		LocationId:       &rob.LocationID,
-		LocationName:     &rob.LocationName,
-		Name:             rob.Name,
-		RobotType:        rob.RobotType,
-		Status:           &status,
-		LastHeartbeatAt:  rob.LastHeartbeatAt,
-		OfflineReason:    rob.OfflineReason,
-		RobotConfig:      mapPtrFromRawMessagePtr(rob.RobotConfig),
-		ActiveEpisodeId:  rob.ActiveEpisodeID,
-		ActiveUserId:     rob.ActiveUserID,
-	}
+	resp := robotResponse(rob)
 
 	operator, err := c.robotOperatorUsecase.Get(ctx, robotID)
 	if err != nil {
 		c.logger.Warn().Err(err).Str("robot_id", robotID).Msg("failed to get robot operator")
 	} else if operator != nil {
-		resp.ActiveOperator = &openapi.RobotOperator{
-			UserId:           operator.UserID,
-			DisplayName:      operator.DisplayName,
-			OrganizationName: operator.OrganizationName,
-		}
+		activeOperator := robotOperatorResponse(*operator)
+		resp.ActiveOperator = &activeOperator
 	}
 
-	return resp, nil
+	return openapi.GetRobotMe200JSONResponse(resp), nil
 }
 
 func (c *controller) UpdateRobotStatus(ctx context.Context, request openapi.UpdateRobotStatusRequestObject) (openapi.UpdateRobotStatusResponseObject, error) {
