@@ -54,13 +54,7 @@ func (s *site) List(ctx context.Context, conn repository.DBConn, filter reposito
 		Limit(limit).
 		Offset(offset)
 
-	if filter.OrganizationID != nil {
-		sel = sel.Where("organization_id = ?", *filter.OrganizationID)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		sel = sel.Where("name ILIKE ?", "%"+escaped+"%")
-	}
+	sel = applySiteListFilters(sel, filter)
 
 	if err := sel.Scan(ctx); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to list sites: %v", err))
@@ -70,13 +64,7 @@ func (s *site) List(ctx context.Context, conn repository.DBConn, filter reposito
 	countSel := conn.NewSelect().
 		Model((*entity.Site)(nil)).
 		ColumnExpr("COUNT(*)")
-	if filter.OrganizationID != nil {
-		countSel = countSel.Where("organization_id = ?", *filter.OrganizationID)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		countSel = countSel.Where("name ILIKE ?", "%"+escaped+"%")
-	}
+	countSel = applySiteListFilters(countSel, filter)
 	if err := countSel.Scan(ctx, &total); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to count sites: %v", err))
 	}
