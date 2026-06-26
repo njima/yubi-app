@@ -240,3 +240,75 @@ func TestEpisodeGradeResponse(t *testing.T) {
 		t.Errorf("UpdatedAt = %v, want %v", got.UpdatedAt, updatedAt)
 	}
 }
+
+func TestTaskResponse(t *testing.T) {
+	description := "Move boxes"
+	priority := model.TaskPriorityHigh
+	difficulty := model.TaskDifficultyA
+	status := model.TaskStatusDoing
+	robotType := "arm"
+	displayName := "Pilot"
+	task := model.Task{
+		IDNatural:          "task-1",
+		Name:               "Move",
+		Description:        &description,
+		ManualURL:          "https://example.com/manual",
+		Priority:           &priority,
+		Difficulty:         &difficulty,
+		Status:             &status,
+		RobotType:          &robotType,
+		Version:            "v2",
+		VersionDisplayName: &displayName,
+		Tags: model.TaskTags{
+			{ID: "tag-1", Name: "Picking", CategoryTypeID: "cat-1", CategoryTypeName: "Work"},
+		},
+	}
+
+	got := taskResponse(task)
+
+	if got.Id != task.IDNatural || got.Name != task.Name || got.ManualUrl != task.ManualURL {
+		t.Fatalf("taskResponse() = %+v, want values from %+v", got, task)
+	}
+	if got.Version == nil || *got.Version != task.Version {
+		t.Errorf("Version = %v, want %q", got.Version, task.Version)
+	}
+	if got.VersionDisplayName == nil || *got.VersionDisplayName != displayName {
+		t.Errorf("VersionDisplayName = %v, want %q", got.VersionDisplayName, displayName)
+	}
+	if got.Tags == nil || len(*got.Tags) != 1 || (*got.Tags)[0].Id != "tag-1" {
+		t.Errorf("Tags = %+v, want tag-1", got.Tags)
+	}
+}
+
+func TestTaskVersionResponse(t *testing.T) {
+	createdAt := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
+	displayName := "Pilot"
+	actualDurationSeconds := int64(90)
+	actualEpisodeCount := 3
+	taskVersion := model.TaskVersion{
+		IDNatural:             "version-1",
+		TaskID:                "task-1",
+		Version:               "v2",
+		DisplayName:           &displayName,
+		ApprovalStatus:        model.ApprovalStatusApproved,
+		IsCurrent:             true,
+		CreatedAt:             createdAt,
+		ActualDurationSeconds: &actualDurationSeconds,
+		ActualEpisodeCount:    &actualEpisodeCount,
+		Parameters: []model.TaskVersionParameter{
+			{Key: "color", Values: []string{"red"}},
+		},
+	}
+
+	got := taskVersionResponse(taskVersion)
+
+	if got.Id != taskVersion.IDNatural || got.TaskId != taskVersion.TaskID || got.Version != taskVersion.Version {
+		t.Fatalf("taskVersionResponse() = %+v, want values from %+v", got, taskVersion)
+	}
+	if got.ActualDurationSeconds == nil || *got.ActualDurationSeconds != int(actualDurationSeconds) {
+		t.Errorf("ActualDurationSeconds = %v, want %d", got.ActualDurationSeconds, actualDurationSeconds)
+	}
+	if got.Parameters == nil || len(*got.Parameters) != 1 || (*got.Parameters)[0].Key != "color" {
+		t.Errorf("Parameters = %+v, want color", got.Parameters)
+	}
+}

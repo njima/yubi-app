@@ -11,63 +11,6 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )
 
-func toOpenAPITag(t model.TaskTag) openapi.TaskTag {
-	return openapi.TaskTag{
-		Id:               t.ID,
-		Name:             t.Name,
-		CategoryTypeId:   t.CategoryTypeID,
-		CategoryTypeName: t.CategoryTypeName,
-	}
-}
-
-func toOpenAPITags(tags model.TaskTags) *[]openapi.TaskTag {
-	if len(tags) == 0 {
-		return nil
-	}
-	result := make([]openapi.TaskTag, 0, len(tags))
-	for _, t := range tags {
-		result = append(result, toOpenAPITag(*t))
-	}
-	return &result
-}
-
-func toOpenAPITask(t model.Task) openapi.Task {
-	var priority openapi.TaskPriority
-	if t.Priority != nil {
-		priority = openapi.TaskPriority(*t.Priority)
-	}
-	var difficulty openapi.TaskDifficulty
-	if t.Difficulty != nil {
-		difficulty = openapi.TaskDifficulty(*t.Difficulty)
-	}
-	var status openapi.TaskStatus
-	if t.Status != nil {
-		status = openapi.TaskStatus(*t.Status)
-	}
-	task := openapi.Task{
-		Id:                    t.IDNatural,
-		Name:                  t.Name,
-		Description:           t.Description,
-		ManualUrl:             t.ManualURL,
-		Priority:              priority,
-		Difficulty:            difficulty,
-		Status:                status,
-		Deadline:              t.Deadline,
-		RobotType:             t.RobotType,
-		TargetDurationSeconds: t.TargetDurationSeconds,
-		TargetEpisodeCount:    t.TargetEpisodeCount,
-		ActualEpisodeCount:    t.ActualEpisodeCount,
-		Tags:                  toOpenAPITags(t.Tags),
-	}
-	if t.Version != "" {
-		task.Version = &t.Version
-		tv := model.TaskVersion{Version: t.Version, DisplayName: t.VersionDisplayName}
-		resolved := tv.DisplayLabel(t.Name)
-		task.VersionDisplayName = &resolved
-	}
-	return task
-}
-
 func (c *controller) ListTasks(ctx context.Context, request openapi.ListTasksRequestObject) (openapi.ListTasksResponseObject, error) {
 	pg := pagination.Parse(request.Params.Page, request.Params.Limit)
 
@@ -95,7 +38,7 @@ func (c *controller) ListTasks(ctx context.Context, request openapi.ListTasksReq
 
 	taskList := make([]openapi.Task, 0, len(tasks))
 	for _, t := range tasks {
-		taskList = append(taskList, toOpenAPITask(*t))
+		taskList = append(taskList, taskResponse(*t))
 	}
 
 	return openapi.ListTasks200JSONResponse{
@@ -134,7 +77,7 @@ func (c *controller) CreateTask(ctx context.Context, request openapi.CreateTaskR
 		return nil, err
 	}
 
-	return openapi.CreateTask201JSONResponse(toOpenAPITask(tk)), nil
+	return openapi.CreateTask201JSONResponse(taskResponse(tk)), nil
 }
 
 func (c *controller) DeleteTaskById(ctx context.Context, request openapi.DeleteTaskByIdRequestObject) (openapi.DeleteTaskByIdResponseObject, error) {
@@ -150,7 +93,7 @@ func (c *controller) GetTaskById(ctx context.Context, request openapi.GetTaskByI
 		return nil, err
 	}
 
-	return openapi.GetTaskById200JSONResponse(toOpenAPITask(tk)), nil
+	return openapi.GetTaskById200JSONResponse(taskResponse(tk)), nil
 }
 
 func (c *controller) UpdateTaskById(ctx context.Context, request openapi.UpdateTaskByIdRequestObject) (openapi.UpdateTaskByIdResponseObject, error) {
@@ -195,7 +138,7 @@ func (c *controller) UpdateTaskById(ctx context.Context, request openapi.UpdateT
 		return nil, err
 	}
 
-	return openapi.UpdateTaskById200JSONResponse(toOpenAPITask(tk)), nil
+	return openapi.UpdateTaskById200JSONResponse(taskResponse(tk)), nil
 }
 
 func (c *controller) CreateTaskVersion(ctx context.Context, request openapi.CreateTaskVersionRequestObject) (openapi.CreateTaskVersionResponseObject, error) {
@@ -219,7 +162,7 @@ func (c *controller) CreateTaskVersion(ctx context.Context, request openapi.Crea
 		return nil, err
 	}
 
-	return openapi.CreateTaskVersion201JSONResponse(taskVersionToResponse(tv)), nil
+	return openapi.CreateTaskVersion201JSONResponse(taskVersionResponse(tv)), nil
 }
 
 func (c *controller) ListTaskVersions(ctx context.Context, request openapi.ListTaskVersionsRequestObject) (openapi.ListTaskVersionsResponseObject, error) {
@@ -230,7 +173,7 @@ func (c *controller) ListTaskVersions(ctx context.Context, request openapi.ListT
 
 	resp := make([]openapi.TaskVersion, 0, len(versions))
 	for _, v := range versions {
-		resp = append(resp, taskVersionToResponse(*v))
+		resp = append(resp, taskVersionResponse(*v))
 	}
 	return openapi.ListTaskVersions200JSONResponse(resp), nil
 }
@@ -252,7 +195,7 @@ func (c *controller) UpdateTaskVersion(ctx context.Context, request openapi.Upda
 		return nil, err
 	}
 
-	return openapi.UpdateTaskVersion200JSONResponse(taskVersionToResponse(tv)), nil
+	return openapi.UpdateTaskVersion200JSONResponse(taskVersionResponse(tv)), nil
 }
 
 func (c *controller) ApproveTaskVersion(ctx context.Context, request openapi.ApproveTaskVersionRequestObject) (openapi.ApproveTaskVersionResponseObject, error) {
@@ -261,7 +204,7 @@ func (c *controller) ApproveTaskVersion(ctx context.Context, request openapi.App
 		return nil, err
 	}
 
-	return openapi.ApproveTaskVersion200JSONResponse(taskVersionToResponse(tv)), nil
+	return openapi.ApproveTaskVersion200JSONResponse(taskVersionResponse(tv)), nil
 }
 
 func (c *controller) UpdateTaskVersionParameters(ctx context.Context, request openapi.UpdateTaskVersionParametersRequestObject) (openapi.UpdateTaskVersionParametersResponseObject, error) {
@@ -279,48 +222,13 @@ func (c *controller) UpdateTaskVersionParameters(ctx context.Context, request op
 		return nil, err
 	}
 
-	return openapi.UpdateTaskVersionParameters200JSONResponse(taskVersionToResponse(tv)), nil
-}
-
-func taskVersionToResponse(tv model.TaskVersion) openapi.TaskVersion {
-	resp := openapi.TaskVersion{
-		Id:                              tv.IDNatural,
-		TaskId:                          tv.TaskID,
-		Version:                         tv.Version,
-		DisplayName:                     tv.DisplayName,
-		IsCurrent:                       tv.IsCurrent,
-		ApprovalStatus:                  openAPIApprovalStatus(tv.ApprovalStatus),
-		CreatedAt:                       tv.CreatedAt,
-		TargetDurationSeconds:           tv.TargetDurationSeconds,
-		TargetEpisodeCount:              tv.TargetEpisodeCount,
-		TargetDurationPerEpisodeSeconds: tv.TargetDurationPerEpisodeSeconds,
-	}
-	if tv.ActualDurationSeconds != nil {
-		v := int(*tv.ActualDurationSeconds)
-		resp.ActualDurationSeconds = &v
-	}
-	if tv.ActualEpisodeCount != nil {
-		resp.ActualEpisodeCount = tv.ActualEpisodeCount
-	}
-	if len(tv.Parameters) > 0 {
-		params := modelToOpenAPIParameters(tv.Parameters)
-		resp.Parameters = &params
-	}
-	return resp
+	return openapi.UpdateTaskVersionParameters200JSONResponse(taskVersionResponse(tv)), nil
 }
 
 func openAPIToModelParameters(params []openapi.TaskVersionParameter) []model.TaskVersionParameter {
 	result := make([]model.TaskVersionParameter, len(params))
 	for i, p := range params {
 		result[i] = model.TaskVersionParameter{Key: p.Key, Values: p.Values}
-	}
-	return result
-}
-
-func modelToOpenAPIParameters(params []model.TaskVersionParameter) []openapi.TaskVersionParameter {
-	result := make([]openapi.TaskVersionParameter, len(params))
-	for i, p := range params {
-		result[i] = openapi.TaskVersionParameter{Key: p.Key, Values: p.Values}
 	}
 	return result
 }
