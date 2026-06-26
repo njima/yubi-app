@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )
@@ -38,13 +37,14 @@ func (c *controller) ListSites(ctx context.Context, request openapi.ListSitesReq
 }
 
 func (c *controller) CreateSite(ctx context.Context, request openapi.CreateSiteRequestObject) (openapi.CreateSiteResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	site, err := c.siteUsecase.Create(ctx, usecase.SiteCreateInput{
-		OrganizationID: request.Body.OrganizationId,
-		Name:           request.Body.Name,
+		OrganizationID: body.OrganizationId,
+		Name:           body.Name,
 	})
 	if err != nil {
 		return nil, err
@@ -63,13 +63,14 @@ func (c *controller) GetSiteById(ctx context.Context, request openapi.GetSiteByI
 }
 
 func (c *controller) UpdateSiteById(ctx context.Context, request openapi.UpdateSiteByIdRequestObject) (openapi.UpdateSiteByIdResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	site, err := c.siteUsecase.Update(ctx, usecase.SiteUpdateInput{
 		ID:   request.SiteId,
-		Name: request.Body.Name,
+		Name: body.Name,
 	})
 	if err != nil {
 		return nil, err

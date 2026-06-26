@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -25,15 +24,16 @@ func (c *controller) CreateRobotExecution(ctx context.Context, request openapi.C
 }
 
 func (c *controller) StartRobotExecution(ctx context.Context, request openapi.StartRobotExecutionRequestObject) (openapi.StartRobotExecutionResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.ExecutionActionInput{
 		EpisodeID:   request.EpisodeId,
 		SubTaskID:   request.SubtaskId,
 		ExecutionID: request.ExecutionId,
-		OccurredAt:  request.Body.OccurredAt,
+		OccurredAt:  body.OccurredAt,
 	}
 
 	if err := c.episodeExecutionUsecase.Start(ctx, input); err != nil {
@@ -44,15 +44,16 @@ func (c *controller) StartRobotExecution(ctx context.Context, request openapi.St
 }
 
 func (c *controller) FinishRobotExecution(ctx context.Context, request openapi.FinishRobotExecutionRequestObject) (openapi.FinishRobotExecutionResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.ExecutionActionInput{
 		EpisodeID:   request.EpisodeId,
 		SubTaskID:   request.SubtaskId,
 		ExecutionID: request.ExecutionId,
-		OccurredAt:  request.Body.OccurredAt,
+		OccurredAt:  body.OccurredAt,
 	}
 
 	if err := c.episodeExecutionUsecase.Finish(ctx, input); err != nil {

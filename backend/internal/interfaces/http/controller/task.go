@@ -7,7 +7,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )
@@ -110,23 +109,24 @@ func (c *controller) ListTasks(ctx context.Context, request openapi.ListTasksReq
 }
 
 func (c *controller) CreateTask(ctx context.Context, request openapi.CreateTaskRequestObject) (openapi.CreateTaskResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.TaskCreateInput{
-		OrganizationID: request.Body.OrganizationId,
-		Name:           request.Body.Name,
-		Description:    request.Body.Description,
-		ManualURL:      request.Body.ManualUrl,
-		Priority:       model.TaskPriority(request.Body.Priority),
-		Difficulty:     model.TaskDifficulty(request.Body.Difficulty),
-		Status:         model.TaskStatus(request.Body.Status),
-		Deadline:       request.Body.Deadline,
-		RobotType:      request.Body.RobotType,
+		OrganizationID: body.OrganizationId,
+		Name:           body.Name,
+		Description:    body.Description,
+		ManualURL:      body.ManualUrl,
+		Priority:       model.TaskPriority(body.Priority),
+		Difficulty:     model.TaskDifficulty(body.Difficulty),
+		Status:         model.TaskStatus(body.Status),
+		Deadline:       body.Deadline,
+		RobotType:      body.RobotType,
 	}
-	if request.Body.TagIds != nil {
-		input.TagIDs = *request.Body.TagIds
+	if body.TagIds != nil {
+		input.TagIDs = *body.TagIds
 	}
 
 	tk, err := c.taskUsecase.Create(ctx, input)
@@ -154,39 +154,40 @@ func (c *controller) GetTaskById(ctx context.Context, request openapi.GetTaskByI
 }
 
 func (c *controller) UpdateTaskById(ctx context.Context, request openapi.UpdateTaskByIdRequestObject) (openapi.UpdateTaskByIdResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.TaskUpdateInput{
 		ID: request.TaskId,
 	}
-	if request.Body.Name != nil {
-		input.Name = request.Body.Name
+	if body.Name != nil {
+		input.Name = body.Name
 	}
-	if request.Body.Description != nil {
-		input.Description = request.Body.Description
+	if body.Description != nil {
+		input.Description = body.Description
 	}
-	if request.Body.ManualUrl != nil {
-		input.ManualURL = request.Body.ManualUrl
+	if body.ManualUrl != nil {
+		input.ManualURL = body.ManualUrl
 	}
-	if request.Body.Priority != nil {
-		input.Priority = taskPriorityPtr(*request.Body.Priority)
+	if body.Priority != nil {
+		input.Priority = taskPriorityPtr(*body.Priority)
 	}
-	if request.Body.Difficulty != nil {
-		input.Difficulty = taskDifficultyPtr(*request.Body.Difficulty)
+	if body.Difficulty != nil {
+		input.Difficulty = taskDifficultyPtr(*body.Difficulty)
 	}
-	if request.Body.Status != nil {
-		input.Status = taskStatusPtr(*request.Body.Status)
+	if body.Status != nil {
+		input.Status = taskStatusPtr(*body.Status)
 	}
-	if request.Body.Deadline != nil {
-		input.Deadline = request.Body.Deadline
+	if body.Deadline != nil {
+		input.Deadline = body.Deadline
 	}
-	if request.Body.RobotType != nil {
-		input.RobotType = request.Body.RobotType
+	if body.RobotType != nil {
+		input.RobotType = body.RobotType
 	}
-	if request.Body.TagIds != nil {
-		input.TagIDs = request.Body.TagIds
+	if body.TagIds != nil {
+		input.TagIDs = body.TagIds
 	}
 
 	tk, err := c.taskUsecase.Update(ctx, input)
@@ -198,18 +199,19 @@ func (c *controller) UpdateTaskById(ctx context.Context, request openapi.UpdateT
 }
 
 func (c *controller) CreateTaskVersion(ctx context.Context, request openapi.CreateTaskVersionRequestObject) (openapi.CreateTaskVersionResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.TaskVersionCreateInput{
 		TaskID:                          request.TaskId,
-		Version:                         request.Body.Version,
-		DisplayName:                     request.Body.DisplayName,
-		BaseTaskVersionID:               request.Body.BaseTaskVersionId,
-		TargetDurationSeconds:           request.Body.TargetDurationSeconds,
-		TargetEpisodeCount:              request.Body.TargetEpisodeCount,
-		TargetDurationPerEpisodeSeconds: request.Body.TargetDurationPerEpisodeSeconds,
+		Version:                         body.Version,
+		DisplayName:                     body.DisplayName,
+		BaseTaskVersionID:               body.BaseTaskVersionId,
+		TargetDurationSeconds:           body.TargetDurationSeconds,
+		TargetEpisodeCount:              body.TargetEpisodeCount,
+		TargetDurationPerEpisodeSeconds: body.TargetDurationPerEpisodeSeconds,
 	}
 
 	tv, err := c.taskVersionUsecase.Create(ctx, input)
@@ -234,16 +236,17 @@ func (c *controller) ListTaskVersions(ctx context.Context, request openapi.ListT
 }
 
 func (c *controller) UpdateTaskVersion(ctx context.Context, request openapi.UpdateTaskVersionRequestObject) (openapi.UpdateTaskVersionResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	tv, err := c.taskVersionUsecase.Update(ctx, request.TaskId, usecase.TaskVersionUpdateInput{
 		ID:                              request.VersionId,
-		DisplayName:                     request.Body.DisplayName,
-		TargetDurationSeconds:           request.Body.TargetDurationSeconds,
-		TargetEpisodeCount:              request.Body.TargetEpisodeCount,
-		TargetDurationPerEpisodeSeconds: request.Body.TargetDurationPerEpisodeSeconds,
+		DisplayName:                     body.DisplayName,
+		TargetDurationSeconds:           body.TargetDurationSeconds,
+		TargetEpisodeCount:              body.TargetEpisodeCount,
+		TargetDurationPerEpisodeSeconds: body.TargetDurationPerEpisodeSeconds,
 	})
 	if err != nil {
 		return nil, err
@@ -262,14 +265,15 @@ func (c *controller) ApproveTaskVersion(ctx context.Context, request openapi.App
 }
 
 func (c *controller) UpdateTaskVersionParameters(ctx context.Context, request openapi.UpdateTaskVersionParametersRequestObject) (openapi.UpdateTaskVersionParametersResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	tv, err := c.taskVersionUsecase.UpdateParameters(ctx, usecase.TaskVersionUpdateParametersInput{
 		TaskID:     request.TaskId,
 		VersionID:  request.VersionId,
-		Parameters: openAPIToModelParameters(request.Body.Parameters),
+		Parameters: openAPIToModelParameters(body.Parameters),
 	})
 	if err != nil {
 		return nil, err

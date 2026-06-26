@@ -55,8 +55,9 @@ func (c *controller) GetRobotMe(ctx context.Context, request openapi.GetRobotMeR
 }
 
 func (c *controller) UpdateRobotStatus(ctx context.Context, request openapi.UpdateRobotStatusRequestObject) (openapi.UpdateRobotStatusResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	robotID, err := requestctx.RobotID(ctx)
@@ -72,7 +73,7 @@ func (c *controller) UpdateRobotStatus(ctx context.Context, request openapi.Upda
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeRobotNotFound, "robot not found"))
 	}
 
-	status := convertToRobotStatus(robotID, request.Body)
+	status := convertToRobotStatus(robotID, body)
 
 	if err := c.robotDeviceUsecase.UpdateRobotStatus(ctx, status); err != nil {
 		return nil, err

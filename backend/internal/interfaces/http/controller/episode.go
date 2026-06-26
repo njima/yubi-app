@@ -259,16 +259,15 @@ func (c *controller) ListEpisodes(ctx context.Context, request openapi.ListEpiso
 }
 
 func (c *controller) CreateEpisode(ctx context.Context, request openapi.CreateEpisodeRequestObject) (openapi.CreateEpisodeResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	body := *request.Body
 
 	input := usecase.EpisodeCreateInput{
 		OrganizationID: body.OrganizationId,
@@ -295,11 +294,11 @@ func (c *controller) CreateEpisode(ctx context.Context, request openapi.CreateEp
 }
 
 func (c *controller) CreateEpisodesBulk(ctx context.Context, request openapi.CreateEpisodesBulkRequestObject) (openapi.CreateEpisodesBulkResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	body := *request.Body
 	if body.Count < 1 || body.Count > 100 {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "count must be between 1 and 100"))
 	}
@@ -377,11 +376,11 @@ func (c *controller) GetEpisodeById(ctx context.Context, request openapi.GetEpis
 }
 
 func (c *controller) UpdateEpisodeById(ctx context.Context, request openapi.UpdateEpisodeByIdRequestObject) (openapi.UpdateEpisodeByIdResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	body := *request.Body
 	status, err := episodeStatusModel(body.Status)
 	if err != nil {
 		return nil, err

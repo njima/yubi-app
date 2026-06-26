@@ -25,8 +25,9 @@ func (c *controller) GetRobotOperator(ctx context.Context, request openapi.GetRo
 }
 
 func (c *controller) SetRobotOperator(ctx context.Context, request openapi.SetRobotOperatorRequestObject) (openapi.SetRobotOperatorResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	userID, err := requestctx.UserID(ctx)
@@ -36,8 +37,8 @@ func (c *controller) SetRobotOperator(ctx context.Context, request openapi.SetRo
 
 	operator := model.RobotOperator{
 		UserID:           userID,
-		DisplayName:      request.Body.DisplayName,
-		OrganizationName: request.Body.OrganizationName,
+		DisplayName:      body.DisplayName,
+		OrganizationName: body.OrganizationName,
 	}
 
 	existing, err := c.robotOperatorUsecase.Set(ctx, request.RobotId, operator)

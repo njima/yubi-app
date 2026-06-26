@@ -12,8 +12,9 @@ import (
 )
 
 func (c *controller) CreateUser(ctx context.Context, request openapi.CreateUserRequestObject) (openapi.CreateUserResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	orgID, err := requestctx.OrganizationID(ctx)
@@ -22,22 +23,22 @@ func (c *controller) CreateUser(ctx context.Context, request openapi.CreateUserR
 	}
 
 	var locationIDs []string
-	if request.Body.LocationIds != nil {
-		locationIDs = *request.Body.LocationIds
+	if body.LocationIds != nil {
+		locationIDs = *body.LocationIds
 	}
 	var siteIDs []string
-	if request.Body.SiteIds != nil {
-		siteIDs = *request.Body.SiteIds
+	if body.SiteIds != nil {
+		siteIDs = *body.SiteIds
 	}
-	role, err := userRoleModel(request.Body.Role)
+	role, err := userRoleModel(body.Role)
 	if err != nil {
 		return nil, err
 	}
 
 	user, err := c.userUsecase.Create(ctx, usecase.CreateInput{
 		OrganizationID: orgID,
-		Email:          string(request.Body.Email),
-		Name:           request.Body.DisplayName,
+		Email:          string(body.Email),
+		Name:           body.DisplayName,
 		Role:           role,
 		LocationIDs:    locationIDs,
 		SiteIDs:        siteIDs,
@@ -161,8 +162,9 @@ func (c *controller) GetMe(ctx context.Context, request openapi.GetMeRequestObje
 }
 
 func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeRequestObject) (openapi.UpdateMeResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	userID, err := requestctx.UserID(ctx)
@@ -172,7 +174,7 @@ func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeReque
 
 	if _, err := c.userUsecase.Update(ctx, usecase.UserUpdateInput{
 		UserID: userID,
-		Name:   &request.Body.DisplayName,
+		Name:   &body.DisplayName,
 	}); err != nil {
 		return nil, err
 	}
@@ -197,15 +199,20 @@ func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeReque
 }
 
 func (c *controller) UpdateUserById(ctx context.Context, request openapi.UpdateUserByIdRequestObject) (openapi.UpdateUserByIdResponseObject, error) {
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	var email *string
 	var displayName *string
 
-	if request.Body.Email != nil {
-		emailValue := string(*request.Body.Email)
+	if body.Email != nil {
+		emailValue := string(*body.Email)
 		email = &emailValue
 	}
-	if request.Body.DisplayName != nil {
-		displayName = request.Body.DisplayName
+	if body.DisplayName != nil {
+		displayName = body.DisplayName
 	}
 
 	user, err := c.userUsecase.Update(ctx, usecase.UserUpdateInput{
@@ -231,10 +238,11 @@ func (c *controller) UpdateUserById(ctx context.Context, request openapi.UpdateU
 }
 
 func (c *controller) UpdateUserRole(ctx context.Context, request openapi.UpdateUserRoleRequestObject) (openapi.UpdateUserRoleResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
-	role, err := userRoleModel(request.Body.Role)
+	role, err := userRoleModel(body.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -280,11 +288,12 @@ func (c *controller) DeleteUserById(ctx context.Context, request openapi.DeleteU
 }
 
 func (c *controller) UpdateUserLocations(ctx context.Context, request openapi.UpdateUserLocationsRequestObject) (openapi.UpdateUserLocationsResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	user, err := c.userUsecase.SetLocations(ctx, request.UserId, request.Body.LocationIds)
+	user, err := c.userUsecase.SetLocations(ctx, request.UserId, body.LocationIds)
 	if err != nil {
 		return nil, err
 	}
@@ -314,11 +323,12 @@ func toSiteSummaries(sites []model.SiteSummary) []openapi.SiteSummary {
 }
 
 func (c *controller) UpdateUserSites(ctx context.Context, request openapi.UpdateUserSitesRequestObject) (openapi.UpdateUserSitesResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	user, err := c.userUsecase.SetSites(ctx, request.UserId, request.Body.SiteIds)
+	user, err := c.userUsecase.SetSites(ctx, request.UserId, body.SiteIds)
 	if err != nil {
 		return nil, err
 	}

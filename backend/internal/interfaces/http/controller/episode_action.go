@@ -4,19 +4,19 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
 func (c *controller) StartRobotEpisode(ctx context.Context, request openapi.StartRobotEpisodeRequestObject) (openapi.StartRobotEpisodeResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.StartEpisodeInput{
 		EpisodeID:  request.EpisodeId,
-		OccurredAt: request.Body.OccurredAt,
+		OccurredAt: body.OccurredAt,
 	}
 
 	// If a live teleop operator is registered (Redis heartbeat), pass their
@@ -36,13 +36,14 @@ func (c *controller) StartRobotEpisode(ctx context.Context, request openapi.Star
 }
 
 func (c *controller) FinishRobotEpisode(ctx context.Context, request openapi.FinishRobotEpisodeRequestObject) (openapi.FinishRobotEpisodeResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.FinishEpisodeInput{
 		EpisodeID:  request.EpisodeId,
-		OccurredAt: request.Body.OccurredAt,
+		OccurredAt: body.OccurredAt,
 	}
 
 	if err := c.episodeUsecase.Finish(ctx, input); err != nil {

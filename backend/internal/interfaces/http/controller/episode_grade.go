@@ -5,7 +5,6 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
@@ -50,8 +49,9 @@ func (c *controller) GetMyEpisodeGrade(ctx context.Context, request openapi.GetM
 }
 
 func (c *controller) UpdateMyEpisodeGrade(ctx context.Context, request openapi.UpdateMyEpisodeGradeRequestObject) (openapi.UpdateMyEpisodeGradeResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	userID, err := requestctx.UserID(ctx)
@@ -71,8 +71,8 @@ func (c *controller) UpdateMyEpisodeGrade(ctx context.Context, request openapi.U
 		EpisodeID:      request.EpisodeId,
 		UserID:         userID,
 		OrganizationID: orgID,
-		Grade:          request.Body.Grade,
-		Comment:        request.Body.Comment,
+		Grade:          body.Grade,
+		Comment:        body.Comment,
 	})
 	if err != nil {
 		return nil, err

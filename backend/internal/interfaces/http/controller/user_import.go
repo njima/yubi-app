@@ -4,16 +4,16 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
 func (c *controller) ValidateUserImport(ctx context.Context, request openapi.ValidateUserImportRequestObject) (openapi.ValidateUserImportResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	result, err := c.userImportUsecase.Validate(ctx, request.Body.CsvContent)
+	result, err := c.userImportUsecase.Validate(ctx, body.CsvContent)
 	if err != nil {
 		return nil, err
 	}
@@ -22,11 +22,12 @@ func (c *controller) ValidateUserImport(ctx context.Context, request openapi.Val
 }
 
 func (c *controller) ImportUsers(ctx context.Context, request openapi.ImportUsersRequestObject) (openapi.ImportUsersResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	result, err := c.userImportUsecase.Import(ctx, request.Body.CsvContent)
+	result, err := c.userImportUsecase.Import(ctx, body.CsvContent)
 	if err != nil {
 		return nil, err
 	}

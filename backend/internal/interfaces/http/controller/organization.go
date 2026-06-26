@@ -30,11 +30,10 @@ func (c *controller) ListOrganizations(ctx context.Context, request openapi.List
 }
 
 func (c *controller) CreateOrganization(ctx context.Context, request openapi.CreateOrganizationRequestObject) (openapi.CreateOrganizationResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
-
-	body := request.Body
 
 	var desc *string
 	if body.Description != nil {
@@ -72,17 +71,18 @@ func (c *controller) GetOrganizationById(ctx context.Context, request openapi.Ge
 }
 
 func (c *controller) UpdateOrganizationById(ctx context.Context, request openapi.UpdateOrganizationByIdRequestObject) (openapi.UpdateOrganizationByIdResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	var displayName *string
 	var description *string
-	if request.Body.DisplayName != nil {
-		displayName = request.Body.DisplayName
+	if body.DisplayName != nil {
+		displayName = body.DisplayName
 	}
-	if request.Body.Description != nil {
-		description = request.Body.Description
+	if body.Description != nil {
+		description = body.Description
 	}
 
 	org, err := c.organizationUsecase.Update(ctx, usecase.OrganizationUpdateInput{

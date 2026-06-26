@@ -101,25 +101,26 @@ func (c *controller) ListRobotTypes(ctx context.Context, request openapi.ListRob
 }
 
 func (c *controller) CreateRobot(ctx context.Context, request openapi.CreateRobotRequestObject) (openapi.CreateRobotResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	var cam json.RawMessage
-	if request.Body.RobotConfig != nil {
-		if b, err := json.Marshal(*request.Body.RobotConfig); err == nil {
+	if body.RobotConfig != nil {
+		if b, err := json.Marshal(*body.RobotConfig); err == nil {
 			cam = b
 		}
 	}
 
 	input := usecase.RobotCreateInput{
-		OrganizationID: request.Body.OrganizationId,
-		LocationID:     request.Body.LocationId,
-		Name:           request.Body.Name,
-		RobotType:      request.Body.RobotType,
+		OrganizationID: body.OrganizationId,
+		LocationID:     body.LocationId,
+		Name:           body.Name,
+		RobotType:      body.RobotType,
 		RobotConfig:    &cam,
 	}
-	mappedLeaderStatus, err := leaderStatus(request.Body.LeaderStatus)
+	mappedLeaderStatus, err := leaderStatus(body.LeaderStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -201,40 +202,41 @@ func (c *controller) GetRobotById(ctx context.Context, request openapi.GetRobotB
 }
 
 func (c *controller) UpdateRobotById(ctx context.Context, request openapi.UpdateRobotByIdRequestObject) (openapi.UpdateRobotByIdResponseObject, error) {
-	if request.Body == nil {
-		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	body, err := requiredBody(request.Body)
+	if err != nil {
+		return nil, err
 	}
 
 	input := usecase.RobotUpdateInput{
 		ID: request.RobotId,
 	}
-	if request.Body.Name != nil {
-		input.Name = request.Body.Name
+	if body.Name != nil {
+		input.Name = body.Name
 	}
-	if request.Body.RobotType != nil {
-		input.RobotType = request.Body.RobotType
+	if body.RobotType != nil {
+		input.RobotType = body.RobotType
 	}
-	status, err := robotStatusModel(request.Body.Status)
+	status, err := robotStatusModel(body.Status)
 	if err != nil {
 		return nil, err
 	}
 	input.Status = status
-	if request.Body.LastHeartbeatAt != nil {
-		input.LastHeartbeatAt = request.Body.LastHeartbeatAt
+	if body.LastHeartbeatAt != nil {
+		input.LastHeartbeatAt = body.LastHeartbeatAt
 	}
-	if request.Body.OfflineReason != nil {
-		input.OfflineReason = request.Body.OfflineReason
+	if body.OfflineReason != nil {
+		input.OfflineReason = body.OfflineReason
 	}
-	if request.Body.RobotConfig != nil {
-		cam, err := json.Marshal(request.Body.RobotConfig)
+	if body.RobotConfig != nil {
+		cam, err := json.Marshal(body.RobotConfig)
 		if err != nil {
 			return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeInternal, "failed to marshal robot config"))
 		}
 		rawMsg := json.RawMessage(cam)
 		input.RobotConfig = &rawMsg
 	}
-	if request.Body.LeaderStatus != nil {
-		input.LeaderStatus, err = leaderStatus(request.Body.LeaderStatus)
+	if body.LeaderStatus != nil {
+		input.LeaderStatus, err = leaderStatus(body.LeaderStatus)
 		if err != nil {
 			return nil, err
 		}
