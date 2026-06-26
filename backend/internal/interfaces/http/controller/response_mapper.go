@@ -14,6 +14,41 @@ func locationResponse(loc model.Location) openapi.Location {
 	}
 }
 
+func apiKeyResponse(key model.APIKey) openapi.ApiKeyResponse {
+	updatedAt := key.CreatedAt
+	if key.UpdatedAt != nil {
+		updatedAt = *key.UpdatedAt
+	}
+	return openapi.ApiKeyResponse{
+		Id:             key.IDNatural,
+		Name:           key.Name,
+		UserId:         key.UserID,
+		UserName:       key.UserName,
+		OrganizationId: key.OrganizationID,
+		RobotId:        key.RobotID,
+		RobotName:      key.RobotName,
+		KeyHint:        key.KeyHint,
+		ExpiresAt:      key.ExpiresAt,
+		LastUsedAt:     key.LastUsedAt,
+		RevokedAt:      key.RevokedAt,
+		CreatedAt:      key.CreatedAt,
+		UpdatedAt:      updatedAt,
+	}
+}
+
+func episodeGradeResponse(grade model.EpisodeGrade, userName string) openapi.EpisodeGrade {
+	return openapi.EpisodeGrade{
+		EpisodeId: grade.EpisodeID,
+		UserId:    grade.UserID,
+		UserName:  userName,
+		Grade:     grade.Grade,
+		Comment:   grade.Comment,
+		GradedAt:  grade.GradedAt,
+		CreatedAt: grade.CreatedAt,
+		UpdatedAt: grade.UpdatedAt,
+	}
+}
+
 func siteResponse(site model.Site) openapi.Site {
 	return openapi.Site{
 		Id:             site.IDNatural,
