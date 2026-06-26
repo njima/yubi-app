@@ -30,7 +30,7 @@ func (c *controller) ListTaskTags(ctx context.Context, request openapi.ListTaskT
 	}
 	resp := make(openapi.ListTaskTags200JSONResponse, 0, len(tags))
 	for _, t := range tags {
-		resp = append(resp, toOpenAPITag(*t))
+		resp = append(resp, taskTagResponse(*t))
 	}
 	return resp, nil
 }
@@ -49,5 +49,5 @@ func (c *controller) CreateTaskTag(ctx context.Context, request openapi.CreateTa
 		return nil, err
 	}
 
-	return openapi.CreateTaskTag201JSONResponse(toOpenAPITag(tag)), nil
+	return openapi.CreateTaskTag201JSONResponse(taskTagResponse(tag)), nil
 }

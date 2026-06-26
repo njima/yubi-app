@@ -76,6 +76,98 @@ func subTaskResponses(subtasks model.SubTasks) []openapi.SubTask {
 	return result
 }
 
+func taskTagResponse(tag model.TaskTag) openapi.TaskTag {
+	return openapi.TaskTag{
+		Id:               tag.ID,
+		Name:             tag.Name,
+		CategoryTypeId:   tag.CategoryTypeID,
+		CategoryTypeName: tag.CategoryTypeName,
+	}
+}
+
+func taskTagResponses(tags model.TaskTags) *[]openapi.TaskTag {
+	if len(tags) == 0 {
+		return nil
+	}
+	result := make([]openapi.TaskTag, 0, len(tags))
+	for _, tag := range tags {
+		result = append(result, taskTagResponse(*tag))
+	}
+	return &result
+}
+
+func taskResponse(task model.Task) openapi.Task {
+	var priority openapi.TaskPriority
+	if task.Priority != nil {
+		priority = openapi.TaskPriority(*task.Priority)
+	}
+	var difficulty openapi.TaskDifficulty
+	if task.Difficulty != nil {
+		difficulty = openapi.TaskDifficulty(*task.Difficulty)
+	}
+	var status openapi.TaskStatus
+	if task.Status != nil {
+		status = openapi.TaskStatus(*task.Status)
+	}
+	resp := openapi.Task{
+		Id:                    task.IDNatural,
+		Name:                  task.Name,
+		Description:           task.Description,
+		ManualUrl:             task.ManualURL,
+		Priority:              priority,
+		Difficulty:            difficulty,
+		Status:                status,
+		Deadline:              task.Deadline,
+		RobotType:             task.RobotType,
+		TargetDurationSeconds: task.TargetDurationSeconds,
+		TargetEpisodeCount:    task.TargetEpisodeCount,
+		ActualEpisodeCount:    task.ActualEpisodeCount,
+		Tags:                  taskTagResponses(task.Tags),
+	}
+	if task.Version != "" {
+		resp.Version = &task.Version
+		tv := model.TaskVersion{Version: task.Version, DisplayName: task.VersionDisplayName}
+		resolved := tv.DisplayLabel(task.Name)
+		resp.VersionDisplayName = &resolved
+	}
+	return resp
+}
+
+func taskVersionResponse(taskVersion model.TaskVersion) openapi.TaskVersion {
+	resp := openapi.TaskVersion{
+		Id:                              taskVersion.IDNatural,
+		TaskId:                          taskVersion.TaskID,
+		Version:                         taskVersion.Version,
+		DisplayName:                     taskVersion.DisplayName,
+		IsCurrent:                       taskVersion.IsCurrent,
+		ApprovalStatus:                  openAPIApprovalStatus(taskVersion.ApprovalStatus),
+		CreatedAt:                       taskVersion.CreatedAt,
+		TargetDurationSeconds:           taskVersion.TargetDurationSeconds,
+		TargetEpisodeCount:              taskVersion.TargetEpisodeCount,
+		TargetDurationPerEpisodeSeconds: taskVersion.TargetDurationPerEpisodeSeconds,
+	}
+	if taskVersion.ActualDurationSeconds != nil {
+		v := int(*taskVersion.ActualDurationSeconds)
+		resp.ActualDurationSeconds = &v
+	}
+	if taskVersion.ActualEpisodeCount != nil {
+		resp.ActualEpisodeCount = taskVersion.ActualEpisodeCount
+	}
+	if len(taskVersion.Parameters) > 0 {
+		params := taskVersionParameterResponses(taskVersion.Parameters)
+		resp.Parameters = &params
+	}
+	return resp
+}
+
+func taskVersionParameterResponses(params []model.TaskVersionParameter) []openapi.TaskVersionParameter {
+	result := make([]openapi.TaskVersionParameter, len(params))
+	for i, param := range params {
+		result[i] = openapi.TaskVersionParameter{Key: param.Key, Values: param.Values}
+	}
+	return result
+}
+
 func organizationResponse(org model.Organization) openapi.OrganizationResponse {
 	return openapi.OrganizationResponse{
 		OrganizationId: org.IDNatural,
