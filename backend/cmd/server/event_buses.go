@@ -1,4 +1,4 @@
-package app
+package main
 
 import "github.com/airoa-org/yubi-app/backend/internal/event"
 

@@ -75,16 +75,27 @@ func TestHTTPControllersDoNotDependOnRepositoryLayer(t *testing.T) {
 	})
 }
 
-func TestAppBootstrapDoesNotConstructUsecasesDirectly(t *testing.T) {
+func TestServerBootstrapDoesNotConstructUsecasesDirectly(t *testing.T) {
 	backendRoot := filepath.Clean("../..")
-	path := filepath.Join(backendRoot, "internal", "app", "bootstrap.go")
+	path := filepath.Join(backendRoot, "cmd", "server", "bootstrap.go")
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		t.Fatalf("read internal/app/bootstrap.go: %v", err)
+		t.Fatalf("read cmd/server/bootstrap.go: %v", err)
 	}
 	if strings.Contains(string(content), "usecase.New") {
-		t.Fatalf("internal/app/bootstrap.go must delegate usecase wiring to internal/app/usecases.go")
+		t.Fatalf("cmd/server/bootstrap.go must delegate usecase wiring to cmd/server/usecases.go")
+	}
+}
+
+func TestServerCompositionRootDoesNotLiveUnderInternalApp(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "app")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("server composition root must live under cmd/server, not internal/app")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/app: %v", err)
 	}
 }
 
