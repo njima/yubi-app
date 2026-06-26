@@ -24,6 +24,23 @@ func siteResponse(site model.Site) openapi.Site {
 	}
 }
 
+func subTaskResponse(subtask model.SubTask) openapi.SubTask {
+	return openapi.SubTask{
+		Id:                    subtask.IDNatural,
+		Name:                  subtask.Name,
+		Description:           subtask.Description,
+		TargetDurationSeconds: subtask.TargetDurationSeconds,
+	}
+}
+
+func subTaskResponses(subtasks model.SubTasks) []openapi.SubTask {
+	result := make([]openapi.SubTask, 0, len(subtasks))
+	for _, subtask := range subtasks {
+		result = append(result, subTaskResponse(*subtask))
+	}
+	return result
+}
+
 func organizationResponse(org model.Organization) openapi.OrganizationResponse {
 	return openapi.OrganizationResponse{
 		OrganizationId: org.IDNatural,
