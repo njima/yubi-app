@@ -49,6 +49,29 @@ func episodeGradeResponse(grade model.EpisodeGrade, userName string) openapi.Epi
 	}
 }
 
+func episodeResponse(ep model.Episode) openapi.Episode {
+	resp := openapi.Episode{
+		Id:            ep.IDNatural,
+		LocationId:    ep.LocationID,
+		UserId:        ep.UserID,
+		RobotId:       ep.RobotID,
+		Status:        openAPIEpisodeStatus(ep.Status),
+		TaskId:        ep.TaskID,
+		TaskVersionId: ep.TaskVersionID,
+		StartedAt:     ep.StartedAt,
+		EndedAt:       ep.FinishedAt,
+		ErrorDetails:  ep.ErrorDetails,
+		CreatedAt:     ep.CreatedAt,
+		RecordedBy:    ep.RecordedByID,
+		AverageGrade:  ep.AverageGrade,
+		GradeCount:    &ep.GradeCount,
+	}
+	if len(ep.ParameterValues) > 0 {
+		resp.ParameterValues = &ep.ParameterValues
+	}
+	return resp
+}
+
 func siteResponse(site model.Site) openapi.Site {
 	return openapi.Site{
 		Id:             site.IDNatural,
@@ -179,7 +202,7 @@ func organizationResponse(org model.Organization) openapi.OrganizationResponse {
 }
 
 func robotResponse(robot model.Robot) openapi.Robot {
-	status, leaderStatus := robotResponseFields(&robot)
+	status, leaderStatus := openAPIRobotStatus(robot.Status), openAPILeaderStatus(robot.LeaderStatus)
 	return openapi.Robot{
 		Id:                         robot.IDNatural,
 		OrganizationId:             &robot.OrganizationID,

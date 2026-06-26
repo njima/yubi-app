@@ -110,29 +110,6 @@ func applyTaskVersionDisplayName(resp *openapi.Episode, ep *model.Episode, taskM
 	resp.TaskVersionDisplayName = &resolved
 }
 
-func episodeToResponse(ep model.Episode) openapi.Episode {
-	resp := openapi.Episode{
-		Id:            ep.IDNatural,
-		LocationId:    ep.LocationID,
-		UserId:        ep.UserID,
-		RobotId:       ep.RobotID,
-		Status:        openAPIEpisodeStatus(ep.Status),
-		TaskId:        ep.TaskID,
-		TaskVersionId: ep.TaskVersionID,
-		StartedAt:     ep.StartedAt,
-		EndedAt:       ep.FinishedAt,
-		ErrorDetails:  ep.ErrorDetails,
-		CreatedAt:     ep.CreatedAt,
-		RecordedBy:    ep.RecordedByID,
-		AverageGrade:  ep.AverageGrade,
-		GradeCount:    &ep.GradeCount,
-	}
-	if len(ep.ParameterValues) > 0 {
-		resp.ParameterValues = &ep.ParameterValues
-	}
-	return resp
-}
-
 // BuildEpisodeSubTasks assembles the API response for episode subtasks by
 // joining subtask master definitions with their episode-specific records and
 // executions. Exported for reuse by the SSE handler.
@@ -243,7 +220,7 @@ func (c *controller) ListEpisodes(ctx context.Context, request openapi.ListEpiso
 	taskMap, tvMap := c.fetchTaskAndVersionMaps(ctx, eps)
 	episodes := make([]openapi.Episode, 0, len(eps))
 	for _, e := range eps {
-		resp := episodeToResponse(*e)
+		resp := episodeResponse(*e)
 		applyTaskVersionDisplayName(&resp, e, taskMap, tvMap)
 		episodes = append(episodes, resp)
 	}
@@ -287,7 +264,7 @@ func (c *controller) CreateEpisode(ctx context.Context, request openapi.CreateEp
 		return nil, err
 	}
 
-	resp := episodeToResponse(ep)
+	resp := episodeResponse(ep)
 	taskMap, tvMap := c.fetchTaskAndVersionMaps(ctx, model.Episodes{&ep})
 	applyTaskVersionDisplayName(&resp, &ep, taskMap, tvMap)
 	return openapi.CreateEpisode201JSONResponse(resp), nil
@@ -329,7 +306,7 @@ func (c *controller) CreateEpisodesBulk(ctx context.Context, request openapi.Cre
 	taskMap, tvMap := c.fetchTaskAndVersionMaps(ctx, eps)
 	resp := make([]openapi.Episode, 0, len(eps))
 	for _, ep := range eps {
-		r := episodeToResponse(*ep)
+		r := episodeResponse(*ep)
 		applyTaskVersionDisplayName(&r, ep, taskMap, tvMap)
 		resp = append(resp, r)
 	}
@@ -366,7 +343,7 @@ func (c *controller) GetEpisodeById(ctx context.Context, request openapi.GetEpis
 		taskDescription = tk.Description
 	}
 
-	resp := episodeToResponse(ep)
+	resp := episodeResponse(ep)
 	resp.Subtasks = &subtasks
 	resp.TaskName = taskName
 	resp.TaskDescription = taskDescription
@@ -400,7 +377,7 @@ func (c *controller) UpdateEpisodeById(ctx context.Context, request openapi.Upda
 		return nil, err
 	}
 
-	resp := episodeToResponse(ep)
+	resp := episodeResponse(ep)
 	taskMap, tvMap := c.fetchTaskAndVersionMaps(ctx, model.Episodes{&ep})
 	applyTaskVersionDisplayName(&resp, &ep, taskMap, tvMap)
 	return openapi.UpdateEpisodeById200JSONResponse(resp), nil
@@ -437,7 +414,7 @@ func (c *controller) GetRobotEpisodeById(ctx context.Context, request openapi.Ge
 		taskDescription = tk.Description
 	}
 
-	resp := episodeToResponse(ep)
+	resp := episodeResponse(ep)
 	resp.Subtasks = &subtasks
 	resp.TaskName = taskName
 	resp.TaskDescription = taskDescription
@@ -452,7 +429,7 @@ func (c *controller) RepeatLastRobotEpisode(ctx context.Context, request openapi
 		return nil, err
 	}
 
-	resp := episodeToResponse(ep)
+	resp := episodeResponse(ep)
 	taskMap, tvMap := c.fetchTaskAndVersionMaps(ctx, model.Episodes{&ep})
 	applyTaskVersionDisplayName(&resp, &ep, taskMap, tvMap)
 	return openapi.RepeatLastRobotEpisode201JSONResponse(resp), nil
@@ -477,7 +454,7 @@ func (c *controller) ListRobotEpisodes(ctx context.Context, request openapi.List
 	taskMap, tvMap := c.fetchTaskAndVersionMaps(ctx, eps)
 	resp := make([]openapi.Episode, 0, len(eps))
 	for _, e := range eps {
-		ep := episodeToResponse(*e)
+		ep := episodeResponse(*e)
 
 		if tk, ok := taskMap[e.TaskID]; ok {
 			ep.TaskName = &tk.Name
