@@ -3,6 +3,8 @@ package persistence
 import (
 	"strings"
 
+	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/schema"
 )
 
@@ -10,6 +12,28 @@ import (
 // don't act as pattern matchers.
 func escapeILIKE(s string) string {
 	return strings.NewReplacer("%", "\\%", "_", "\\_").Replace(s)
+}
+
+func applyLocationListFilters(sel *bun.SelectQuery, filter repository.LocationListFilter) *bun.SelectQuery {
+	if filter.SiteID != nil && *filter.SiteID != "" {
+		sel = sel.Where("l.site_id = ?", *filter.SiteID)
+	}
+	if filter.Search != nil && *filter.Search != "" {
+		escaped := escapeILIKE(*filter.Search)
+		sel = sel.Where("l.name ILIKE ?", "%"+escaped+"%")
+	}
+	return sel
+}
+
+func applySiteListFilters(sel *bun.SelectQuery, filter repository.SiteListFilter) *bun.SelectQuery {
+	if filter.OrganizationID != nil {
+		sel = sel.Where("organization_id = ?", *filter.OrganizationID)
+	}
+	if filter.Search != nil && *filter.Search != "" {
+		escaped := escapeILIKE(*filter.Search)
+		sel = sel.Where("name ILIKE ?", "%"+escaped+"%")
+	}
+	return sel
 }
 
 // namedSQLArgs lets bun's NewRaw resolve ?name placeholders against a flat

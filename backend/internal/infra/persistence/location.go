@@ -66,16 +66,9 @@ func (l *location) List(ctx context.Context, conn repository.DBConn, filter repo
 		Limit(limit).
 		Offset(offset)
 
-	if filter.SiteID != nil && *filter.SiteID != "" {
-		sel = sel.Where("l.site_id = ?", *filter.SiteID)
-	}
+	sel = applyLocationListFilters(sel, filter)
 
 	sel = applyLocationSortOrder(sel, filter.SortBy, filter.SortOrder)
-
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		sel = sel.Where("l.name ILIKE ?", "%"+escaped+"%")
-	}
 
 	if err := sel.Scan(ctx); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to list locations: %v", err))
@@ -85,13 +78,7 @@ func (l *location) List(ctx context.Context, conn repository.DBConn, filter repo
 	countSel := conn.NewSelect().
 		Model((*entity.Location)(nil)).
 		ColumnExpr("COUNT(*)")
-	if filter.SiteID != nil && *filter.SiteID != "" {
-		countSel = countSel.Where("l.site_id = ?", *filter.SiteID)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		countSel = countSel.Where("l.name ILIKE ?", "%"+escaped+"%")
-	}
+	countSel = applyLocationListFilters(countSel, filter)
 	if err := countSel.Scan(ctx, &total); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to count locations: %v", err))
 	}
