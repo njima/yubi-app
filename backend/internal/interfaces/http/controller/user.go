@@ -172,7 +172,7 @@ func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeReque
 
 	if _, err := c.userUsecase.Update(ctx, usecase.UserUpdateInput{
 		UserID: userID,
-		Name:   request.Body.DisplayName,
+		Name:   &request.Body.DisplayName,
 	}); err != nil {
 		return nil, err
 	}
@@ -197,13 +197,15 @@ func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeReque
 }
 
 func (c *controller) UpdateUserById(ctx context.Context, request openapi.UpdateUserByIdRequestObject) (openapi.UpdateUserByIdResponseObject, error) {
-	var email, displayName string
+	var email *string
+	var displayName *string
 
 	if request.Body.Email != nil {
-		email = string(*request.Body.Email)
+		emailValue := string(*request.Body.Email)
+		email = &emailValue
 	}
 	if request.Body.DisplayName != nil {
-		displayName = *request.Body.DisplayName
+		displayName = request.Body.DisplayName
 	}
 
 	user, err := c.userUsecase.Update(ctx, usecase.UserUpdateInput{

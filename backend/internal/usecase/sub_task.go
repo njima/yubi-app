@@ -88,18 +88,12 @@ func (s *subtask) GetByID(ctx context.Context, id string) (model.SubTask, error)
 }
 
 func (s *subtask) List(ctx context.Context, taskID, taskVersionID *string, page, limit int) (model.SubTasks, int, error) {
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
+	pg := pagination.Normalize(page, limit)
 	filter := repository.SubTaskListFilter{
 		TaskID:        taskID,
 		TaskVersionID: taskVersionID,
 	}
-	return s.repo.List(ctx, s.data.Conn(), filter, limit, offset)
+	return s.repo.List(ctx, s.data.Conn(), filter, pg.Limit, pg.Offset)
 }
 
 func (s *subtask) Update(ctx context.Context, input SubTaskUpdateInput) (model.SubTask, error) {

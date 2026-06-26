@@ -65,14 +65,8 @@ func (o *organization) GetByNaturalID(ctx context.Context, idNatural string) (mo
 }
 
 func (o *organization) List(ctx context.Context, page, limit int) (model.Organizations, int, error) {
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
-	return o.orgRepo.List(ctx, o.data.Conn(), limit, offset)
+	pg := pagination.Normalize(page, limit)
+	return o.orgRepo.List(ctx, o.data.Conn(), pg.Limit, pg.Offset)
 }
 
 func (o *organization) Update(ctx context.Context, input OrganizationUpdateInput) (model.Organization, error) {

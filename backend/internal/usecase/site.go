@@ -57,14 +57,8 @@ func (s *siteUsecase) GetByID(ctx context.Context, id string) (model.Site, error
 }
 
 func (s *siteUsecase) List(ctx context.Context, filter SiteListFilter, page, limit int) (model.Sites, int, error) {
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
-	return s.siteRepo.List(ctx, s.data.Conn(), filter.repositoryFilter(), limit, offset)
+	pg := pagination.Normalize(page, limit)
+	return s.siteRepo.List(ctx, s.data.Conn(), filter.repositoryFilter(), pg.Limit, pg.Offset)
 }
 
 func (s *siteUsecase) Update(ctx context.Context, input SiteUpdateInput) (model.Site, error) {

@@ -308,14 +308,8 @@ func (e *episode) List(ctx context.Context, filter EpisodeListFilter, page, limi
 		}
 	}
 
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
-	episodes, total, err := e.repo.List(ctx, e.data.Conn(), filter.repositoryFilter(), limit, offset)
+	pg := pagination.Normalize(page, limit)
+	episodes, total, err := e.repo.List(ctx, e.data.Conn(), filter.repositoryFilter(), pg.Limit, pg.Offset)
 	if err != nil {
 		return nil, 0, err
 	}
