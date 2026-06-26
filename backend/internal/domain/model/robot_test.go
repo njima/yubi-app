@@ -566,50 +566,119 @@ func newRobotWithStatus(status RobotStatus) Robot {
 	return r
 }
 
-func TestRobot_StartTeleoperation(t *testing.T) {
-	episodeID := "550e8400-e29b-41d4-a716-446655440010"
-	userID := "550e8400-e29b-41d4-a716-446655440011"
-
+func TestRobot_ResolvedStatusDoesNotMutateOperationStatus(t *testing.T) {
 	tests := []struct {
-		name          string
-		initialStatus RobotStatus
-		episodeID     string
-		userID        string
-		wantErr       bool
-		wantStatus    RobotStatus
+		name           string
+		initialStatus  RobotStatus
+		heartbeatAlive bool
+		wantResolved   RobotStatus
+		wantStored     RobotStatus
 	}{
 		{
-			name:          "success: Online → Busy",
-			initialStatus: RobotStatusOnline,
-			episodeID:     episodeID,
-			userID:        userID,
-			wantErr:       false,
-			wantStatus:    RobotStatusBusy,
+			name:           "ready with heartbeat appears online",
+			initialStatus:  RobotStatusReady,
+			heartbeatAlive: true,
+			wantResolved:   RobotStatusOnline,
+			wantStored:     RobotStatusReady,
 		},
 		{
-			name:          "error: Offline → cannot start teleoperation",
-			initialStatus: RobotStatusOffline,
-			episodeID:     episodeID,
-			userID:        userID,
-			wantErr:       true,
+			name:           "ready without heartbeat appears offline",
+			initialStatus:  RobotStatusReady,
+			heartbeatAlive: false,
+			wantResolved:   RobotStatusOffline,
+			wantStored:     RobotStatusReady,
 		},
 		{
-			name:          "error: Busy → cannot start teleoperation",
-			initialStatus: RobotStatusBusy,
-			episodeID:     episodeID,
-			userID:        userID,
-			wantErr:       true,
+			name:           "busy ignores heartbeat",
+			initialStatus:  RobotStatusBusy,
+			heartbeatAlive: true,
+			wantResolved:   RobotStatusBusy,
+			wantStored:     RobotStatusBusy,
+		},
+		{
+			name:           "faulted ignores heartbeat",
+			initialStatus:  RobotStatusFaulted,
+			heartbeatAlive: true,
+			wantResolved:   RobotStatusFaulted,
+			wantStored:     RobotStatusFaulted,
+		},
+		{
+			name:           "maintenance ignores heartbeat",
+			initialStatus:  RobotStatusMaintenance,
+			heartbeatAlive: true,
+			wantResolved:   RobotStatusMaintenance,
+			wantStored:     RobotStatusMaintenance,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := newRobotWithStatus(tt.initialStatus)
-			err := r.StartTeleoperation(tt.episodeID, tt.userID)
+
+			got := r.ResolvedStatus(tt.heartbeatAlive)
+
+			if got != tt.wantResolved {
+				t.Fatalf("Robot.ResolvedStatus() = %v, want %v", got, tt.wantResolved)
+			}
+			if r.Status != tt.wantStored {
+				t.Fatalf("Robot.Status mutated to %v, want %v", r.Status, tt.wantStored)
+			}
+		})
+	}
+}
+
+func TestRobot_StartTeleoperationRequiresReadyAndHeartbeat(t *testing.T) {
+	episodeID := "550e8400-e29b-41d4-a716-446655440010"
+	userID := "550e8400-e29b-41d4-a716-446655440011"
+
+	tests := []struct {
+		name           string
+		initialStatus  RobotStatus
+		heartbeatAlive bool
+		wantErr        bool
+		wantStatus     RobotStatus
+	}{
+		{
+			name:           "ready with heartbeat starts",
+			initialStatus:  RobotStatusReady,
+			heartbeatAlive: true,
+			wantErr:        false,
+			wantStatus:     RobotStatusBusy,
+		},
+		{
+			name:           "ready without heartbeat fails",
+			initialStatus:  RobotStatusReady,
+			heartbeatAlive: false,
+			wantErr:        true,
+			wantStatus:     RobotStatusReady,
+		},
+		{
+			name:           "busy with heartbeat fails",
+			initialStatus:  RobotStatusBusy,
+			heartbeatAlive: true,
+			wantErr:        true,
+			wantStatus:     RobotStatusBusy,
+		},
+		{
+			name:           "legacy online status fails as non-persistent operation state",
+			initialStatus:  RobotStatusOnline,
+			heartbeatAlive: true,
+			wantErr:        true,
+			wantStatus:     RobotStatusOnline,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := newRobotWithStatus(tt.initialStatus)
+			err := r.StartTeleoperation(episodeID, userID, tt.heartbeatAlive)
 
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("Robot.StartTeleoperation() error = nil, wantErr %v", tt.wantErr)
+				}
+				if r.Status != tt.wantStatus {
+					t.Errorf("Robot.StartTeleoperation() Status = %v, want %v", r.Status, tt.wantStatus)
 				}
 				return
 			}
@@ -620,11 +689,11 @@ func TestRobot_StartTeleoperation(t *testing.T) {
 			if r.Status != tt.wantStatus {
 				t.Errorf("Robot.StartTeleoperation() Status = %v, want %v", r.Status, tt.wantStatus)
 			}
-			if r.ActiveEpisodeID == nil || *r.ActiveEpisodeID != tt.episodeID {
-				t.Errorf("Robot.StartTeleoperation() ActiveEpisodeID = %v, want %v", r.ActiveEpisodeID, tt.episodeID)
+			if r.ActiveEpisodeID == nil || *r.ActiveEpisodeID != episodeID {
+				t.Errorf("Robot.StartTeleoperation() ActiveEpisodeID = %v, want %v", r.ActiveEpisodeID, episodeID)
 			}
-			if r.ActiveUserID == nil || *r.ActiveUserID != tt.userID {
-				t.Errorf("Robot.StartTeleoperation() ActiveUserID = %v, want %v", r.ActiveUserID, tt.userID)
+			if r.ActiveUserID == nil || *r.ActiveUserID != userID {
+				t.Errorf("Robot.StartTeleoperation() ActiveUserID = %v, want %v", r.ActiveUserID, userID)
 			}
 		})
 	}

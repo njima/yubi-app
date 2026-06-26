@@ -200,20 +200,37 @@ func (r *Robot) SetRobotConfig(robotConfig json.RawMessage) error {
 	return r.validate()
 }
 
+func (s RobotStatus) IsPersistentOperationStatus() bool {
+	switch s {
+	case RobotStatusReady, RobotStatusBusy, RobotStatusFaulted, RobotStatusMaintenance:
+		return true
+	default:
+		return false
+	}
+}
+
+func (s RobotStatus) IsConnectionOnlyStatus() bool {
+	return s == RobotStatusOnline || s == RobotStatusOffline
+}
+
 // CanStartTeleoperation checks if the robot can start teleoperation.
-// The caller must resolve the robot's status via ResolvedStatus before calling this.
-func (r *Robot) CanStartTeleoperation() error {
-	if r.Status != RobotStatusOnline {
+func (r *Robot) CanStartTeleoperation(heartbeatAlive bool) error {
+	if r.Status != RobotStatusReady {
 		return apperror.NewError(
-			apperror.NewMessage(apperror.CodeConflict, "robot must be online to start teleoperation, current status: %d", r.Status),
+			apperror.NewMessage(apperror.CodeConflict, "robot operation status must be Ready to start teleoperation, current status: %d", r.Status),
+		)
+	}
+	if !heartbeatAlive {
+		return apperror.NewError(
+			apperror.NewMessage(apperror.CodeConflict, "robot must be online to start teleoperation"),
 		)
 	}
 	return nil
 }
 
 // StartTeleoperation transitions the robot to Busy state and sets active episode/user
-func (r *Robot) StartTeleoperation(episodeID, userID string) error {
-	if err := r.CanStartTeleoperation(); err != nil {
+func (r *Robot) StartTeleoperation(episodeID, userID string, heartbeatAlive bool) error {
+	if err := r.CanStartTeleoperation(heartbeatAlive); err != nil {
 		return err
 	}
 	r.Status = RobotStatusBusy
@@ -243,18 +260,19 @@ func (r *Robot) EndTeleoperation() error {
 	return nil
 }
 
-// ResolvedStatus updates r.Status by combining DB status with Redis heartbeat state.
+// ResolvedStatus combines DB operation status with Redis heartbeat state for display.
 // Ready or Online + heartbeat alive → Online
 // Ready or Online + heartbeat absent → Offline
 // Busy / Faulted / Maintenance → unchanged
-func (r *Robot) ResolvedStatus(heartbeatAlive bool) {
+func (r Robot) ResolvedStatus(heartbeatAlive bool) RobotStatus {
 	if r.Status == RobotStatusReady || r.Status == RobotStatusOnline {
 		if heartbeatAlive {
-			r.Status = RobotStatusOnline
+			return RobotStatusOnline
 		} else {
-			r.Status = RobotStatusOffline
+			return RobotStatusOffline
 		}
 	}
+	return r.Status
 }
 
 func (r Robot) ConsecutiveFaultDays() *int {

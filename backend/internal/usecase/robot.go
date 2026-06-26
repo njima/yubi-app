@@ -81,7 +81,7 @@ func (r *robot) GetByID(ctx context.Context, id string) (model.Robot, error) {
 	if err != nil {
 		return model.Robot{}, err
 	}
-	rob.ResolvedStatus(status != nil)
+	rob.Status = rob.ResolvedStatus(status != nil)
 	return rob, nil
 }
 
@@ -121,7 +121,7 @@ func (r *robot) List(ctx context.Context, filter RobotListFilter, page, limit in
 		if err != nil {
 			return nil, 0, err
 		}
-		rob.ResolvedStatus(status != nil)
+		rob.Status = rob.ResolvedStatus(status != nil)
 		result = append(result, rob)
 	}
 	return result, total, nil
@@ -147,7 +147,7 @@ func (r *robot) Update(ctx context.Context, input RobotUpdateInput) (model.Robot
 	if err != nil {
 		return model.Robot{}, err
 	}
-	urob.ResolvedStatus(status != nil)
+	urob.Status = urob.ResolvedStatus(status != nil)
 
 	return urob, nil
 }

@@ -436,7 +436,7 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 		if err != nil {
 			return err
 		}
-		robot.ResolvedStatus(robotStatus != nil)
+		heartbeatAlive := robotStatus != nil
 
 		// Priority: live teleop operator > episode.RecordedByID > API key user
 		activeUserID := userID
@@ -452,7 +452,7 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 		} else if episode.RecordedByID != nil {
 			activeUserID = *episode.RecordedByID
 		}
-		if err := robot.StartTeleoperation(input.EpisodeID, activeUserID); err != nil {
+		if err := robot.StartTeleoperation(input.EpisodeID, activeUserID, heartbeatAlive); err != nil {
 			return err
 		}
 
