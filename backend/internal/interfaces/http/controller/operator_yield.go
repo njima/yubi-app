@@ -8,15 +8,16 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
 func (c *controller) ExportOperatorYield(
 	ctx context.Context,
 	request openapi.ExportOperatorYieldRequestObject,
 ) (openapi.ExportOperatorYieldResponseObject, error) {
-	// openapi_types.Date is forwarded as-is; the repository reads only Y/M/D
-	// and re-interprets the calendar date in JST (see OperatorYieldExportFilter).
-	filter := repository.OperatorYieldExportFilter{
+	// openapi_types.Date is forwarded as-is; the usecase/repository reads only Y/M/D
+	// and re-interprets the calendar date in JST.
+	filter := usecase.OperatorYieldExportFilter{
 		DateFrom:   request.Params.DateFrom.Time,
 		DateTo:     request.Params.DateTo.Time,
 		LocationID: request.Params.LocationId,

@@ -15,7 +15,7 @@ import (
 )
 
 type OperatorYieldExportUsecase interface {
-	Export(ctx context.Context, filter repository.OperatorYieldExportFilter) ([]byte, error)
+	Export(ctx context.Context, filter OperatorYieldExportFilter) ([]byte, error)
 }
 
 type operatorYieldExport struct {
@@ -51,14 +51,14 @@ func sanitizeUserText(s string) string {
 	return s
 }
 
-func (u *operatorYieldExport) Export(ctx context.Context, filter repository.OperatorYieldExportFilter) ([]byte, error) {
+func (u *operatorYieldExport) Export(ctx context.Context, filter OperatorYieldExportFilter) ([]byte, error) {
 	if filter.DateFrom.After(filter.DateTo) {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest,
 			"date_from must be on or before date_to"))
 	}
 
 	start := time.Now()
-	rows, err := u.repo.Export(ctx, u.data.Conn(), filter)
+	rows, err := u.repo.Export(ctx, u.data.Conn(), filter.repositoryFilter())
 	if err != nil {
 		return nil, err
 	}

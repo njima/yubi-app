@@ -4,11 +4,10 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 
-func episodeStatuses(values []openapi.EpisodeCollectionStatus) ([]repository.EpisodeStatus, error) {
-	statuses := make([]repository.EpisodeStatus, 0, len(values))
+func episodeStatuses(values []openapi.EpisodeCollectionStatus) ([]model.EpisodeStatus, error) {
+	statuses := make([]model.EpisodeStatus, 0, len(values))
 	for _, value := range values {
 		status, err := episodeStatusModel(&value)
 		if err != nil {
@@ -97,12 +96,8 @@ func userRoleModel(value openapi.UserRole) (model.UserRole, error) {
 	}
 }
 
-func robotStatus(value *openapi.RobotStatus) *repository.RobotFilterStatus {
-	if value == nil {
-		return nil
-	}
-	status := repository.RobotFilterStatus(*value)
-	return &status
+func robotStatus(value *openapi.RobotStatus) (*model.RobotStatus, error) {
+	return robotStatusModel(value)
 }
 
 func openAPIRobotStatus(value model.RobotStatus) openapi.RobotStatus {
@@ -159,26 +154,26 @@ func robotStatusModel(value *openapi.RobotStatus) (*model.RobotStatus, error) {
 	return &status, nil
 }
 
-func taskStatuses(values []openapi.TaskStatus) []repository.TaskStatus {
-	statuses := make([]repository.TaskStatus, 0, len(values))
+func taskStatuses(values []openapi.TaskStatus) []model.TaskStatus {
+	statuses := make([]model.TaskStatus, 0, len(values))
 	for _, value := range values {
-		statuses = append(statuses, repository.TaskStatus(value))
+		statuses = append(statuses, model.TaskStatus(value))
 	}
 	return statuses
 }
 
-func taskPriorities(values []openapi.TaskPriority) []repository.TaskPriority {
-	priorities := make([]repository.TaskPriority, 0, len(values))
+func taskPriorities(values []openapi.TaskPriority) []model.TaskPriority {
+	priorities := make([]model.TaskPriority, 0, len(values))
 	for _, value := range values {
-		priorities = append(priorities, repository.TaskPriority(value))
+		priorities = append(priorities, model.TaskPriority(value))
 	}
 	return priorities
 }
 
-func taskDifficulties(values []openapi.TaskDifficulty) []repository.TaskDifficulty {
-	difficulties := make([]repository.TaskDifficulty, 0, len(values))
+func taskDifficulties(values []openapi.TaskDifficulty) []model.TaskDifficulty {
+	difficulties := make([]model.TaskDifficulty, 0, len(values))
 	for _, value := range values {
-		difficulties = append(difficulties, repository.TaskDifficulty(value))
+		difficulties = append(difficulties, model.TaskDifficulty(value))
 	}
 	return difficulties
 }

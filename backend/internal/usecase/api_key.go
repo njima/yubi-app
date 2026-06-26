@@ -50,7 +50,7 @@ type APIKeyUsecase interface {
 	// MarkUsed enqueues an async last_used_at update for the given key id.
 	MarkUsed(apiKeyID int64)
 	// List returns API keys in the caller's organization. Admin-only at the controller layer.
-	List(ctx context.Context, filter repository.APIKeyListFilter, page, limit int) (model.APIKeys, int, error)
+	List(ctx context.Context, filter APIKeyListFilter, page, limit int) (model.APIKeys, int, error)
 	Create(ctx context.Context, input APIKeyCreateInput) (APIKeyCreateResult, error)
 	Get(ctx context.Context, idNatural string) (model.APIKey, error)
 	Update(ctx context.Context, input APIKeyUpdateInput) (model.APIKey, error)
@@ -172,7 +172,7 @@ func (a *apiKey) MarkUsed(apiKeyID int64) {
 	}()
 }
 
-func (a *apiKey) List(ctx context.Context, filter repository.APIKeyListFilter, page, limit int) (model.APIKeys, int, error) {
+func (a *apiKey) List(ctx context.Context, filter APIKeyListFilter, page, limit int) (model.APIKeys, int, error) {
 	if limit <= 0 {
 		limit = 50
 	}
@@ -180,7 +180,7 @@ func (a *apiKey) List(ctx context.Context, filter repository.APIKeyListFilter, p
 	if page > 1 {
 		offset = (page - 1) * limit
 	}
-	return a.repo.List(ctx, a.data.Conn(), filter, limit, offset)
+	return a.repo.List(ctx, a.data.Conn(), filter.repositoryFilter(), limit, offset)
 }
 
 func (a *apiKey) Create(ctx context.Context, input APIKeyCreateInput) (APIKeyCreateResult, error) {

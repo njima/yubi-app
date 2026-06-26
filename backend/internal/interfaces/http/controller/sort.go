@@ -2,53 +2,53 @@ package controller
 
 import (
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
-func episodeSortBy(v *openapi.ListEpisodesParamsSortBy) *repository.EpisodeSortBy {
+func episodeSortBy(v *openapi.ListEpisodesParamsSortBy) *usecase.EpisodeSortBy {
 	if v == nil {
 		return nil
 	}
-	sortBy := repository.EpisodeSortBy(*v)
+	sortBy := usecase.EpisodeSortBy(*v)
 	return &sortBy
 }
 
-func locationSortBy(v *openapi.ListLocationsParamsSortBy) *repository.LocationSortBy {
+func locationSortBy(v *openapi.ListLocationsParamsSortBy) *usecase.LocationSortBy {
 	if v == nil {
 		return nil
 	}
-	sortBy := repository.LocationSortBy(*v)
+	sortBy := usecase.LocationSortBy(*v)
 	return &sortBy
 }
 
-func robotSortBy(v *openapi.ListRobotsParamsSortBy) *repository.RobotSortBy {
+func robotSortBy(v *openapi.ListRobotsParamsSortBy) *usecase.RobotSortBy {
 	if v == nil {
 		return nil
 	}
-	sortBy := repository.RobotSortBy(*v)
+	sortBy := usecase.RobotSortBy(*v)
 	return &sortBy
 }
 
-func taskSortBy(v *openapi.ListTasksParamsSortBy) *repository.TaskSortBy {
+func taskSortBy(v *openapi.ListTasksParamsSortBy) *usecase.TaskSortBy {
 	if v == nil {
 		return nil
 	}
-	sortBy := repository.TaskSortBy(*v)
+	sortBy := usecase.TaskSortBy(*v)
 	return &sortBy
 }
 
-func userSortBy(v *openapi.ListUsersParamsSortBy) *repository.UserSortBy {
+func userSortBy(v *openapi.ListUsersParamsSortBy) *usecase.UserSortBy {
 	if v == nil {
 		return nil
 	}
-	sortBy := repository.UserSortBy(*v)
+	sortBy := usecase.UserSortBy(*v)
 	return &sortBy
 }
 
-func sortOrder[T ~string](v *T) *repository.SortOrder {
+func sortOrder[T ~string](v *T) *usecase.SortOrder {
 	if v == nil {
 		return nil
 	}
-	order := repository.SortOrder(*v)
+	order := usecase.SortOrder(*v)
 	return &order
 }

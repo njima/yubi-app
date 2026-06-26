@@ -14,8 +14,8 @@ import (
 type RobotUsecase interface {
 	Create(ctx context.Context, input RobotCreateInput) (model.Robot, error)
 	GetByID(ctx context.Context, id string) (model.Robot, error)
-	List(ctx context.Context, filter repository.RobotListFilter, page, limit int) (model.Robots, int, error)
-	ListTypes(ctx context.Context, filter repository.RobotTypeFilter) ([]string, error)
+	List(ctx context.Context, filter RobotListFilter, page, limit int) (model.Robots, int, error)
+	ListTypes(ctx context.Context, filter RobotTypeFilter) ([]string, error)
 	Update(ctx context.Context, input RobotUpdateInput) (model.Robot, error)
 	Delete(ctx context.Context, id string) error
 }
@@ -85,7 +85,7 @@ func (r *robot) GetByID(ctx context.Context, id string) (model.Robot, error) {
 	return rob, nil
 }
 
-func (r *robot) List(ctx context.Context, filter repository.RobotListFilter, page, limit int) (model.Robots, int, error) {
+func (r *robot) List(ctx context.Context, filter RobotListFilter, page, limit int) (model.Robots, int, error) {
 	if limit <= 0 {
 		limit = pagination.DefaultLimit
 	}
@@ -94,9 +94,10 @@ func (r *robot) List(ctx context.Context, filter repository.RobotListFilter, pag
 	}
 	offset := (page - 1) * limit
 
-	dbFilter := filter
-	if filter.Status != nil &&
-		(*filter.Status == repository.RobotFilterStatusOnline || *filter.Status == repository.RobotFilterStatusOffline) {
+	dbFilter := filter.repositoryFilter()
+	if dbFilter.Status != nil &&
+		(*dbFilter.Status == repository.RobotFilterStatusOnline || *dbFilter.Status == repository.RobotFilterStatusOffline) {
+		requestedStatus := *dbFilter.Status
 		dbFilter.Status = nil
 
 		onlineIDs, err := r.robotStatusRepo.GetAllOnlineRobotIDs(ctx)
@@ -104,7 +105,7 @@ func (r *robot) List(ctx context.Context, filter repository.RobotListFilter, pag
 			return nil, 0, err
 		}
 
-		if *filter.Status == repository.RobotFilterStatusOnline {
+		if requestedStatus == repository.RobotFilterStatusOnline {
 			if len(onlineIDs) == 0 {
 				return model.Robots{}, 0, nil
 			}
@@ -231,11 +232,12 @@ func (r *robot) update(ctx context.Context, robot model.Robot, input RobotUpdate
 	return robot, nil
 }
 
-func (r *robot) ListTypes(ctx context.Context, filter repository.RobotTypeFilter) ([]string, error) {
-	if filter.Status != nil &&
-		(*filter.Status == repository.RobotFilterStatusOnline || *filter.Status == repository.RobotFilterStatusOffline) {
-		requestedStatus := *filter.Status
-		filter.Status = nil
+func (r *robot) ListTypes(ctx context.Context, filter RobotTypeFilter) ([]string, error) {
+	dbFilter := filter.repositoryFilter()
+	if dbFilter.Status != nil &&
+		(*dbFilter.Status == repository.RobotFilterStatusOnline || *dbFilter.Status == repository.RobotFilterStatusOffline) {
+		requestedStatus := *dbFilter.Status
+		dbFilter.Status = nil
 
 		onlineIDs, err := r.robotStatusRepo.GetAllOnlineRobotIDs(ctx)
 		if err != nil {
@@ -246,13 +248,13 @@ func (r *robot) ListTypes(ctx context.Context, filter repository.RobotTypeFilter
 			if len(onlineIDs) == 0 {
 				return []string{}, nil
 			}
-			filter.OnlineRobotIDs = &onlineIDs
+			dbFilter.OnlineRobotIDs = &onlineIDs
 		} else {
-			filter.OnlineRobotIDs = &onlineIDs
-			filter.ExcludeOnline = true
+			dbFilter.OnlineRobotIDs = &onlineIDs
+			dbFilter.ExcludeOnline = true
 		}
 	}
-	return r.repo.ListTypes(ctx, r.data.Conn(), filter)
+	return r.repo.ListTypes(ctx, r.data.Conn(), dbFilter)
 }
 
 func (r *robot) Delete(ctx context.Context, id string) error {

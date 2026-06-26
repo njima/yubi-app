@@ -35,7 +35,7 @@ type EpisodeUsecase interface {
 	GetByID(ctx context.Context, id string) (model.Episode, error)
 	GetCurrentRobotEpisode(ctx context.Context, robotID string) (*model.Episode, error)
 	GetSubTasksByEpisodeID(ctx context.Context, episodeID string, taskVersionID string) (model.SubTasks, model.EpisodeSubTasks, model.EpisodeSubTaskExecutions, error)
-	List(ctx context.Context, filter repository.EpisodeListFilter, page, limit int) (model.Episodes, int, error)
+	List(ctx context.Context, filter EpisodeListFilter, page, limit int) (model.Episodes, int, error)
 	Update(ctx context.Context, input EpisodeUpdateInput) (model.Episode, error)
 	Delete(ctx context.Context, id string) error
 	Start(ctx context.Context, input StartEpisodeInput) error
@@ -297,7 +297,7 @@ func (e *episode) GetSubTasksByEpisodeID(ctx context.Context, episodeID string, 
 	return subtasks, records, executions, nil
 }
 
-func (e *episode) List(ctx context.Context, filter repository.EpisodeListFilter, page, limit int) (model.Episodes, int, error) {
+func (e *episode) List(ctx context.Context, filter EpisodeListFilter, page, limit int) (model.Episodes, int, error) {
 	if filter.TaskID != nil && filter.TaskVersionID != nil {
 		tv, err := e.tvRepo.GetByID(ctx, e.data.Conn(), *filter.TaskVersionID)
 		if err != nil {
@@ -315,7 +315,7 @@ func (e *episode) List(ctx context.Context, filter repository.EpisodeListFilter,
 		page = 1
 	}
 	offset := (page - 1) * limit
-	episodes, total, err := e.repo.List(ctx, e.data.Conn(), filter, limit, offset)
+	episodes, total, err := e.repo.List(ctx, e.data.Conn(), filter.repositoryFilter(), limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
