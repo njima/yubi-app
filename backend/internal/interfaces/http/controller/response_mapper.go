@@ -33,3 +33,48 @@ func organizationResponse(org model.Organization) openapi.OrganizationResponse {
 		UpdatedAt:      org.UpdatedAt,
 	}
 }
+
+func userResponse(user model.User) openapi.UserResponse {
+	return openapi.UserResponse{
+		UserId:           user.IDNatural,
+		Email:            user.Email,
+		DisplayName:      user.Name,
+		Role:             openAPIUserRolePtr(user.Role),
+		OrganizationId:   user.OrganizationID,
+		OrganizationName: user.OrganizationName,
+		CreatedAt:        user.CreatedAt,
+		UpdatedAt:        user.UpdatedAt,
+		Locations:        locationSummaries(user.Locations),
+		Sites:            siteSummaries(user.Sites),
+	}
+}
+
+func userResponses(users model.Users) []openapi.UserResponse {
+	result := make([]openapi.UserResponse, 0, len(users))
+	for _, user := range users {
+		result = append(result, userResponse(*user))
+	}
+	return result
+}
+
+func locationSummaries(locs []model.LocationSummary) []openapi.LocationSummary {
+	result := make([]openapi.LocationSummary, 0, len(locs))
+	for _, loc := range locs {
+		result = append(result, openapi.LocationSummary{
+			LocationId: loc.LocationID,
+			Name:       loc.Name,
+		})
+	}
+	return result
+}
+
+func siteSummaries(sites []model.SiteSummary) []openapi.SiteSummary {
+	result := make([]openapi.SiteSummary, 0, len(sites))
+	for _, site := range sites {
+		result = append(result, openapi.SiteSummary{
+			SiteId: site.SiteID,
+			Name:   site.Name,
+		})
+	}
+	return result
+}

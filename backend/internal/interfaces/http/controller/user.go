@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 
-	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
@@ -47,17 +46,7 @@ func (c *controller) CreateUser(ctx context.Context, request openapi.CreateUserR
 		return nil, err
 	}
 
-	return openapi.CreateUser201JSONResponse{
-		CreatedAt:      user.CreatedAt,
-		DisplayName:    user.Name,
-		Email:          user.Email,
-		Role:           openAPIUserRolePtr(user.Role),
-		OrganizationId: user.OrganizationID,
-		UpdatedAt:      user.UpdatedAt,
-		UserId:         user.IDNatural,
-		Locations:      toLocationSummaries(user.Locations),
-		Sites:          toSiteSummaries(user.Sites),
-	}, nil
+	return openapi.CreateUser201JSONResponse(userResponse(user)), nil
 }
 
 func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersRequestObject) (openapi.ListUsersResponseObject, error) {
@@ -81,22 +70,6 @@ func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersReq
 		return nil, err
 	}
 
-	respUsers := make([]openapi.UserResponse, 0, len(users))
-	for _, u := range users {
-		respUsers = append(respUsers, openapi.UserResponse{
-			UserId:           u.IDNatural,
-			Email:            u.Email,
-			DisplayName:      u.Name,
-			Role:             openAPIUserRolePtr(u.Role),
-			OrganizationId:   u.OrganizationID,
-			OrganizationName: u.OrganizationName,
-			CreatedAt:        u.CreatedAt,
-			UpdatedAt:        u.UpdatedAt,
-			Locations:        toLocationSummaries(u.Locations),
-			Sites:            toSiteSummaries(u.Sites),
-		})
-	}
-
 	userFilter := openapi.UserFilter{
 		LocationId: params.LocationId,
 		SiteId:     params.SiteId,
@@ -112,7 +85,7 @@ func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersReq
 			Limit: pg.Limit,
 			Page:  pg.Page,
 		},
-		Users: respUsers,
+		Users: userResponses(users),
 	}, nil
 }
 
@@ -122,18 +95,7 @@ func (c *controller) GetUserById(ctx context.Context, request openapi.GetUserByI
 		return nil, err
 	}
 
-	return openapi.GetUserById200JSONResponse{
-		UserId:           user.IDNatural,
-		Email:            user.Email,
-		DisplayName:      user.Name,
-		Role:             openAPIUserRolePtr(user.Role),
-		OrganizationId:   user.OrganizationID,
-		OrganizationName: user.OrganizationName,
-		CreatedAt:        user.CreatedAt,
-		UpdatedAt:        user.UpdatedAt,
-		Locations:        toLocationSummaries(user.Locations),
-		Sites:            toSiteSummaries(user.Sites),
-	}, nil
+	return openapi.GetUserById200JSONResponse(userResponse(user)), nil
 }
 
 func (c *controller) GetMe(ctx context.Context, request openapi.GetMeRequestObject) (openapi.GetMeResponseObject, error) {
@@ -147,18 +109,7 @@ func (c *controller) GetMe(ctx context.Context, request openapi.GetMeRequestObje
 		return nil, err
 	}
 
-	return openapi.GetMe200JSONResponse{
-		UserId:           user.IDNatural,
-		Email:            user.Email,
-		DisplayName:      user.Name,
-		Role:             openAPIUserRolePtr(user.Role),
-		OrganizationId:   user.OrganizationID,
-		OrganizationName: user.OrganizationName,
-		CreatedAt:        user.CreatedAt,
-		UpdatedAt:        user.UpdatedAt,
-		Locations:        toLocationSummaries(user.Locations),
-		Sites:            toSiteSummaries(user.Sites),
-	}, nil
+	return openapi.GetMe200JSONResponse(userResponse(user)), nil
 }
 
 func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeRequestObject) (openapi.UpdateMeResponseObject, error) {
@@ -184,18 +135,7 @@ func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeReque
 		return nil, err
 	}
 
-	return openapi.UpdateMe200JSONResponse{
-		UserId:           user.IDNatural,
-		Email:            user.Email,
-		DisplayName:      user.Name,
-		Role:             openAPIUserRolePtr(user.Role),
-		OrganizationId:   user.OrganizationID,
-		OrganizationName: user.OrganizationName,
-		CreatedAt:        user.CreatedAt,
-		UpdatedAt:        user.UpdatedAt,
-		Locations:        toLocationSummaries(user.Locations),
-		Sites:            toSiteSummaries(user.Sites),
-	}, nil
+	return openapi.UpdateMe200JSONResponse(userResponse(user)), nil
 }
 
 func (c *controller) UpdateUserById(ctx context.Context, request openapi.UpdateUserByIdRequestObject) (openapi.UpdateUserByIdResponseObject, error) {
@@ -224,17 +164,7 @@ func (c *controller) UpdateUserById(ctx context.Context, request openapi.UpdateU
 		return nil, err
 	}
 
-	return openapi.UpdateUserById200JSONResponse{
-		UserId:         user.IDNatural,
-		Email:          user.Email,
-		DisplayName:    user.Name,
-		Role:           openAPIUserRolePtr(user.Role),
-		OrganizationId: user.OrganizationID,
-		CreatedAt:      user.CreatedAt,
-		UpdatedAt:      user.UpdatedAt,
-		Locations:      toLocationSummaries(user.Locations),
-		Sites:          toSiteSummaries(user.Sites),
-	}, nil
+	return openapi.UpdateUserById200JSONResponse(userResponse(user)), nil
 }
 
 func (c *controller) UpdateUserRole(ctx context.Context, request openapi.UpdateUserRoleRequestObject) (openapi.UpdateUserRoleResponseObject, error) {
@@ -255,28 +185,7 @@ func (c *controller) UpdateUserRole(ctx context.Context, request openapi.UpdateU
 		return nil, err
 	}
 
-	return openapi.UpdateUserRole200JSONResponse{
-		UserId:         user.IDNatural,
-		Email:          user.Email,
-		DisplayName:    user.Name,
-		Role:           openAPIUserRolePtr(user.Role),
-		OrganizationId: user.OrganizationID,
-		CreatedAt:      user.CreatedAt,
-		UpdatedAt:      user.UpdatedAt,
-		Locations:      toLocationSummaries(user.Locations),
-		Sites:          toSiteSummaries(user.Sites),
-	}, nil
-}
-
-func toLocationSummaries(locs []model.LocationSummary) []openapi.LocationSummary {
-	result := make([]openapi.LocationSummary, 0, len(locs))
-	for _, l := range locs {
-		result = append(result, openapi.LocationSummary{
-			LocationId: l.LocationID,
-			Name:       l.Name,
-		})
-	}
-	return result
+	return openapi.UpdateUserRole200JSONResponse(userResponse(user)), nil
 }
 
 func (c *controller) DeleteUserById(ctx context.Context, request openapi.DeleteUserByIdRequestObject) (openapi.DeleteUserByIdResponseObject, error) {
@@ -298,28 +207,7 @@ func (c *controller) UpdateUserLocations(ctx context.Context, request openapi.Up
 		return nil, err
 	}
 
-	return openapi.UpdateUserLocations200JSONResponse{
-		UserId:         user.IDNatural,
-		Email:          user.Email,
-		DisplayName:    user.Name,
-		Role:           openAPIUserRolePtr(user.Role),
-		OrganizationId: user.OrganizationID,
-		CreatedAt:      user.CreatedAt,
-		UpdatedAt:      user.UpdatedAt,
-		Locations:      toLocationSummaries(user.Locations),
-		Sites:          toSiteSummaries(user.Sites),
-	}, nil
-}
-
-func toSiteSummaries(sites []model.SiteSummary) []openapi.SiteSummary {
-	result := make([]openapi.SiteSummary, 0, len(sites))
-	for _, s := range sites {
-		result = append(result, openapi.SiteSummary{
-			SiteId: s.SiteID,
-			Name:   s.Name,
-		})
-	}
-	return result
+	return openapi.UpdateUserLocations200JSONResponse(userResponse(user)), nil
 }
 
 func (c *controller) UpdateUserSites(ctx context.Context, request openapi.UpdateUserSitesRequestObject) (openapi.UpdateUserSitesResponseObject, error) {
@@ -333,17 +221,7 @@ func (c *controller) UpdateUserSites(ctx context.Context, request openapi.Update
 		return nil, err
 	}
 
-	return openapi.UpdateUserSites200JSONResponse{
-		UserId:         user.IDNatural,
-		Email:          user.Email,
-		DisplayName:    user.Name,
-		Role:           openAPIUserRolePtr(user.Role),
-		OrganizationId: user.OrganizationID,
-		CreatedAt:      user.CreatedAt,
-		UpdatedAt:      user.UpdatedAt,
-		Locations:      toLocationSummaries(user.Locations),
-		Sites:          toSiteSummaries(user.Sites),
-	}, nil
+	return openapi.UpdateUserSites200JSONResponse(userResponse(user)), nil
 }
 
 // Permissions
