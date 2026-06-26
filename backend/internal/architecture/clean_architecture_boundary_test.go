@@ -16,7 +16,7 @@ func TestDomainDoesNotDependOnOuterLayers(t *testing.T) {
 		"internal/app",
 		"internal/authz",
 		"internal/config",
-		"internal/database",
+		"internal/infra/database",
 		"internal/event",
 		"internal/gen",
 		"internal/infra",
@@ -34,7 +34,7 @@ func TestUsecaseDoesNotDependOnOuterLayers(t *testing.T) {
 		"internal/app",
 		"internal/authz",
 		"internal/config",
-		"internal/database",
+		"internal/infra/database",
 		"internal/gen",
 		"internal/infra",
 		"internal/interfaces",
@@ -48,7 +48,7 @@ func TestRepositoryInterfacesDoNotDependOnImplementations(t *testing.T) {
 		"internal/app",
 		"internal/authz",
 		"internal/config",
-		"internal/database",
+		"internal/infra/database",
 		"internal/gen",
 		"internal/infra",
 		"internal/interfaces",
@@ -140,6 +140,17 @@ func TestApplicationEventBusLivesUnderUsecase(t *testing.T) {
 		t.Fatalf("application event bus must live under internal/usecase/eventbus, not internal/event")
 	} else if !os.IsNotExist(err) {
 		t.Fatalf("stat internal/event: %v", err)
+	}
+}
+
+func TestDatabaseInfrastructureLivesUnderInfra(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "database")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("database infrastructure must live under internal/infra/database, not internal/database")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/database: %v", err)
 	}
 }
 

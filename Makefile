@@ -48,7 +48,7 @@ logs: ## Show logs from all services
 # Database
 # ==============================================================================
 .PHONY: migrate
-MIGRATE_DIR := file://internal/database/migrate
+MIGRATE_DIR := file://internal/infra/database/migrate
 DB_URL_EXPR := postgres://$$DB_USER:$$DB_PASSWORD@$$DB_HOST:$$DB_PORT/$$DB_NAME?sslmode=disable
 
 migrate: ## Apply database migrations
@@ -60,7 +60,7 @@ migrate-status: ## Show database migration status
 
 .PHONY: seed
 seed: ## Seed database with initial data
-	cat backend/internal/database/seeder/initial_data.sql | docker compose exec -T postgres psql -U $${DB_USER:-postgres} -d $${DB_NAME:-airoa}
+	cat backend/internal/infra/database/seeder/initial_data.sql | docker compose exec -T postgres psql -U $${DB_USER:-postgres} -d $${DB_NAME:-airoa}
 
 # ==============================================================================
 # Backend

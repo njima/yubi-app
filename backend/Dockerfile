@@ -56,7 +56,7 @@ COPY --from=builder /app/write-robot-status-metrics .
 
 # Copy Atlas CLI and migration files
 COPY --from=atlas /usr/local/bin/atlas /usr/local/bin/atlas
-COPY internal/database/migrate ./migrate
+COPY internal/infra/database/migrate ./migrate
 COPY atlas.hcl ./atlas.hcl
 
 # Change ownership

@@ -5,8 +5,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 )
 
 func EntityToEpisodeModel(ee entity.Episode, et entity.TaskVersion) model.Episode {

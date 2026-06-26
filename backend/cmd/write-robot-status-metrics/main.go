@@ -11,8 +11,8 @@ import (
 	"github.com/getsentry/sentry-go"
 
 	"github.com/airoa-org/yubi-app/backend/internal/config"
-	"github.com/airoa-org/yubi-app/backend/internal/database"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/database"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/platform/log"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"

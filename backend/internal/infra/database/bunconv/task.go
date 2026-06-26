@@ -1,8 +1,8 @@
 package bunconv
 
 import (
-	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 )
 
 func EntityToTaskModel(et entity.Task, etv entity.TaskVersion) model.Task {

@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/database"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/database"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/uptrace/bun"

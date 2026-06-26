@@ -8,7 +8,7 @@ variable "db_url" {
 
 env "local" {
   // Source of truth: SQL schema file
-  src = "file://internal/database/schema/schema.up.sql"
+  src = "file://internal/infra/database/schema/schema.up.sql"
 
   // Target database URL
   url = var.db_url
@@ -18,7 +18,7 @@ env "local" {
 
   migration {
     // Directory containing migration files
-    dir = "file://internal/database/migrate"
+    dir = "file://internal/infra/database/migrate"
   }
 
   diff {
@@ -38,12 +38,12 @@ env "local" {
 
 env "dev" {
   // Same as local but with explicit connection
-  src = "file://internal/database/schema/schema.up.sql"
+  src = "file://internal/infra/database/schema/schema.up.sql"
   url = "postgres://postgres:postgres@localhost:5432/airoa?sslmode=disable"
   dev = "docker://postgres/17/dev?search_path=public"
 
   migration {
-    dir = "file://internal/database/migrate"
+    dir = "file://internal/infra/database/migrate"
   }
 
   format {
