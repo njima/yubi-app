@@ -20,7 +20,7 @@ func (o *organization) Create(ctx context.Context, conn repository.DBConn, org m
 
 	dbOrg := organizationModelToEntity(org)
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbOrg).
 		Returning("*").
 		Scan(ctx, &inserted); err != nil {
@@ -33,7 +33,7 @@ func (o *organization) Create(ctx context.Context, conn repository.DBConn, org m
 func (o *organization) GetByNaturalID(ctx context.Context, conn repository.DBConn, idNatural string) (model.Organization, error) {
 	var dbOrg entity.Organization
 
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbOrg).
 		Where("id_natural = ?", idNatural).
 		Scan(ctx); err != nil {
@@ -49,7 +49,7 @@ func (o *organization) GetByNaturalID(ctx context.Context, conn repository.DBCon
 func (o *organization) List(ctx context.Context, conn repository.DBConn, limit, offset int) (model.Organizations, int, error) {
 	var dbOrgs []entity.Organization
 
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		Model(&dbOrgs).
 		Order("created_at DESC").
 		Limit(limit).
@@ -60,7 +60,7 @@ func (o *organization) List(ctx context.Context, conn repository.DBConn, limit, 
 	}
 
 	var total int
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model((*entity.Organization)(nil)).
 		ColumnExpr("COUNT(*)").
 		Scan(ctx, &total); err != nil {
@@ -79,7 +79,7 @@ func (o *organization) List(ctx context.Context, conn repository.DBConn, limit, 
 func (o *organization) Update(ctx context.Context, conn repository.DBConn, org model.Organization) (model.Organization, error) {
 	var updated entity.Organization
 
-	upd := conn.NewUpdate().Model((*entity.Organization)(nil))
+	upd := bunConn(conn).NewUpdate().Model((*entity.Organization)(nil))
 	hasSet := false
 	if org.Name != "" {
 		upd = upd.Set("name = ?", org.Name)
@@ -107,7 +107,7 @@ func (o *organization) Update(ctx context.Context, conn repository.DBConn, org m
 
 func (o *organization) Delete(ctx context.Context, conn repository.DBConn, idNatural string) error {
 	var deletedID int64
-	if err := conn.NewDelete().
+	if err := bunConn(conn).NewDelete().
 		Model((*entity.Organization)(nil)).
 		Where("id_natural = ?", idNatural).
 		Returning("id").

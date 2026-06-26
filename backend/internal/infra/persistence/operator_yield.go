@@ -131,7 +131,7 @@ LIMIT ?row_limit
 	}
 
 	var rows []row
-	if err := conn.NewRaw(sqlText, args).Scan(ctx, &rows); err != nil {
+	if err := bunConn(conn).NewRaw(sqlText, args).Scan(ctx, &rows); err != nil {
 		return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to export operator yield: %v", err))
 	}
 

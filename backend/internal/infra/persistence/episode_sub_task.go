@@ -29,7 +29,7 @@ func (e *episodeSubTask) BulkCreate(ctx context.Context, conn repository.DBConn,
 		})
 	}
 
-	if _, err := conn.NewInsert().
+	if _, err := bunConn(conn).NewInsert().
 		Model(&dbSubtasks).
 		Exec(ctx); err != nil {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to bulk create episode subtasks: %v", err))
@@ -41,7 +41,7 @@ func (e *episodeSubTask) BulkCreate(ctx context.Context, conn repository.DBConn,
 func (e *episodeSubTask) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.EpisodeSubTask, error) {
 	var dbSt entity.EpisodeSubTask
 
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbSt).
 		Where("id_natural = ?", id).
 		Scan(ctx); err != nil {
@@ -63,7 +63,7 @@ func (e *episodeSubTask) GetByID(ctx context.Context, conn repository.DBConn, id
 func (e *episodeSubTask) GetByEpisodeID(ctx context.Context, conn repository.DBConn, episodeID string) (model.EpisodeSubTasks, error) {
 	var dbSubtasks []entity.EpisodeSubTask
 
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbSubtasks).
 		Where("episode_id = ?", episodeID).
 		Scan(ctx); err != nil {
@@ -98,7 +98,7 @@ func (e *episodeSubTask) Update(ctx context.Context, conn repository.DBConn, sub
 		CollectionStatus: subtask.CollectionStatus,
 	}
 
-	if _, err := conn.NewUpdate().
+	if _, err := bunConn(conn).NewUpdate().
 		Model(&dbSt).
 		WherePK().
 		Exec(ctx); err != nil {
@@ -109,7 +109,7 @@ func (e *episodeSubTask) Update(ctx context.Context, conn repository.DBConn, sub
 }
 
 func (e *episodeSubTask) BulkCancelByEpisodeID(ctx context.Context, conn repository.DBConn, episodeID string) error {
-	if _, err := conn.NewUpdate().
+	if _, err := bunConn(conn).NewUpdate().
 		Model((*entity.EpisodeSubTask)(nil)).
 		Set("collection_status = ?", model.SubTaskCollectionStatusCancelled).
 		Where("episode_id = ?", episodeID).

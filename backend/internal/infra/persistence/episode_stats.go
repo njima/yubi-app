@@ -28,7 +28,7 @@ func (e *episodeStats) UpsertHourly(ctx context.Context, conn repository.DBConn,
 		EpisodeCount:         stats.EpisodeCount,
 	}
 
-	_, err := conn.NewInsert().
+	_, err := bunConn(conn).NewInsert().
 		Model(&dbEntity).
 		On("CONFLICT (organization_id, location_id, robot_id, period_start) DO UPDATE").
 		Set("total_duration_seconds = EXCLUDED.total_duration_seconds").
@@ -55,7 +55,7 @@ func (e *episodeStats) UpsertDaily(ctx context.Context, conn repository.DBConn, 
 		EpisodeCount:         stats.EpisodeCount,
 	}
 
-	_, err := conn.NewInsert().
+	_, err := bunConn(conn).NewInsert().
 		Model(&dbEntity).
 		On("CONFLICT (organization_id, location_id, robot_id, period_start) DO UPDATE").
 		Set("total_duration_seconds = EXCLUDED.total_duration_seconds").
@@ -82,7 +82,7 @@ func (e *episodeStats) UpsertMonthly(ctx context.Context, conn repository.DBConn
 		EpisodeCount:         stats.EpisodeCount,
 	}
 
-	_, err := conn.NewInsert().
+	_, err := bunConn(conn).NewInsert().
 		Model(&dbEntity).
 		On("CONFLICT (organization_id, location_id, robot_id, period_start) DO UPDATE").
 		Set("total_duration_seconds = EXCLUDED.total_duration_seconds").
@@ -100,7 +100,7 @@ func (e *episodeStats) UpsertMonthly(ctx context.Context, conn repository.DBConn
 // BulkReplaceHourly replaces hourly stats for a given period.
 func (e *episodeStats) BulkReplaceHourly(ctx context.Context, conn repository.DBConn, periodStart time.Time, statsList []model.EpisodeStats) error {
 	// Delete all existing rows for this period (handles removed/excluded episodes)
-	if _, err := conn.NewDelete().
+	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.EpisodeStatsHourly)(nil)).
 		Where("period_start = ?", periodStart).
 		Exec(ctx); err != nil {
@@ -124,7 +124,7 @@ func (e *episodeStats) BulkReplaceHourly(ctx context.Context, conn repository.DB
 		}
 	}
 
-	_, err := conn.NewInsert().
+	_, err := bunConn(conn).NewInsert().
 		Model(&entities).
 		Exec(ctx)
 
@@ -137,7 +137,7 @@ func (e *episodeStats) BulkReplaceHourly(ctx context.Context, conn repository.DB
 
 // BulkReplaceDaily replaces daily stats for a given period.
 func (e *episodeStats) BulkReplaceDaily(ctx context.Context, conn repository.DBConn, periodStart time.Time, statsList []model.EpisodeStats) error {
-	if _, err := conn.NewDelete().
+	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.EpisodeStatsDaily)(nil)).
 		Where("period_start = ?", periodStart).
 		Exec(ctx); err != nil {
@@ -161,7 +161,7 @@ func (e *episodeStats) BulkReplaceDaily(ctx context.Context, conn repository.DBC
 		}
 	}
 
-	_, err := conn.NewInsert().
+	_, err := bunConn(conn).NewInsert().
 		Model(&entities).
 		Exec(ctx)
 
@@ -174,7 +174,7 @@ func (e *episodeStats) BulkReplaceDaily(ctx context.Context, conn repository.DBC
 
 // BulkReplaceMonthly replaces monthly stats for a given period.
 func (e *episodeStats) BulkReplaceMonthly(ctx context.Context, conn repository.DBConn, periodStart time.Time, statsList []model.EpisodeStats) error {
-	if _, err := conn.NewDelete().
+	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.EpisodeStatsMonthly)(nil)).
 		Where("period_start = ?", periodStart).
 		Exec(ctx); err != nil {
@@ -198,7 +198,7 @@ func (e *episodeStats) BulkReplaceMonthly(ctx context.Context, conn repository.D
 		}
 	}
 
-	_, err := conn.NewInsert().
+	_, err := bunConn(conn).NewInsert().
 		Model(&entities).
 		Exec(ctx)
 
@@ -213,7 +213,7 @@ func (e *episodeStats) BulkReplaceMonthly(ctx context.Context, conn repository.D
 func (e *episodeStats) ListHourly(ctx context.Context, conn repository.DBConn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
 	var entities []entity.EpisodeStatsHourly
 
-	query := conn.NewSelect().Model(&entities).Order("period_start ASC")
+	query := bunConn(conn).NewSelect().Model(&entities).Order("period_start ASC")
 	query = applyStatsFilterToSelect(query, filter)
 
 	if err := query.Scan(ctx); err != nil {
@@ -227,7 +227,7 @@ func (e *episodeStats) ListHourly(ctx context.Context, conn repository.DBConn, f
 func (e *episodeStats) ListDaily(ctx context.Context, conn repository.DBConn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
 	var entities []entity.EpisodeStatsDaily
 
-	query := conn.NewSelect().Model(&entities).Order("period_start ASC")
+	query := bunConn(conn).NewSelect().Model(&entities).Order("period_start ASC")
 	query = applyStatsFilterToSelect(query, filter)
 
 	if err := query.Scan(ctx); err != nil {
@@ -241,7 +241,7 @@ func (e *episodeStats) ListDaily(ctx context.Context, conn repository.DBConn, fi
 func (e *episodeStats) ListMonthly(ctx context.Context, conn repository.DBConn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
 	var entities []entity.EpisodeStatsMonthly
 
-	query := conn.NewSelect().Model(&entities).Order("period_start ASC")
+	query := bunConn(conn).NewSelect().Model(&entities).Order("period_start ASC")
 	query = applyStatsFilterToSelect(query, filter)
 
 	if err := query.Scan(ctx); err != nil {
@@ -263,7 +263,7 @@ func (e *episodeStats) AggregateEpisodesForPeriod(ctx context.Context, conn repo
 
 	var results []aggregateResult
 
-	err := conn.NewSelect().
+	err := bunConn(conn).NewSelect().
 		TableExpr("episode AS e").
 		ColumnExpr("e.organization_id").
 		ColumnExpr("e.location_id").
@@ -307,7 +307,7 @@ func (e *episodeStats) AggregateByTaskVersion(ctx context.Context, conn reposito
 
 	var results []aggregateResult
 
-	err := conn.NewSelect().
+	err := bunConn(conn).NewSelect().
 		TableExpr("episode AS e").
 		ColumnExpr("e.task_version_id").
 		ColumnExpr("COALESCE(SUM(EXTRACT(EPOCH FROM (e.finished_at - e.started_at))::bigint), 0) AS total_duration_seconds").
@@ -339,7 +339,7 @@ func (e *episodeStats) AggregateByTaskVersion(ctx context.Context, conn reposito
 func (e *episodeStats) BulkUpsertTaskVersionStats(ctx context.Context, conn repository.DBConn, statsList []model.TaskVersionStats) error {
 	// If no stats, delete all rows (all completed episodes were removed)
 	if len(statsList) == 0 {
-		_, err := conn.NewDelete().
+		_, err := bunConn(conn).NewDelete().
 			Model((*entity.TaskVersionStats)(nil)).
 			Where("TRUE").
 			Exec(ctx)
@@ -354,7 +354,7 @@ func (e *episodeStats) BulkUpsertTaskVersionStats(ctx context.Context, conn repo
 	for i, stats := range statsList {
 		activeIDs[i] = stats.TaskVersionID
 	}
-	if _, err := conn.NewDelete().
+	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.TaskVersionStats)(nil)).
 		Where("task_version_id NOT IN (?)", bun.In(activeIDs)).
 		Exec(ctx); err != nil {
@@ -372,7 +372,7 @@ func (e *episodeStats) BulkUpsertTaskVersionStats(ctx context.Context, conn repo
 		}
 	}
 
-	_, err := conn.NewInsert().
+	_, err := bunConn(conn).NewInsert().
 		Model(&entities).
 		On("CONFLICT (task_version_id) DO UPDATE").
 		Set("total_duration_seconds = EXCLUDED.total_duration_seconds").

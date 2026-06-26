@@ -25,7 +25,7 @@ func (f *fleet) GetSummary(ctx context.Context, conn repository.DBConn) ([]repos
 
 	var rows []repository.FleetSummaryRow
 
-	err = conn.NewSelect().
+	err = bunConn(conn).NewSelect().
 		TableExpr("robot AS r").
 		Join("JOIN location AS l ON l.id_natural = r.location_id").
 		Join("JOIN site AS si ON si.id_natural = l.site_id").
@@ -54,7 +54,7 @@ func (f *fleet) GetStats(ctx context.Context, conn repository.DBConn, filter rep
 
 	var rows []repository.FleetStatsRow
 
-	err = conn.NewSelect().
+	err = bunConn(conn).NewSelect().
 		TableExpr("episode_stats_hourly AS esh").
 		Join("JOIN robot AS r ON r.id_natural = esh.robot_id").
 		Join("JOIN location AS l ON l.id_natural = esh.location_id").
@@ -84,7 +84,7 @@ func (f *fleet) GetUptimeStats(ctx context.Context, conn repository.DBConn, filt
 
 	var rows []repository.FleetUptimeStatsRow
 
-	err = conn.NewSelect().
+	err = bunConn(conn).NewSelect().
 		TableExpr("robot_uptime_hourly AS ruh").
 		Join("JOIN robot AS r ON r.id_natural = ruh.robot_id").
 		Join("JOIN location AS l ON l.id_natural = ruh.location_id").
@@ -120,7 +120,7 @@ func (f *fleet) GetCollectionTrend(ctx context.Context, conn repository.DBConn, 
 
 	var rows []repository.FleetTrendRow
 
-	err = conn.NewSelect().
+	err = bunConn(conn).NewSelect().
 		TableExpr(fmt.Sprintf("%s AS es", tableName)).
 		Join("JOIN robot AS r ON r.id_natural = es.robot_id").
 		Join("JOIN location AS l ON l.id_natural = es.location_id").

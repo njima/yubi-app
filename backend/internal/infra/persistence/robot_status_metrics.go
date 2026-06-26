@@ -35,7 +35,7 @@ func (r *robotUptimeMetrics) WriteBatch(ctx context.Context, conn repository.DBC
 		})
 	}
 
-	_, err := conn.NewInsert().
+	_, err := bunConn(conn).NewInsert().
 		Model(&entities).
 		On("CONFLICT (robot_id, period_start) DO UPDATE").
 		Set("uptime_seconds = ruh.uptime_seconds + EXCLUDED.uptime_seconds").

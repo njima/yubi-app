@@ -35,7 +35,7 @@ func (tv *taskVersion) Create(ctx context.Context, conn repository.DBConn, m mod
 		Parameters:                      bunconv.TaskVersionParametersToJSON(m.Parameters),
 	}
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&e).
 		Returning("*").
 		Scan(ctx, &inserted); err != nil {
@@ -46,7 +46,7 @@ func (tv *taskVersion) Create(ctx context.Context, conn repository.DBConn, m mod
 }
 
 func (tv *taskVersion) Update(ctx context.Context, conn repository.DBConn, m model.TaskVersion) (model.TaskVersion, error) {
-	upd := conn.NewUpdate().Model((*entity.TaskVersion)(nil))
+	upd := bunConn(conn).NewUpdate().Model((*entity.TaskVersion)(nil))
 	hasSet := false
 	if m.TargetDurationSeconds != nil {
 		if *m.TargetDurationSeconds == 0 {
@@ -96,7 +96,7 @@ func (tv *taskVersion) Update(ctx context.Context, conn repository.DBConn, m mod
 
 func (tv *taskVersion) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.TaskVersion, error) {
 	var e entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&e).
 		Where("id_natural = ?", id).
 		Scan(ctx); err != nil {
@@ -114,7 +114,7 @@ func (tv *taskVersion) GetByID(ctx context.Context, conn repository.DBConn, id s
 
 func (tv *taskVersion) GetByIDForUpdate(ctx context.Context, conn repository.DBConn, id string) (model.TaskVersion, error) {
 	var e entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&e).
 		Where("id_natural = ?", id).
 		For("UPDATE").
@@ -129,7 +129,7 @@ func (tv *taskVersion) GetByIDForUpdate(ctx context.Context, conn repository.DBC
 
 func (tv *taskVersion) GetLatestApprovedByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (model.TaskVersion, error) {
 	var e entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&e).
 		Where("task_id = ?", taskID).
 		Where("approval_status = ?", model.ApprovalStatusApproved).
@@ -146,7 +146,7 @@ func (tv *taskVersion) GetLatestApprovedByTaskID(ctx context.Context, conn repos
 
 func (tv *taskVersion) Approve(ctx context.Context, conn repository.DBConn, id string) (model.TaskVersion, error) {
 	var updated entity.TaskVersion
-	if err := conn.NewUpdate().
+	if err := bunConn(conn).NewUpdate().
 		Model((*entity.TaskVersion)(nil)).
 		Set("approval_status = ?", model.ApprovalStatusApproved).
 		Where("id_natural = ?", id).
@@ -162,7 +162,7 @@ func (tv *taskVersion) Approve(ctx context.Context, conn repository.DBConn, id s
 
 func (tv *taskVersion) UpdateParameters(ctx context.Context, conn repository.DBConn, id string, parameters []model.TaskVersionParameter) (model.TaskVersion, error) {
 	var updated entity.TaskVersion
-	if err := conn.NewUpdate().
+	if err := bunConn(conn).NewUpdate().
 		Model((*entity.TaskVersion)(nil)).
 		Set("parameters = ?", bunconv.TaskVersionParametersToJSON(parameters)).
 		Where("id_natural = ?", id).
@@ -181,7 +181,7 @@ func (tv *taskVersion) ListByIDs(ctx context.Context, conn repository.DBConn, id
 		return nil, nil
 	}
 	var versions []entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&versions).
 		Where("id_natural IN (?)", bun.In(ids)).
 		Scan(ctx); err != nil {
@@ -192,7 +192,7 @@ func (tv *taskVersion) ListByIDs(ctx context.Context, conn repository.DBConn, id
 
 func (tv *taskVersion) ListByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (model.TaskVersions, error) {
 	var versions []entity.TaskVersion
-	err := conn.NewSelect().
+	err := bunConn(conn).NewSelect().
 		Model(&versions).
 		Where("task_id = ?", taskID).
 		Order("created_at DESC").
@@ -219,7 +219,7 @@ func (tv *taskVersion) attachStats(ctx context.Context, conn repository.DBConn, 
 	}
 
 	var stats []entity.TaskVersionStats
-	err := conn.NewSelect().
+	err := bunConn(conn).NewSelect().
 		Model(&stats).
 		Where("task_version_id IN (?)", bun.In(ids)).
 		Scan(ctx)
@@ -250,7 +250,7 @@ func (tv *taskVersion) SumTargetByTaskID(ctx context.Context, conn repository.DB
 
 	var total int64
 
-	err = conn.NewSelect().
+	err = bunConn(conn).NewSelect().
 		TableExpr("task_version").
 		ColumnExpr("COALESCE(SUM(COALESCE(target_duration_seconds, 0)), 0)").
 		Where("organization_id = ?", orgID).
