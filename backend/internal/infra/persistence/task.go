@@ -9,11 +9,11 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/database/bunconv"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 )
 
 type task struct{}
@@ -605,7 +605,7 @@ func applyTaskSummaryFilter(sel *bun.SelectQuery, filter repository.TaskSummaryF
 }
 
 func (t *task) GetFilteredTasks(ctx context.Context, conn repository.DBConn, filter repository.TaskSummaryFilter) ([]repository.FilteredTask, error) {
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}
@@ -629,7 +629,7 @@ func (t *task) GetTargetsByTaskIDs(ctx context.Context, conn repository.DBConn, 
 		return map[string]repository.TaskTargets{}, nil
 	}
 
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}
@@ -662,7 +662,7 @@ func (t *task) FindExistingNames(ctx context.Context, conn repository.DBConn, na
 		return map[string]bool{}, nil
 	}
 
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}
@@ -781,7 +781,7 @@ func (t *task) GetActualsByTaskIDs(ctx context.Context, conn repository.DBConn, 
 		return map[string]repository.TaskActuals{}, nil
 	}
 
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}

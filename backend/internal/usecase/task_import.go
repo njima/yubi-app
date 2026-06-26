@@ -11,9 +11,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 )
 
 const maxImportFileLen = 5 * 1024 * 1024 // 5MB
@@ -178,7 +178,7 @@ func (u *taskImport) Validate(ctx context.Context, csvContent string) (TaskImpor
 }
 
 func (u *taskImport) Import(ctx context.Context, csvContent string) (TaskImportResult, error) {
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil {
 		return TaskImportResult{}, err
 	}

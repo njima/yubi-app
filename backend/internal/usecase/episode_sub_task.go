@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 )
 
 type SubTaskActionInput struct {
@@ -47,7 +47,7 @@ func NewEpisodeSubTask(
 }
 
 func (e *episodeSubTask) Complete(ctx context.Context, input SubTaskActionInput) error {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (e *episodeSubTask) Complete(ctx context.Context, input SubTaskActionInput)
 }
 
 func (e *episodeSubTask) Skip(ctx context.Context, input SubTaskActionInput) error {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return err
 	}

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 )
 
 type operatorYield struct{}
@@ -19,7 +19,7 @@ func (g *operatorYield) Export(
 	conn repository.DBConn,
 	filter repository.OperatorYieldExportFilter,
 ) ([]repository.OperatorYieldExportRow, error) {
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/config"
 	"github.com/airoa-org/yubi-app/backend/internal/database/ddtrace"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
@@ -15,6 +14,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/infra/storage"
 	"github.com/airoa-org/yubi-app/backend/internal/log"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/uptrace/bun"
@@ -37,7 +37,7 @@ func newApplication(ctx context.Context) (*application, error) {
 	}
 
 	entity.OrgIDFromContext = func(ctx context.Context) (string, bool) {
-		id, err := ccontext.OrganizationID(ctx)
+		id, err := requestctx.OrganizationID(ctx)
 		return id, err == nil && id != ""
 	}
 

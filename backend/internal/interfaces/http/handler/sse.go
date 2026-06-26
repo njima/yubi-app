@@ -16,11 +16,11 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/authz"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/controller"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -76,7 +76,7 @@ func NewSSEHandler(
 }
 
 func (h *SSEHandler) StreamRobotStatus(c *gin.Context) {
-	role, err := ccontext.UserRole(c.Request.Context())
+	role, err := requestctx.UserRole(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusForbidden, openapi.ErrorResponse{
 			Code:    http.StatusForbidden,
@@ -145,7 +145,7 @@ func (h *SSEHandler) StreamRobotStatus(c *gin.Context) {
 func (h *SSEHandler) StreamRobotStatusByIds(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	role, err := ccontext.UserRole(ctx)
+	role, err := requestctx.UserRole(ctx)
 	if err != nil {
 		c.JSON(http.StatusForbidden, openapi.ErrorResponse{
 			Code:    http.StatusForbidden,
@@ -391,7 +391,7 @@ func streamSSE[T any](c *gin.Context, ch <-chan T, initial func() error, onEvent
 // StreamEpisodeListUpdates sends a lightweight SSE ping whenever any episode
 // is created or mutated, allowing the frontend to invalidate its list cache.
 func (h *SSEHandler) StreamEpisodeListUpdates(c *gin.Context) {
-	role, err := ccontext.UserRole(c.Request.Context())
+	role, err := requestctx.UserRole(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusForbidden, openapi.ErrorResponse{
 			Code:    http.StatusForbidden,
@@ -423,7 +423,7 @@ func (h *SSEHandler) StreamEpisodeListUpdates(c *gin.Context) {
 // StreamEpisodeUpdates streams episode state via SSE, pushing updates
 // whenever the event bus signals a change.
 func (h *SSEHandler) StreamEpisodeUpdates(c *gin.Context) {
-	role, err := ccontext.UserRole(c.Request.Context())
+	role, err := requestctx.UserRole(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusForbidden, openapi.ErrorResponse{
 			Code:    http.StatusForbidden,
@@ -599,7 +599,7 @@ func convertGateToOpenAPI(g *model.GateConditionStatus) openapi.GateConditionSta
 // Per-robot fan-out: a single goroutine drives every subscriber watching
 // the same robot, matching the pattern of StreamRobotStatus.
 func (h *SSEHandler) StreamRobotTeleop(c *gin.Context) {
-	role, err := ccontext.UserRole(c.Request.Context())
+	role, err := requestctx.UserRole(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusForbidden, openapi.ErrorResponse{
 			Code:    http.StatusForbidden,

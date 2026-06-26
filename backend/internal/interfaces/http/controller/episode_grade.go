@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -28,7 +28,7 @@ func episodeGradeToResponse(g model.EpisodeGrade, userName string) openapi.Episo
 }
 
 func (c *controller) GetMyEpisodeGrade(ctx context.Context, request openapi.GetMyEpisodeGradeRequestObject) (openapi.GetMyEpisodeGradeResponseObject, error) {
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -54,11 +54,11 @@ func (c *controller) UpdateMyEpisodeGrade(ctx context.Context, request openapi.U
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
 
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil {
 		return nil, err
 	}

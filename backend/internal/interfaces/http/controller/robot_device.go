@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
 func (c *controller) GetRobotMe(ctx context.Context, request openapi.GetRobotMeRequestObject) (openapi.GetRobotMeResponseObject, error) {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (c *controller) UpdateRobotStatus(ctx context.Context, request openapi.Upda
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
 
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return nil, err
 	}

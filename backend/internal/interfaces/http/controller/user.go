@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -16,7 +16,7 @@ func (c *controller) CreateUser(ctx context.Context, request openapi.CreateUserR
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
 
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersReq
 		LocationId: params.LocationId,
 		SiteId:     params.SiteId,
 	}
-	if orgID, err := ccontext.OrganizationID(ctx); err == nil {
+	if orgID, err := requestctx.OrganizationID(ctx); err == nil {
 		userFilter.OrganizationId = &orgID
 	}
 
@@ -136,7 +136,7 @@ func (c *controller) GetUserById(ctx context.Context, request openapi.GetUserByI
 }
 
 func (c *controller) GetMe(ctx context.Context, request openapi.GetMeRequestObject) (openapi.GetMeResponseObject, error) {
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeReque
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
 
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}

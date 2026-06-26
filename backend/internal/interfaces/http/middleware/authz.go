@@ -3,8 +3,8 @@ package middleware
 import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/authz"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,7 +31,7 @@ func NewAuthzMiddleware() openapi.StrictMiddlewareFunc {
 				)
 			}
 
-			role, err := ccontext.UserRole(ctx.Request.Context())
+			role, err := requestctx.UserRole(ctx.Request.Context())
 			if err != nil {
 				return nil, apperror.NewError(
 					apperror.NewMessage(apperror.CodeForbidden, "user role not found in context"),
