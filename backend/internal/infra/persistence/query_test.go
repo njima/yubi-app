@@ -138,6 +138,28 @@ func TestApplyRobotListFilters_UsedByListAndCountQueries(t *testing.T) {
 	}
 }
 
+func TestApplyRobotConnectionStateFilter_UsesReadyResolvableStatuses(t *testing.T) {
+	onlineIDs := []string{"robot-1", "robot-2"}
+	filter := repository.RobotListFilter{
+		OnlineRobotIDs: &onlineIDs,
+		ExcludeOnline:  true,
+	}
+
+	sql := captureQuery(t, func(db *bun.DB) *bun.SelectQuery {
+		var robots []entity.Robot
+		return applyRobotConnectionStateFilter(db.NewSelect().Model(&robots), filter.OnlineRobotIDs, filter.ExcludeOnline)
+	})
+
+	for _, want := range []string{
+		"r.status IN (5, 0)",
+		"r.id_natural NOT IN ('robot-1', 'robot-2')",
+	} {
+		if !strings.Contains(sql, want) {
+			t.Fatalf("expected %q in SQL, got:\n%s", want, sql)
+		}
+	}
+}
+
 func TestApplyTaskListFilters_UsedByListAndCountQueries(t *testing.T) {
 	hasApprovedVersion := true
 	robotType := "arm"

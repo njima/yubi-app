@@ -38,15 +38,7 @@ func applySiteListFilters(sel *bun.SelectQuery, filter repository.SiteListFilter
 }
 
 func applyRobotListFilters(sel *bun.SelectQuery, filter repository.RobotListFilter) *bun.SelectQuery {
-	if filter.SiteID != nil && *filter.SiteID != "" {
-		sel = sel.Where(`EXISTS (
-			SELECT 1 FROM location l
-			WHERE l.id_natural = r.location_id AND l.site_id = ?
-		)`, *filter.SiteID)
-	}
-	if filter.LocationID != nil {
-		sel = sel.Where("r.location_id = ?", *filter.LocationID)
-	}
+	sel = applyRobotScopeFilters(sel, filter.SiteID, filter.LocationID)
 	if filter.Status != nil {
 		sel = sel.Where("r.status = ?", *filter.Status)
 	}
@@ -57,18 +49,38 @@ func applyRobotListFilters(sel *bun.SelectQuery, filter repository.RobotListFilt
 		escaped := escapeILIKE(*filter.Search)
 		sel = sel.Where("r.name ILIKE ?", "%"+escaped+"%")
 	}
-	if filter.OnlineRobotIDs != nil {
-		ids := *filter.OnlineRobotIDs
-		sel = sel.Where("r.status IN (?)", bun.In([]model.RobotStatus{
-			model.RobotStatusReady, model.RobotStatusOnline,
-		}))
-		if filter.ExcludeOnline {
-			if len(ids) > 0 {
-				sel = sel.Where("r.id_natural NOT IN (?)", bun.In(ids))
-			}
-		} else {
-			sel = sel.Where("r.id_natural IN (?)", bun.In(ids))
+	sel = applyRobotConnectionStateFilter(sel, filter.OnlineRobotIDs, filter.ExcludeOnline)
+	return sel
+}
+
+func applyRobotScopeFilters(sel *bun.SelectQuery, siteID, locationID *string) *bun.SelectQuery {
+	if siteID != nil && *siteID != "" {
+		sel = sel.Where(`EXISTS (
+			SELECT 1 FROM location l
+			WHERE l.id_natural = r.location_id AND l.site_id = ?
+		)`, *siteID)
+	}
+	if locationID != nil {
+		sel = sel.Where("r.location_id = ?", *locationID)
+	}
+	return sel
+}
+
+func applyRobotConnectionStateFilter(sel *bun.SelectQuery, onlineRobotIDs *[]string, excludeOnline bool) *bun.SelectQuery {
+	if onlineRobotIDs == nil {
+		return sel
+	}
+
+	ids := *onlineRobotIDs
+	sel = sel.Where("r.status IN (?)", bun.In([]model.RobotStatus{
+		model.RobotStatusReady, model.RobotStatusOnline,
+	}))
+	if excludeOnline {
+		if len(ids) > 0 {
+			sel = sel.Where("r.id_natural NOT IN (?)", bun.In(ids))
 		}
+	} else {
+		sel = sel.Where("r.id_natural IN (?)", bun.In(ids))
 	}
 	return sel
 }
