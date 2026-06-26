@@ -5,18 +5,8 @@ import {
   EPISODE_COLLECTION_STATUS,
   type EpisodeCollectionStatusValue,
 } from "@/shared/lib/status-constants";
+import { EPISODE_COLLECTION_STATUS_DISPLAY } from "@/shared/lib/status-display";
 import { Badge } from "@/shared/ui/badge";
-
-const statusStyles: Record<EpisodeCollectionStatusValue, string> = {
-  [EPISODE_COLLECTION_STATUS.READY]:
-    "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300",
-  [EPISODE_COLLECTION_STATUS.RECORDING]:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  [EPISODE_COLLECTION_STATUS.CANCEL]:
-    "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  [EPISODE_COLLECTION_STATUS.COMPLETED]:
-    "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-};
 
 interface EpisodeStatusBadgeProps {
   status?: number;
@@ -30,14 +20,12 @@ export function EpisodeStatusBadge({ status }: EpisodeStatusBadgeProps) {
   }
 
   const statusCode = status as EpisodeCollectionStatusValue;
+  const display =
+    EPISODE_COLLECTION_STATUS_DISPLAY[statusCode] ??
+    EPISODE_COLLECTION_STATUS_DISPLAY[EPISODE_COLLECTION_STATUS.READY];
+
   return (
-    <Badge
-      variant="outline"
-      className={
-        statusStyles[statusCode] ??
-        statusStyles[EPISODE_COLLECTION_STATUS.READY]
-      }
-    >
+    <Badge variant="outline" className={display.className}>
       {getStatusLabel(statusCode)}
     </Badge>
   );
