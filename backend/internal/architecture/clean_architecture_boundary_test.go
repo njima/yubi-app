@@ -69,6 +69,19 @@ func TestAuthzDoesNotDependOnHTTPBoundary(t *testing.T) {
 	})
 }
 
+func TestAppBootstrapDoesNotConstructUsecasesDirectly(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "app", "bootstrap.go")
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read internal/app/bootstrap.go: %v", err)
+	}
+	if strings.Contains(string(content), "usecase.New") {
+		t.Fatalf("internal/app/bootstrap.go must delegate usecase wiring to internal/app/usecases.go")
+	}
+}
+
 func assertNoForbiddenImports(t *testing.T, packageDir string, forbiddenPrefixes []string) {
 	t.Helper()
 
