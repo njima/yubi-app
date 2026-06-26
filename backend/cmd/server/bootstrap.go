@@ -14,7 +14,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/platform/config"
 	"github.com/airoa-org/yubi-app/backend/internal/platform/log"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/uptrace/bun"

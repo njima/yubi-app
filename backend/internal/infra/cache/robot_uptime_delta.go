@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 )
 
 const (

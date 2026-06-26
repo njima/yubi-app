@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 )
 
 type TaskVersionCreateInput struct {

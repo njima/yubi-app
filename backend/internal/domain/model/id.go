@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/google/uuid"
 )
 

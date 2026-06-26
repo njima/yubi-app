@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/redis/go-redis/v9"
 	redistrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/redis/go-redis.v9"
 )

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 )
 
 // TaskExportUsecase generates a CSV export of tasks.

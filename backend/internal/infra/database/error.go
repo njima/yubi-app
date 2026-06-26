@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror/stack"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror/stack"
 )
 
 type ErrorKind int
