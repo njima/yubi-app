@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/airoa-org/yubi-app/backend/internal/config"
-	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 
 	"github.com/rs/zerolog"
 	"github.com/uptrace/bun"
@@ -21,8 +21,8 @@ type application struct {
 
 	usecases
 
-	robotStatusBus  *event.Bus
-	episodeBus      *event.Bus
-	robotEpisodeBus *event.Bus
-	episodeListBus  *event.Bus
+	robotStatusBus  *eventbus.Bus
+	episodeBus      *eventbus.Bus
+	robotEpisodeBus *eventbus.Bus
+	episodeListBus  *eventbus.Bus
 }

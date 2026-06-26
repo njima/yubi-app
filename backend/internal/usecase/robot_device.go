@@ -6,8 +6,8 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 	"github.com/rs/zerolog"
 )
 
@@ -68,7 +68,7 @@ type robotDevice struct {
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository
 	data            repository.DataAccess
 	logger          zerolog.Logger
-	statusBus       *event.Bus
+	statusBus       *eventbus.Bus
 }
 
 func NewRobotDevice(
@@ -77,7 +77,7 @@ func NewRobotDevice(
 	uptimeDeltaRepo repository.RobotUptimeDeltaRepository,
 	data repository.DataAccess,
 	logger zerolog.Logger,
-	statusBus *event.Bus,
+	statusBus *eventbus.Bus,
 ) *robotDevice {
 	return &robotDevice{
 		robotRepo:       robotRepo,

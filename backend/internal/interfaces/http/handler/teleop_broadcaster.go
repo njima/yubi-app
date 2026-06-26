@@ -10,10 +10,10 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/controller"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 )
 
 // teleopBroadcaster multiplexes robotStatusBus and robotEpisodeBus into a
@@ -29,8 +29,8 @@ import (
 type teleopBroadcaster struct {
 	parent             context.Context
 	logger             zerolog.Logger
-	robotStatusBus     *event.Bus
-	robotEpisodeBus    *event.Bus
+	robotStatusBus     *eventbus.Bus
+	robotEpisodeBus    *eventbus.Bus
 	robotDeviceUsecase usecase.RobotDeviceUsecase
 	episodeUsecase     usecase.EpisodeUsecase
 	taskUsecase        usecase.TaskUsecase
@@ -57,7 +57,7 @@ const teleopSubBuffer = 16
 func newTeleopBroadcaster(
 	ctx context.Context,
 	logger zerolog.Logger,
-	robotStatusBus, robotEpisodeBus *event.Bus,
+	robotStatusBus, robotEpisodeBus *eventbus.Bus,
 	robotDeviceUsecase usecase.RobotDeviceUsecase,
 	episodeUsecase usecase.EpisodeUsecase,
 	taskUsecase usecase.TaskUsecase,
@@ -167,7 +167,7 @@ func (tb *teleopBroadcaster) fanOut(robotID string, kind teleopEventKind, frame 
 		default:
 			// Slow subscriber — drop this frame rather than block the
 			// per-robot loop. Mirrors the behaviour of the existing
-			// event.Broadcaster fan-out.
+			// eventbus.Broadcaster fan-out.
 		}
 	}
 }

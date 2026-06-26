@@ -11,12 +11,12 @@ import (
 	"github.com/rs/zerolog"
 	gintrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gin-gonic/gin"
 
-	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/controller"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/handler"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/middleware"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 )
 
 const DefaultAPIBodyLimit = 6 * 1024 * 1024 // 6MB
@@ -48,10 +48,10 @@ type SSEDependencies struct {
 	EpisodeUsecase      usecase.EpisodeUsecase
 	TaskUsecase         usecase.TaskUsecase
 	TaskVersionUsecase  usecase.TaskVersionUsecase
-	EpisodeBus          *event.Bus
-	RobotEpisodeBus     *event.Bus
-	EpisodeListBus      *event.Bus
-	RobotStatusEventBus *event.Bus
+	EpisodeBus          *eventbus.Bus
+	RobotEpisodeBus     *eventbus.Bus
+	EpisodeListBus      *eventbus.Bus
+	RobotStatusEventBus *eventbus.Bus
 }
 
 func New(ctx context.Context, deps Dependencies) *gin.Engine {

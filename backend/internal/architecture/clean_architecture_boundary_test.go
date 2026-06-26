@@ -121,6 +121,28 @@ func TestErrorStackHelperLivesUnderAppError(t *testing.T) {
 	}
 }
 
+func TestRuntimeLogHelperLivesUnderPlatform(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "log")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("runtime log helper must live under internal/platform/log, not internal/log")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/log: %v", err)
+	}
+}
+
+func TestApplicationEventBusLivesUnderUsecase(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "event")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("application event bus must live under internal/usecase/eventbus, not internal/event")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/event: %v", err)
+	}
+}
+
 func assertNoForbiddenImports(t *testing.T, packageDir string, forbiddenPrefixes []string) {
 	t.Helper()
 
