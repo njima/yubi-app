@@ -30,6 +30,10 @@ func (c *controller) ListOrganizations(ctx context.Context, request openapi.List
 }
 
 func (c *controller) CreateOrganization(ctx context.Context, request openapi.CreateOrganizationRequestObject) (openapi.CreateOrganizationResponseObject, error) {
+	if request.Body == nil {
+		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
+	}
+
 	body := request.Body
 
 	var desc *string
