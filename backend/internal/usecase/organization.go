@@ -30,7 +30,7 @@ type OrganizationCreateInput struct {
 
 type OrganizationUpdateInput struct {
 	OrganizationID string
-	DisplayName    string
+	DisplayName    *string
 	Description    *string
 }
 
@@ -75,6 +75,10 @@ func (o *organization) Update(ctx context.Context, input OrganizationUpdateInput
 		return model.Organization{}, err
 	}
 
+	if input.DisplayName == nil && input.Description == nil {
+		return org, nil
+	}
+
 	uorg, err := o.update(ctx, org, input)
 	if err != nil {
 		return model.Organization{}, err
@@ -89,8 +93,10 @@ func (o *organization) Update(ctx context.Context, input OrganizationUpdateInput
 }
 
 func (o *organization) update(ctx context.Context, org model.Organization, input OrganizationUpdateInput) (model.Organization, error) {
-	if err := org.SetName(input.DisplayName); err != nil {
-		return model.Organization{}, err
+	if input.DisplayName != nil {
+		if err := org.SetName(*input.DisplayName); err != nil {
+			return model.Organization{}, err
+		}
 	}
 
 	if input.Description != nil {

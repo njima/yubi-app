@@ -24,7 +24,7 @@ type LocationCreateInput struct {
 
 type LocationUpdateInput struct {
 	ID   string
-	Name string
+	Name *string
 }
 
 type location struct {
@@ -65,7 +65,11 @@ func (l *location) Update(ctx context.Context, input LocationUpdateInput) (model
 		return model.Location{}, err
 	}
 
-	if err := lo.SetName(input.Name); err != nil {
+	if input.Name == nil {
+		return lo, nil
+	}
+
+	if err := lo.SetName(*input.Name); err != nil {
 		return model.Location{}, err
 	}
 
