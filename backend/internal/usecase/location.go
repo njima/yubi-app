@@ -55,14 +55,8 @@ func (l *location) GetByID(ctx context.Context, id string) (model.Location, erro
 }
 
 func (l *location) List(ctx context.Context, filter LocationListFilter, page, limit int) (model.Locations, int, error) {
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
-	return l.locRepo.List(ctx, l.data.Conn(), filter.repositoryFilter(), limit, offset)
+	pg := pagination.Normalize(page, limit)
+	return l.locRepo.List(ctx, l.data.Conn(), filter.repositoryFilter(), pg.Limit, pg.Offset)
 }
 
 func (l *location) Update(ctx context.Context, input LocationUpdateInput) (model.Location, error) {

@@ -33,8 +33,8 @@ type CreateInput struct {
 type UserUpdateInput struct {
 	UserID         string
 	OrganizationID string
-	Name           string
-	Email          string
+	Name           *string
+	Email          *string
 }
 
 type UserRoleUpdateInput struct {
@@ -106,15 +106,15 @@ func (u *user) Update(ctx context.Context, input UserUpdateInput) (model.User, e
 	}
 
 	needsUserUpdate := false
-	if input.Name != "" {
-		if err := existing.SetName(input.Name); err != nil {
+	if input.Name != nil {
+		if err := existing.SetName(*input.Name); err != nil {
 			return model.User{}, err
 		}
 		needsUserUpdate = true
 	}
 
-	if input.Email != "" {
-		if err := existing.SetEmail(input.Email); err != nil {
+	if input.Email != nil {
+		if err := existing.SetEmail(*input.Email); err != nil {
 			return model.User{}, err
 		}
 		needsUserUpdate = true
@@ -191,14 +191,8 @@ func (u *user) GetByNaturalID(ctx context.Context, idNatural string) (model.User
 }
 
 func (u *user) List(ctx context.Context, filter UserListFilter, page, limit int) (model.Users, int, error) {
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
-	users, total, err := u.userRepo.List(ctx, u.data.Conn(), filter.repositoryFilter(), limit, offset)
+	pg := pagination.Normalize(page, limit)
+	users, total, err := u.userRepo.List(ctx, u.data.Conn(), filter.repositoryFilter(), pg.Limit, pg.Offset)
 	if err != nil {
 		return nil, 0, err
 	}

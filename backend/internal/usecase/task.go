@@ -124,14 +124,8 @@ func (t *task) ListByIDs(ctx context.Context, ids []string) (model.Tasks, error)
 }
 
 func (t *task) List(ctx context.Context, filter TaskListFilter, page, limit int) (model.Tasks, int, error) {
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
-	tasks, total, err := t.repo.List(ctx, t.data.Conn(), filter.repositoryFilter(), limit, offset)
+	pg := pagination.Normalize(page, limit)
+	tasks, total, err := t.repo.List(ctx, t.data.Conn(), filter.repositoryFilter(), pg.Limit, pg.Offset)
 	if err != nil {
 		return nil, 0, err
 	}

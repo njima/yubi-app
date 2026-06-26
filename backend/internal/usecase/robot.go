@@ -86,13 +86,7 @@ func (r *robot) GetByID(ctx context.Context, id string) (model.Robot, error) {
 }
 
 func (r *robot) List(ctx context.Context, filter RobotListFilter, page, limit int) (model.Robots, int, error) {
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
+	pg := pagination.Normalize(page, limit)
 
 	dbFilter := filter.repositoryFilter()
 	if dbFilter.Status != nil &&
@@ -116,7 +110,7 @@ func (r *robot) List(ctx context.Context, filter RobotListFilter, page, limit in
 		}
 	}
 
-	robs, total, err := r.repo.List(ctx, r.data.Conn(), dbFilter, limit, offset)
+	robs, total, err := r.repo.List(ctx, r.data.Conn(), dbFilter, pg.Limit, pg.Offset)
 	if err != nil {
 		return nil, 0, err
 	}

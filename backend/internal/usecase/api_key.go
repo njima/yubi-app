@@ -9,6 +9,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 	"github.com/rs/zerolog"
 )
 
@@ -173,14 +174,8 @@ func (a *apiKey) MarkUsed(apiKeyID int64) {
 }
 
 func (a *apiKey) List(ctx context.Context, filter APIKeyListFilter, page, limit int) (model.APIKeys, int, error) {
-	if limit <= 0 {
-		limit = 50
-	}
-	offset := 0
-	if page > 1 {
-		offset = (page - 1) * limit
-	}
-	return a.repo.List(ctx, a.data.Conn(), filter.repositoryFilter(), limit, offset)
+	pg := pagination.NormalizeWithDefault(page, limit, 50)
+	return a.repo.List(ctx, a.data.Conn(), filter.repositoryFilter(), pg.Limit, pg.Offset)
 }
 
 func (a *apiKey) Create(ctx context.Context, input APIKeyCreateInput) (APIKeyCreateResult, error) {

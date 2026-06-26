@@ -96,3 +96,71 @@ func TestParse(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalize(t *testing.T) {
+	tests := []struct {
+		name       string
+		page       int
+		limit      int
+		wantPage   int
+		wantLimit  int
+		wantOffset int
+	}{
+		{
+			name:       "valid page and limit",
+			page:       3,
+			limit:      10,
+			wantPage:   3,
+			wantLimit:  10,
+			wantOffset: 20,
+		},
+		{
+			name:       "zero page uses first page",
+			page:       0,
+			limit:      50,
+			wantPage:   1,
+			wantLimit:  50,
+			wantOffset: 0,
+		},
+		{
+			name:       "negative page uses first page",
+			page:       -2,
+			limit:      50,
+			wantPage:   1,
+			wantLimit:  50,
+			wantOffset: 0,
+		},
+		{
+			name:       "zero limit uses default",
+			page:       2,
+			limit:      0,
+			wantPage:   2,
+			wantLimit:  DefaultLimit,
+			wantOffset: DefaultLimit,
+		},
+		{
+			name:       "limit exceeding max is capped",
+			page:       2,
+			limit:      MaxLimit + 1,
+			wantPage:   2,
+			wantLimit:  MaxLimit,
+			wantOffset: MaxLimit,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.page, tt.limit)
+
+			if got.Page != tt.wantPage {
+				t.Errorf("Page = %d, want %d", got.Page, tt.wantPage)
+			}
+			if got.Limit != tt.wantLimit {
+				t.Errorf("Limit = %d, want %d", got.Limit, tt.wantLimit)
+			}
+			if got.Offset != tt.wantOffset {
+				t.Errorf("Offset = %d, want %d", got.Offset, tt.wantOffset)
+			}
+		})
+	}
+}

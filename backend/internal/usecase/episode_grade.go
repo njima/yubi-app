@@ -50,15 +50,9 @@ func (u *episodeGrade) GetMyGrade(ctx context.Context, episodeID, userID string)
 }
 
 func (u *episodeGrade) List(ctx context.Context, episodeID string, page, limit int) ([]EpisodeGradeListItem, int, error) {
-	if limit <= 0 {
-		limit = pagination.DefaultLimit
-	}
-	if page <= 0 {
-		page = 1
-	}
-	offset := (page - 1) * limit
+	pg := pagination.Normalize(page, limit)
 
-	items, total, err := u.repo.ListByEpisodeID(ctx, u.data.Conn(), episodeID, limit, offset)
+	items, total, err := u.repo.ListByEpisodeID(ctx, u.data.Conn(), episodeID, pg.Limit, pg.Offset)
 	if err != nil {
 		return nil, 0, err
 	}
