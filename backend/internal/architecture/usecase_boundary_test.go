@@ -130,7 +130,7 @@ func TestUsecaseTransactionCallbacksUseLocalConn(t *testing.T) {
 	}
 }
 
-func TestUsecaseInterfacesDoNotExposeRepositoryFilters(t *testing.T) {
+func TestUsecaseInterfacesDoNotExposeRepositoryTypes(t *testing.T) {
 	backendRoot := filepath.Clean("../..")
 	usecaseRoot := filepath.Join(backendRoot, "internal", "usecase")
 
@@ -166,7 +166,7 @@ func TestUsecaseInterfacesDoNotExposeRepositoryFilters(t *testing.T) {
 				inUsecaseInterface = false
 				continue
 			}
-			if inUsecaseInterface && strings.Contains(line, "repository.") && strings.Contains(line, "Filter") {
+			if inUsecaseInterface && strings.Contains(line, "repository.") {
 				violations = append(violations, rel+":"+strconv.Itoa(lineNumber+1))
 			}
 		}
@@ -176,6 +176,6 @@ func TestUsecaseInterfacesDoNotExposeRepositoryFilters(t *testing.T) {
 		t.Fatalf("walk backend/internal/usecase: %v", err)
 	}
 	if len(violations) > 0 {
-		t.Fatalf("usecase interfaces must expose usecase input/filter types instead of repository filters; violations: %s", strings.Join(violations, ", "))
+		t.Fatalf("usecase interfaces must expose usecase/domain types instead of repository types; violations: %s", strings.Join(violations, ", "))
 	}
 }
