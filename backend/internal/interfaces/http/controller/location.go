@@ -26,12 +26,7 @@ func (c *controller) ListLocations(ctx context.Context, request openapi.ListLoca
 
 	locations := make([]openapi.Location, 0, len(locs))
 	for _, l := range locs {
-		locations = append(locations, openapi.Location{
-			Id:       l.IDNatural,
-			Name:     l.Name,
-			SiteId:   l.SiteID,
-			SiteName: l.SiteName,
-		})
+		locations = append(locations, locationResponse(*l))
 	}
 
 	return openapi.ListLocations200JSONResponse{
@@ -58,12 +53,7 @@ func (c *controller) CreateLocation(ctx context.Context, request openapi.CreateL
 		return nil, err
 	}
 
-	return openapi.CreateLocation201JSONResponse{
-		Id:       loc.IDNatural,
-		Name:     loc.Name,
-		SiteId:   loc.SiteID,
-		SiteName: loc.SiteName,
-	}, nil
+	return openapi.CreateLocation201JSONResponse(locationResponse(loc)), nil
 }
 
 func (c *controller) DeleteLocationById(ctx context.Context, request openapi.DeleteLocationByIdRequestObject) (openapi.DeleteLocationByIdResponseObject, error) {
@@ -80,12 +70,7 @@ func (c *controller) GetLocationById(ctx context.Context, request openapi.GetLoc
 		return nil, err
 	}
 
-	return openapi.GetLocationById200JSONResponse{
-		Id:       loc.IDNatural,
-		Name:     loc.Name,
-		SiteId:   loc.SiteID,
-		SiteName: loc.SiteName,
-	}, nil
+	return openapi.GetLocationById200JSONResponse(locationResponse(loc)), nil
 }
 
 func (c *controller) UpdateLocationById(ctx context.Context, request openapi.UpdateLocationByIdRequestObject) (openapi.UpdateLocationByIdResponseObject, error) {
@@ -103,10 +88,5 @@ func (c *controller) UpdateLocationById(ctx context.Context, request openapi.Upd
 		return nil, err
 	}
 
-	return openapi.UpdateLocationById200JSONResponse{
-		Id:       loc.IDNatural,
-		Name:     loc.Name,
-		SiteId:   loc.SiteID,
-		SiteName: loc.SiteName,
-	}, nil
+	return openapi.UpdateLocationById200JSONResponse(locationResponse(loc)), nil
 }
