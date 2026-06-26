@@ -3,33 +3,10 @@ package controller
 import (
 	"context"
 
-	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )
-
-func apiKeyToResponse(k model.APIKey) openapi.ApiKeyResponse {
-	var updatedAt = k.CreatedAt
-	if k.UpdatedAt != nil {
-		updatedAt = *k.UpdatedAt
-	}
-	return openapi.ApiKeyResponse{
-		Id:             k.IDNatural,
-		Name:           k.Name,
-		UserId:         k.UserID,
-		UserName:       k.UserName,
-		OrganizationId: k.OrganizationID,
-		RobotId:        k.RobotID,
-		RobotName:      k.RobotName,
-		KeyHint:        k.KeyHint,
-		ExpiresAt:      k.ExpiresAt,
-		LastUsedAt:     k.LastUsedAt,
-		RevokedAt:      k.RevokedAt,
-		CreatedAt:      k.CreatedAt,
-		UpdatedAt:      updatedAt,
-	}
-}
 
 func (c *controller) ListApiKeys(ctx context.Context, request openapi.ListApiKeysRequestObject) (openapi.ListApiKeysResponseObject, error) {
 	params := request.Params
@@ -50,7 +27,7 @@ func (c *controller) ListApiKeys(ctx context.Context, request openapi.ListApiKey
 
 	respKeys := make([]openapi.ApiKeyResponse, 0, len(keys))
 	for _, k := range keys {
-		respKeys = append(respKeys, apiKeyToResponse(*k))
+		respKeys = append(respKeys, apiKeyResponse(*k))
 	}
 
 	return openapi.ListApiKeys200JSONResponse{
@@ -78,7 +55,7 @@ func (c *controller) CreateApiKey(ctx context.Context, request openapi.CreateApi
 		return nil, err
 	}
 
-	resp := apiKeyToResponse(out.APIKey)
+	resp := apiKeyResponse(out.APIKey)
 	updatedAt := resp.UpdatedAt
 	return openapi.CreateApiKey201JSONResponse{
 		Id:             resp.Id,
@@ -103,7 +80,7 @@ func (c *controller) GetApiKey(ctx context.Context, request openapi.GetApiKeyReq
 	if err != nil {
 		return nil, err
 	}
-	return openapi.GetApiKey200JSONResponse(apiKeyToResponse(k)), nil
+	return openapi.GetApiKey200JSONResponse(apiKeyResponse(k)), nil
 }
 
 func (c *controller) UpdateApiKey(ctx context.Context, request openapi.UpdateApiKeyRequestObject) (openapi.UpdateApiKeyResponseObject, error) {
@@ -125,7 +102,7 @@ func (c *controller) UpdateApiKey(ctx context.Context, request openapi.UpdateApi
 	if err != nil {
 		return nil, err
 	}
-	return openapi.UpdateApiKey200JSONResponse(apiKeyToResponse(updated)), nil
+	return openapi.UpdateApiKey200JSONResponse(apiKeyResponse(updated)), nil
 }
 
 func (c *controller) RevokeApiKey(ctx context.Context, request openapi.RevokeApiKeyRequestObject) (openapi.RevokeApiKeyResponseObject, error) {

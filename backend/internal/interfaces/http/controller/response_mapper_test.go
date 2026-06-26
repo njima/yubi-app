@@ -178,3 +178,65 @@ func TestSubTaskResponse(t *testing.T) {
 		t.Errorf("TargetDurationSeconds = %v, want %d", got.TargetDurationSeconds, targetDurationSeconds)
 	}
 }
+
+func TestAPIKeyResponse(t *testing.T) {
+	createdAt := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
+	expiresAt := createdAt.Add(24 * time.Hour)
+	robotID := "robot-1"
+	robotName := "Yubi"
+	key := model.APIKey{
+		IDNatural:      "key-1",
+		OrganizationID: "org-1",
+		UserID:         "user-1",
+		UserName:       "Operator",
+		RobotID:        &robotID,
+		RobotName:      &robotName,
+		Name:           "Robot key",
+		KeyHint:        "abcd...wxyz",
+		ExpiresAt:      &expiresAt,
+		CreatedAt:      createdAt,
+	}
+
+	got := apiKeyResponse(key)
+
+	if got.Id != key.IDNatural || got.Name != key.Name || got.KeyHint != key.KeyHint {
+		t.Fatalf("apiKeyResponse() = %+v, want values from %+v", got, key)
+	}
+	if got.UserId != key.UserID || got.UserName != key.UserName || got.OrganizationId != key.OrganizationID {
+		t.Errorf("owner fields = (%q, %q, %q), want (%q, %q, %q)", got.UserId, got.UserName, got.OrganizationId, key.UserID, key.UserName, key.OrganizationID)
+	}
+	if got.RobotId == nil || *got.RobotId != robotID || got.RobotName == nil || *got.RobotName != robotName {
+		t.Errorf("robot fields = (%v, %v), want (%q, %q)", got.RobotId, got.RobotName, robotID, robotName)
+	}
+	if !got.UpdatedAt.Equal(createdAt) {
+		t.Errorf("UpdatedAt = %v, want CreatedAt fallback %v", got.UpdatedAt, createdAt)
+	}
+}
+
+func TestEpisodeGradeResponse(t *testing.T) {
+	gradedAt := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
+	createdAt := gradedAt.Add(-time.Hour)
+	updatedAt := gradedAt.Add(time.Hour)
+	comment := "good"
+	grade := model.EpisodeGrade{
+		EpisodeID: "episode-1",
+		UserID:    "user-1",
+		Grade:     0.8,
+		Comment:   &comment,
+		GradedAt:  gradedAt,
+		CreatedAt: createdAt,
+		UpdatedAt: &updatedAt,
+	}
+
+	got := episodeGradeResponse(grade, "Operator")
+
+	if got.EpisodeId != grade.EpisodeID || got.UserId != grade.UserID || got.UserName != "Operator" {
+		t.Fatalf("episodeGradeResponse() = %+v, want values from %+v", got, grade)
+	}
+	if got.Comment == nil || *got.Comment != comment {
+		t.Errorf("Comment = %v, want %q", got.Comment, comment)
+	}
+	if got.UpdatedAt == nil || !got.UpdatedAt.Equal(updatedAt) {
+		t.Errorf("UpdatedAt = %v, want %v", got.UpdatedAt, updatedAt)
+	}
+}

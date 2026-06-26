@@ -3,28 +3,11 @@ package controller
 import (
 	"context"
 
-	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )
-
-func episodeGradeToResponse(g model.EpisodeGrade, userName string) openapi.EpisodeGrade {
-	resp := openapi.EpisodeGrade{
-		EpisodeId: g.EpisodeID,
-		UserId:    g.UserID,
-		UserName:  userName,
-		Grade:     g.Grade,
-		Comment:   g.Comment,
-		GradedAt:  g.GradedAt,
-		CreatedAt: g.CreatedAt,
-	}
-	if g.UpdatedAt != nil {
-		resp.UpdatedAt = g.UpdatedAt
-	}
-	return resp
-}
 
 func (c *controller) GetMyEpisodeGrade(ctx context.Context, request openapi.GetMyEpisodeGradeRequestObject) (openapi.GetMyEpisodeGradeResponseObject, error) {
 	userID, err := requestctx.UserID(ctx)
@@ -45,7 +28,7 @@ func (c *controller) GetMyEpisodeGrade(ctx context.Context, request openapi.GetM
 		return nil, err
 	}
 
-	return openapi.GetMyEpisodeGrade200JSONResponse(episodeGradeToResponse(*grade, userName)), nil
+	return openapi.GetMyEpisodeGrade200JSONResponse(episodeGradeResponse(*grade, userName)), nil
 }
 
 func (c *controller) UpdateMyEpisodeGrade(ctx context.Context, request openapi.UpdateMyEpisodeGradeRequestObject) (openapi.UpdateMyEpisodeGradeResponseObject, error) {
@@ -83,7 +66,7 @@ func (c *controller) UpdateMyEpisodeGrade(ctx context.Context, request openapi.U
 		return nil, err
 	}
 
-	return openapi.UpdateMyEpisodeGrade200JSONResponse(episodeGradeToResponse(saved, userName)), nil
+	return openapi.UpdateMyEpisodeGrade200JSONResponse(episodeGradeResponse(saved, userName)), nil
 }
 
 func (c *controller) lookupUserName(ctx context.Context, userID string) (string, error) {
@@ -108,7 +91,7 @@ func (c *controller) ListEpisodeGrades(ctx context.Context, request openapi.List
 
 	grades := make([]openapi.EpisodeGrade, 0, len(items))
 	for _, it := range items {
-		grades = append(grades, episodeGradeToResponse(it.Grade, it.UserName))
+		grades = append(grades, episodeGradeResponse(it.Grade, it.UserName))
 	}
 
 	return openapi.ListEpisodeGrades200JSONResponse{
