@@ -155,3 +155,26 @@ func TestRobotResponse(t *testing.T) {
 		t.Errorf("ActiveUserId = %v, want %q", got.ActiveUserId, activeUserID)
 	}
 }
+
+func TestSubTaskResponse(t *testing.T) {
+	description := "Pick an item"
+	targetDurationSeconds := 120
+	subtask := model.SubTask{
+		IDNatural:             "subtask-1",
+		Name:                  "Pick",
+		Description:           &description,
+		TargetDurationSeconds: &targetDurationSeconds,
+	}
+
+	got := subTaskResponse(subtask)
+
+	if got.Id != subtask.IDNatural || got.Name != subtask.Name {
+		t.Fatalf("subTaskResponse() = %+v, want values from %+v", got, subtask)
+	}
+	if got.Description == nil || *got.Description != description {
+		t.Errorf("Description = %v, want %q", got.Description, description)
+	}
+	if got.TargetDurationSeconds == nil || *got.TargetDurationSeconds != targetDurationSeconds {
+		t.Errorf("TargetDurationSeconds = %v, want %d", got.TargetDurationSeconds, targetDurationSeconds)
+	}
+}

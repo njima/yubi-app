@@ -22,17 +22,7 @@ func (c *controller) ListSubTasks(ctx context.Context, request openapi.ListSubTa
 		return nil, err
 	}
 
-	resp := make([]openapi.SubTask, 0, len(sts))
-	for _, s := range sts {
-		resp = append(resp, openapi.SubTask{
-			Id:                    s.IDNatural,
-			Name:                  s.Name,
-			Description:           s.Description,
-			TargetDurationSeconds: s.TargetDurationSeconds,
-		})
-	}
-
-	return openapi.ListSubTasks200JSONResponse(resp), nil
+	return openapi.ListSubTasks200JSONResponse(subTaskResponses(sts)), nil
 }
 
 func (c *controller) CreateSubTask(ctx context.Context, request openapi.CreateSubTaskRequestObject) (openapi.CreateSubTaskResponseObject, error) {
@@ -53,12 +43,7 @@ func (c *controller) CreateSubTask(ctx context.Context, request openapi.CreateSu
 		return nil, err
 	}
 
-	return openapi.CreateSubTask201JSONResponse{
-		Id:                    st.IDNatural,
-		Name:                  st.Name,
-		Description:           st.Description,
-		TargetDurationSeconds: st.TargetDurationSeconds,
-	}, nil
+	return openapi.CreateSubTask201JSONResponse(subTaskResponse(st)), nil
 }
 
 func (c *controller) DeleteSubTaskById(ctx context.Context, request openapi.DeleteSubTaskByIdRequestObject) (openapi.DeleteSubTaskByIdResponseObject, error) {
@@ -73,12 +58,7 @@ func (c *controller) GetSubTaskById(ctx context.Context, request openapi.GetSubT
 	if err != nil {
 		return nil, err
 	}
-	return openapi.GetSubTaskById200JSONResponse{
-		Id:                    st.IDNatural,
-		Name:                  st.Name,
-		Description:           st.Description,
-		TargetDurationSeconds: st.TargetDurationSeconds,
-	}, nil
+	return openapi.GetSubTaskById200JSONResponse(subTaskResponse(st)), nil
 }
 
 func (c *controller) UpdateSubTaskById(ctx context.Context, request openapi.UpdateSubTaskByIdRequestObject) (openapi.UpdateSubTaskByIdResponseObject, error) {
@@ -103,12 +83,7 @@ func (c *controller) UpdateSubTaskById(ctx context.Context, request openapi.Upda
 		return nil, err
 	}
 
-	return openapi.UpdateSubTaskById200JSONResponse{
-		Id:                    st.IDNatural,
-		Name:                  st.Name,
-		Description:           st.Description,
-		TargetDurationSeconds: st.TargetDurationSeconds,
-	}, nil
+	return openapi.UpdateSubTaskById200JSONResponse(subTaskResponse(st)), nil
 }
 
 func (c *controller) ReorderSubTasks(ctx context.Context, request openapi.ReorderSubTasksRequestObject) (openapi.ReorderSubTasksResponseObject, error) {
@@ -125,17 +100,7 @@ func (c *controller) ReorderSubTasks(ctx context.Context, request openapi.Reorde
 		return nil, err
 	}
 
-	resp := make(openapi.ReorderSubTasks200JSONResponse, 0, len(sts))
-	for _, s := range sts {
-		resp = append(resp, openapi.SubTask{
-			Id:                    s.IDNatural,
-			Name:                  s.Name,
-			Description:           s.Description,
-			TargetDurationSeconds: s.TargetDurationSeconds,
-		})
-	}
-
-	return resp, nil
+	return openapi.ReorderSubTasks200JSONResponse(subTaskResponses(sts)), nil
 }
 
 func (c *controller) CompleteSubTask(ctx context.Context, request openapi.CompleteSubTaskRequestObject) (openapi.CompleteSubTaskResponseObject, error) {
