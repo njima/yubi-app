@@ -43,14 +43,17 @@ frontend/
 │   ├── lib/                    # core libraries
 │   │   ├── api/                # API client configuration
 │   │   │   ├── client.ts       # interceptors 付き Zodios client
-│   │   │   ├── backend-client.ts # server-side fetch (X-User-ID を送信)
+│   │   │   ├── client-fetch.ts # browser-side fetch/schema helpers
+│   │   │   ├── query-string.ts # query string builder
+│   │   │   ├── backend-client.ts # server-side re-export facade
+│   │   │   ├── backend-client/ # endpoint group ごとの server-side backend wrappers
 │   │   │   ├── config.ts       # API URL configuration
 │   │   │   └── generated/      # auto-generated Zodios client
 │   │   └── auth/               # session management
 │   │       └── session.ts      # getUserId(), getUserSession()
 │   │
 │   └── shared/                 # features 横断の shared code
-│       ├── components/         # layout components (TopNav, UserMenu)
+│       ├── components/         # shared renderers and reusable components
 │       ├── hooks/              # shared hooks (status labels など)
 │       ├── lib/                # utilities (date, status constants)
 │       ├── providers/          # React providers (QueryProvider)
@@ -86,9 +89,22 @@ Backend API (http://backend:8000)
 
 ### Server Components と Client Components
 
-- **Server Components** (`backend-client.ts`): `X-User-ID` header 付きで backend から直接 data を取得します。layouts や initial page loads で使います。
-- **Client Components**: `/web/api/*` routes を呼ぶ TanStack Query hooks を使います。これらの routes は `backend-client.ts` 経由で backend に proxy します。
+- **Server Components / Route Handlers** (`backend-client.ts`): `X-User-ID` header 付きで backend から直接 data を取得します。facade は `lib/api/backend-client/` 配下の endpoint-specific modules を re-export します。
+- **Client Components**: `/web/api/*` routes を呼ぶ TanStack Query hooks を使います。繰り返しになる fetch、schema parsing、query string building には `client-fetch.ts` と `query-string.ts` を優先して使います。
 - **SSE Streams**: real-time updates のため、`sse-proxy.ts` 経由で `X-User-ID` header を付けて proxy します。
+
+### 依存関係のルール
+
+dependency direction は次の形に保ちます。
+
+```text
+app -> features -> shared
+app/api -> lib/api
+features -> lib/api, shared
+lib/api -> generated, auth
+```
+
+`shared` は concrete feature modules を import しません。shared rendering に feature-specific behavior が必要な場合は、teleoperation layout components のように feature layer から registry に登録します。feature 間の import は、target feature の小さな public API 経由にします。
 
 ### API Code Generation
 
@@ -121,6 +137,12 @@ features/episodes/
 ├── schemas/             # Zod validation schemas (forms 用)
 └── index.ts             # public API (re-exports)
 ```
+
+feature files は責務を絞ります。大きくなった feature-specific renderer は `teleop-layout-components.tsx` のような local file に分け、registration や page wiring とは分離します。form ownership は、section の props contract が安定している場合を除き parent form に残します。
+
+## Status Display Policy
+
+status values は `shared/lib/status-constants.ts` に置きます。badge color、label key、terminal state、successful completion などの display metadata は `shared/lib/status-display.ts` に置きます。feature badge components は feature-specific のままでよいですが、status map を重複させず shared display metadata を使います。
 
 ## 認証
 
