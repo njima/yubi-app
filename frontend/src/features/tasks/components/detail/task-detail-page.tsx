@@ -16,7 +16,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { usePermission } from "@/shared/hooks/use-permission";
 import { toDateTimeLocalValue } from "@/shared/lib/date-utils";
 import { APPROVAL_STATUS } from "@/shared/lib/status-constants";
 import { Badge } from "@/shared/ui/badge";
@@ -31,6 +30,8 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+
+import { usePermission } from "@/features/users";
 
 import { useApproveTaskVersionMutation } from "../../hooks/use-approve-task-version-mutation";
 import { useTaskVersionsQuery } from "../../hooks/use-task-versions-query";

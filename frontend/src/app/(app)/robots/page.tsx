@@ -14,7 +14,6 @@ import {
   useFormatAbsoluteTime,
   useFormatDistanceTime,
 } from "@/shared/hooks/use-date-formatters";
-import { usePermission } from "@/shared/hooks/use-permission";
 import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
 import { ROBOT_STATUS, USER_ROLE } from "@/shared/lib/status-constants";
 import { PaginationFooter } from "@/shared/ui/pagination-footer";
@@ -37,6 +36,7 @@ import {
 import { getRobotColumns } from "@/features/robots/components/robot-columns";
 import { RobotDataTable } from "@/features/robots/components/robot-data-table";
 import { useSiteSearchOptions } from "@/features/sites";
+import { usePermission } from "@/features/users";
 import { useMeQuery } from "@/features/users";
 
 const validSortBy = [

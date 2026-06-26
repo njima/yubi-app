@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
-import { usePermission } from "@/shared/hooks/use-permission";
 import { formatDateTime } from "@/shared/lib/date-utils";
 import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
 import { Badge } from "@/shared/ui/badge";
@@ -19,6 +18,7 @@ import {
   isRobotInScope,
 } from "@/features/robots";
 import { useTaskVersionsQuery } from "@/features/tasks";
+import { usePermission } from "@/features/users";
 import { useUsersQuery } from "@/features/users";
 
 import { useEpisodeStream } from "../../hooks/use-episode-stream";

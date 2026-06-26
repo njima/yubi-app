@@ -1,8 +1,9 @@
 import { getUserSession } from "@/lib/auth/session";
 import { SessionProvider } from "@/lib/auth/session-context";
 
-import { TopNav } from "@/shared/components/layout/top-nav";
 import { Toaster } from "@/shared/ui/sonner";
+
+import { TopNav } from "./_components/top-nav";
 
 export default async function AppLayout({
   children,

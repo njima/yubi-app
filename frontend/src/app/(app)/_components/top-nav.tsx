@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { usePermission } from "@/shared/hooks/use-permission";
+import { usePermission } from "@/features/users";
 
 import { LanguageSwitcher } from "./language-switcher";
 import { NavItem } from "./nav-item";

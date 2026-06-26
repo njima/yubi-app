@@ -12,7 +12,6 @@ import {
 import { Suspense, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { usePermission } from "@/shared/hooks/use-permission";
 import {
   useTaskStatusLabel,
   useTaskPriorityLabel,
@@ -49,6 +48,7 @@ import {
   TaskDataTable,
   getTaskColumns,
 } from "@/features/tasks";
+import { usePermission } from "@/features/users";
 
 const validSortBy = [
   "name",

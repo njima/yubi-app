@@ -11,13 +11,13 @@ import { Suspense, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useFormatRelativeTime } from "@/shared/hooks/use-date-formatters";
-import { usePermission } from "@/shared/hooks/use-permission";
 import { useUserRoleLabel } from "@/shared/hooks/use-status-labels";
 import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
 import { SearchableSelect } from "@/shared/ui/searchable-select";
 
 import { useLocationSearchOptions } from "@/features/locations";
 import { useSiteSearchOptions } from "@/features/sites";
+import { usePermission } from "@/features/users";
 import { useMeQuery, useUsersQuery } from "@/features/users";
 import { CreateUserDialog } from "@/features/users/components/create-user-dialog";
 import { ImportUsersDialog } from "@/features/users/components/import-users-dialog";
