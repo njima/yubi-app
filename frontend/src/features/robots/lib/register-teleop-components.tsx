@@ -15,6 +15,9 @@ import type { schemas } from "@/lib/api/generated/api";
 import { ParameterizedName } from "@/shared/components/parameterized-name";
 import { registerLayoutComponent } from "@/shared/lib/layout-registry";
 import type { LayoutContext } from "@/shared/lib/layout-registry";
+import type { LayoutCamera } from "@/shared/lib/layout-registry";
+import { isCameraItem } from "@/shared/lib/layout-types";
+import type { CameraLayoutItem } from "@/shared/lib/layout-types";
 import { SUBTASK_COLLECTION_STATUS } from "@/shared/lib/status-constants";
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
@@ -22,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { TeachMeBizCard } from "@/features/tasks";
 
+import { CameraView } from "../components/camera-view";
 import {
   GateStatusBadge,
   GateGroupCell,
@@ -45,6 +49,11 @@ let registered = false;
 export function registerTeleopComponents() {
   if (registered) return;
   registered = true;
+
+  registerLayoutComponent("camera", (ctx, item) => {
+    if (!isCameraItem(item)) return null;
+    return <CameraRenderer item={item} context={ctx} />;
+  });
 
   registerLayoutComponent("task-information", (ctx) => (
     <TaskInformationCard ctx={ctx} />
@@ -96,6 +105,61 @@ export function registerTeleopComponents() {
   ));
 
   registerLayoutComponent("tf-visualizer", (ctx) => <TfVisualizer ctx={ctx} />);
+}
+
+function resolveCamera(
+  ref: string,
+  cameras: LayoutCamera[]
+): LayoutCamera | undefined {
+  const lower = (s: string | undefined) => s?.toLowerCase() ?? "";
+  if (ref === "*main*") {
+    return cameras.find(
+      (c) =>
+        lower(c.name).includes("head") || lower(c.namespace).includes("head")
+    );
+  }
+  if (ref === "*left*") {
+    return cameras.find(
+      (c) =>
+        lower(c.name).includes("left") || lower(c.namespace).includes("left")
+    );
+  }
+  if (ref === "*right*") {
+    return cameras.find(
+      (c) =>
+        lower(c.name).includes("right") || lower(c.namespace).includes("right")
+    );
+  }
+  return cameras.find((c) => c.namespace === ref);
+}
+
+function CameraRenderer({
+  item,
+  context,
+}: {
+  item: CameraLayoutItem;
+  context: LayoutContext;
+}) {
+  const { cameras, host, port } = context;
+  const camera = cameras?.length ? resolveCamera(item.ref, cameras) : undefined;
+
+  return (
+    <CameraView
+      camera={camera}
+      host={host}
+      port={port}
+      robotName={context.robot?.name}
+      placeholderLabel={item.ref}
+      showOverlays={item.overlay}
+      episodeStatus={context.episode?.status}
+      errorDetails={context.episode?.error_details}
+      currentSubtask={context.currentSubtask}
+      nextSubtask={context.nextSubtask}
+      parameterValues={context.episode?.parameter_values}
+      gateLevel={context.gateLevel}
+      streamConfig={context.streamConfig}
+    />
+  );
 }
 
 // --- Gate Information Card ---

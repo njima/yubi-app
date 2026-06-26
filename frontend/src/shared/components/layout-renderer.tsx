@@ -4,17 +4,12 @@ import { Component } from "react";
 
 import { getLayoutComponent } from "@/shared/lib/layout-registry";
 import type { LayoutContext } from "@/shared/lib/layout-registry";
-import { isCameraItem } from "@/shared/lib/layout-types";
 import type {
-  CameraLayoutItem,
   LayoutItem,
   LayoutRow,
   PageLayoutConfig,
 } from "@/shared/lib/layout-types";
 import { cn } from "@/shared/lib/utils";
-
-import { CameraView } from "@/features/robots/components/camera-view";
-import type { Camera } from "@/features/robots/lib/camera-utils";
 
 import type { ErrorInfo, ReactNode } from "react";
 
@@ -114,9 +109,7 @@ function RowRenderer({
     >
       {row.items.map((item, i) => {
         const span = item.span ?? 1;
-        const key = isCameraItem(item)
-          ? `cam-${item.ref}-${i}`
-          : `${item.type}-${i}`;
+        const key = `${item.type}-${i}`;
         return (
           <div
             key={key}
@@ -137,9 +130,6 @@ function ItemRenderer({
   item: LayoutItem;
   context: LayoutContext;
 }) {
-  if (isCameraItem(item)) {
-    return <CameraRenderer item={item} context={context} />;
-  }
   const render = getLayoutComponent(item.type);
   if (!render) {
     console.warn(`[LayoutRenderer] component "${item.type}" not registered`);
@@ -147,7 +137,7 @@ function ItemRenderer({
   }
   return (
     <ComponentErrorBoundary componentId={item.type}>
-      {render(context)}
+      {render(context, item)}
     </ComponentErrorBoundary>
   );
 }
@@ -185,58 +175,4 @@ class ComponentErrorBoundary extends Component<
     }
     return this.props.children;
   }
-}
-
-// --- Camera rendering ---
-
-function resolveCamera(ref: string, cameras: Camera[]): Camera | undefined {
-  const lower = (s: string | undefined) => s?.toLowerCase() ?? "";
-  if (ref === "*main*") {
-    return cameras.find(
-      (c) =>
-        lower(c.name).includes("head") || lower(c.namespace).includes("head")
-    );
-  }
-  if (ref === "*left*") {
-    return cameras.find(
-      (c) =>
-        lower(c.name).includes("left") || lower(c.namespace).includes("left")
-    );
-  }
-  if (ref === "*right*") {
-    return cameras.find(
-      (c) =>
-        lower(c.name).includes("right") || lower(c.namespace).includes("right")
-    );
-  }
-  return cameras.find((c) => c.namespace === ref);
-}
-
-function CameraRenderer({
-  item,
-  context,
-}: {
-  item: CameraLayoutItem;
-  context: LayoutContext;
-}) {
-  const { cameras, host, port } = context;
-  const camera = cameras?.length ? resolveCamera(item.ref, cameras) : undefined;
-
-  return (
-    <CameraView
-      camera={camera}
-      host={host}
-      port={port}
-      robotName={context.robot?.name}
-      placeholderLabel={item.ref}
-      showOverlays={item.overlay}
-      episodeStatus={context.episode?.status}
-      errorDetails={context.episode?.error_details}
-      currentSubtask={context.currentSubtask}
-      nextSubtask={context.nextSubtask}
-      parameterValues={context.episode?.parameter_values}
-      gateLevel={context.gateLevel}
-      streamConfig={context.streamConfig}
-    />
-  );
 }

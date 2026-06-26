@@ -1,8 +1,8 @@
 "use client";
 
-import { useMeQuery } from "@/features/users";
+import { hasPermission, type PermissionAction } from "@/shared/lib/permissions";
 
-import { hasPermission, type PermissionAction } from "../lib/permissions";
+import { useMeQuery } from "@/features/users";
 
 export function usePermission(action: PermissionAction): boolean {
   const { data: me } = useMeQuery();

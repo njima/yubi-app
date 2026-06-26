@@ -1,9 +1,7 @@
+import type { LayoutCamera } from "@/shared/lib/layout-registry";
 import type { RobotLayoutConfig } from "@/shared/lib/layout-types";
 
-export interface Camera {
-  namespace: string;
-  name?: string;
-}
+export type Camera = LayoutCamera;
 
 export interface StreamConfig {
   quality?: number;

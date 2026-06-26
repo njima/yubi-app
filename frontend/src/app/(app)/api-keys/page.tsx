@@ -10,7 +10,6 @@ import { Suspense, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useFormatAbsoluteTime } from "@/shared/hooks/use-date-formatters";
-import { usePermission } from "@/shared/hooks/use-permission";
 import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Label } from "@/shared/ui/label";
@@ -24,6 +23,7 @@ import {
 } from "@/features/api-keys";
 import { useRobotQuery } from "@/features/robots";
 import { useRobotSearchOptions } from "@/features/robots/hooks/use-robot-search-options";
+import { usePermission } from "@/features/users";
 
 function ApiKeysContent() {
   const { t } = useTranslation();
