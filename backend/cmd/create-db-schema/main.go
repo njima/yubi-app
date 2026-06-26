@@ -9,13 +9,13 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 )
 
 const (
-	outputPath   = "./internal/database/schema/"
+	outputPath   = "./internal/infra/database/schema/"
 	outputUpPath = outputPath + "schema.up.sql"
 )
 

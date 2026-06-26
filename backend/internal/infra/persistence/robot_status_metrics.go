@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
+	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
