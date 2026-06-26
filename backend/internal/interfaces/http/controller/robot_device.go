@@ -7,7 +7,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
 func (c *controller) GetRobotMe(ctx context.Context, request openapi.GetRobotMeRequestObject) (openapi.GetRobotMeResponseObject, error) {
@@ -81,15 +81,15 @@ func (c *controller) UpdateRobotStatus(ctx context.Context, request openapi.Upda
 	return openapi.UpdateRobotStatus200Response{}, nil
 }
 
-func convertToRobotStatus(robotID string, req *openapi.RobotStatusUpdateRequest) repository.RobotStatus {
-	var metrics []repository.RobotMetric
+func convertToRobotStatus(robotID string, req *openapi.RobotStatusUpdateRequest) usecase.RobotDeviceStatus {
+	var metrics []usecase.RobotMetric
 	if req.Status.Metrics != nil && len(*req.Status.Metrics) > 0 {
 		for _, m := range *req.Status.Metrics {
 			var labels map[string]string
 			if m.Labels != nil {
 				labels = *m.Labels
 			}
-			metrics = append(metrics, repository.RobotMetric{
+			metrics = append(metrics, usecase.RobotMetric{
 				Name:   m.Name,
 				Type:   string(m.Type),
 				Unit:   m.Unit,
@@ -125,16 +125,16 @@ func convertToRobotStatus(robotID string, req *openapi.RobotStatusUpdateRequest)
 		}
 	}
 
-	return repository.RobotStatus{
+	return usecase.RobotDeviceStatus{
 		RobotID:    robotID,
 		RobotType:  req.RobotType,
 		ReportedAt: req.ReportedAt,
-		Status: repository.RobotStatusDetail{
-			Battery: repository.BatteryStatus{
+		Status: usecase.RobotDeviceStatusDetail{
+			Battery: usecase.RobotBatteryStatus{
 				Pct:      req.Status.Battery.Pct,
 				Charging: req.Status.Battery.Charging,
 			},
-			Connection: repository.ConnectionStatus{
+			Connection: usecase.RobotConnectionStatus{
 				QualityPct: req.Status.Connection.QualityPct,
 			},
 			UptimeSec:      req.Status.UptimeSec,

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -30,9 +29,7 @@ func (c *controller) ExportOperatorYield(
 		return nil, err
 	}
 
-	// JST so the filename date matches the report bucketing — a UTC server
-	// clock would produce a different date string between 15:00–23:59 UTC.
-	filename := fmt.Sprintf("operator_yield_export_%s.csv", time.Now().In(repository.JSTLocation).Format("20060102"))
+	filename := usecase.OperatorYieldExportFilename(time.Now())
 
 	return openapi.ExportOperatorYield200TextcsvResponse{
 		Body: bytes.NewReader(csvBytes),

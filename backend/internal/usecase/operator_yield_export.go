@@ -18,6 +18,10 @@ type OperatorYieldExportUsecase interface {
 	Export(ctx context.Context, filter OperatorYieldExportFilter) ([]byte, error)
 }
 
+func OperatorYieldExportFilename(now time.Time) string {
+	return "operator_yield_export_" + now.In(repository.JSTLocation).Format("20060102") + ".csv"
+}
+
 type operatorYieldExport struct {
 	repo   repository.OperatorYield
 	data   repository.DataAccess

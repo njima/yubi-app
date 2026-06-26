@@ -69,6 +69,12 @@ func TestAuthzDoesNotDependOnHTTPBoundary(t *testing.T) {
 	})
 }
 
+func TestHTTPControllersDoNotDependOnRepositoryLayer(t *testing.T) {
+	assertNoForbiddenImports(t, "internal/interfaces/http/controller", []string{
+		"internal/repository",
+	})
+}
+
 func TestAppBootstrapDoesNotConstructUsecasesDirectly(t *testing.T) {
 	backendRoot := filepath.Clean("../..")
 	path := filepath.Join(backendRoot, "internal", "app", "bootstrap.go")
