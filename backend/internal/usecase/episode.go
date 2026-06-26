@@ -7,10 +7,10 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 	"github.com/rs/zerolog"
 )
 
@@ -88,9 +88,9 @@ type episode struct {
 	// subscriber's read may return stale data (PostgreSQL MVCC). This is
 	// acceptable for the current single-writer setup; consider a post-commit
 	// hook if read replicas are introduced.
-	bus      *event.Bus
-	robotBus *event.Bus
-	listBus  *event.Bus
+	bus      *eventbus.Bus
+	robotBus *eventbus.Bus
+	listBus  *eventbus.Bus
 }
 
 type EpisodeDependencies struct {
@@ -108,9 +108,9 @@ type EpisodeDependencies struct {
 	LocationRepository       repository.Location
 	SiteRepository           repository.Site
 	DataAccess               repository.DataAccess
-	EventBus                 *event.Bus
-	RobotEventBus            *event.Bus
-	ListEventBus             *event.Bus
+	EventBus                 *eventbus.Bus
+	RobotEventBus            *eventbus.Bus
+	ListEventBus             *eventbus.Bus
 }
 
 func NewEpisode(deps EpisodeDependencies) *episode {

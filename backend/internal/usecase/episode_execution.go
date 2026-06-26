@@ -6,9 +6,9 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 )
 
 type CreateExecutionInput struct {
@@ -41,9 +41,9 @@ type episodeExecution struct {
 	episodeSubTaskRepo repository.EpisodeSubTask
 	executionRepo      repository.EpisodeSubTaskExecution
 	data               repository.DataAccess
-	bus                *event.Bus
-	robotBus           *event.Bus
-	listBus            *event.Bus
+	bus                *eventbus.Bus
+	robotBus           *eventbus.Bus
+	listBus            *eventbus.Bus
 }
 
 func NewEpisodeExecution(
@@ -51,9 +51,9 @@ func NewEpisodeExecution(
 	episodeSubTaskRepo repository.EpisodeSubTask,
 	executionRepo repository.EpisodeSubTaskExecution,
 	data repository.DataAccess,
-	bus *event.Bus,
-	robotBus *event.Bus,
-	listBus *event.Bus,
+	bus *eventbus.Bus,
+	robotBus *eventbus.Bus,
+	listBus *eventbus.Bus,
 ) EpisodeExecutionUsecase {
 	return &episodeExecution{
 		episodeRepo:        episodeRepo,

@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 )
 
 type SubTaskActionInput struct {
@@ -23,18 +23,18 @@ type episodeSubTask struct {
 	episodeRepo        repository.Episode
 	episodeSubTaskRepo repository.EpisodeSubTask
 	data               repository.DataAccess
-	bus                *event.Bus
-	robotBus           *event.Bus
-	listBus            *event.Bus
+	bus                *eventbus.Bus
+	robotBus           *eventbus.Bus
+	listBus            *eventbus.Bus
 }
 
 func NewEpisodeSubTask(
 	episodeRepo repository.Episode,
 	episodeSubTaskRepo repository.EpisodeSubTask,
 	data repository.DataAccess,
-	bus *event.Bus,
-	robotBus *event.Bus,
-	listBus *event.Bus,
+	bus *eventbus.Bus,
+	robotBus *eventbus.Bus,
+	listBus *eventbus.Bus,
 ) EpisodeSubTaskUsecase {
 	return &episodeSubTask{
 		episodeRepo:        episodeRepo,

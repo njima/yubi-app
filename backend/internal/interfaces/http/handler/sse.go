@@ -17,11 +17,11 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/authz"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
-	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/controller"
 	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 )
 
 const (
@@ -33,9 +33,9 @@ type SSEHandler struct {
 	episodeUsecase         usecase.EpisodeUsecase
 	taskUsecase            usecase.TaskUsecase
 	taskVersionUsecase     usecase.TaskVersionUsecase
-	bus                    *event.Bus
-	listBus                *event.Bus
-	robotStatusBroadcaster *event.Broadcaster[[]byte]
+	bus                    *eventbus.Bus
+	listBus                *eventbus.Bus
+	robotStatusBroadcaster *eventbus.Broadcaster[[]byte]
 	teleopBroadcaster      *teleopBroadcaster
 	logger                 zerolog.Logger
 }
@@ -47,10 +47,10 @@ func NewSSEHandler(
 	episodeUsecase usecase.EpisodeUsecase,
 	taskUsecase usecase.TaskUsecase,
 	taskVersionUsecase usecase.TaskVersionUsecase,
-	bus *event.Bus,
-	robotBus *event.Bus,
-	listBus *event.Bus,
-	robotStatusBus *event.Bus,
+	bus *eventbus.Bus,
+	robotBus *eventbus.Bus,
+	listBus *eventbus.Bus,
+	robotStatusBus *eventbus.Bus,
 ) *SSEHandler {
 	h := &SSEHandler{
 		robotDeviceUsecase: robotDeviceUsecase,
@@ -61,7 +61,7 @@ func NewSSEHandler(
 		listBus:            listBus,
 		logger:             logger,
 	}
-	h.robotStatusBroadcaster = event.NewBroadcaster(ctx, robotStatusBus, h.fetchRobotStatusFrame)
+	h.robotStatusBroadcaster = eventbus.NewBroadcaster(ctx, robotStatusBus, h.fetchRobotStatusFrame)
 	h.teleopBroadcaster = newTeleopBroadcaster(
 		ctx,
 		logger,

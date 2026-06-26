@@ -14,7 +14,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/database"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
-	"github.com/airoa-org/yubi-app/backend/internal/log"
+	"github.com/airoa-org/yubi-app/backend/internal/platform/log"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
