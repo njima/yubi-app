@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/rs/zerolog"
 )
 
@@ -409,11 +409,11 @@ func (e *episode) Delete(ctx context.Context, id string) error {
 }
 
 func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return err
 	}
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return err
 	}
@@ -483,7 +483,7 @@ func (e *episode) Start(ctx context.Context, input StartEpisodeInput) error {
 }
 
 func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return err
 	}
@@ -561,7 +561,7 @@ func (e *episode) Finish(ctx context.Context, input FinishEpisodeInput) error {
 }
 
 func (e *episode) RepeatLast(ctx context.Context) (model.Episode, error) {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return model.Episode{}, err
 	}
@@ -578,7 +578,7 @@ func (e *episode) RepeatLast(ctx context.Context) (model.Episode, error) {
 	// Workaround: repo.List does not populate OrganizationID on the returned
 	// model (field is omitted in the manual mapping), so we read it from the
 	// auth context instead of copying from the last episode.
-	organizationID, err := ccontext.OrganizationID(ctx)
+	organizationID, err := requestctx.OrganizationID(ctx)
 	if err != nil {
 		return model.Episode{}, err
 	}
@@ -611,7 +611,7 @@ func (e *episode) RepeatLast(ctx context.Context) (model.Episode, error) {
 }
 
 func (e *episode) Cancel(ctx context.Context, input CancelEpisodeInput) error {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return err
 	}

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -22,7 +22,7 @@ func (c *controller) StartRobotEpisode(ctx context.Context, request openapi.Star
 	// If a live teleop operator is registered (Redis heartbeat), pass their
 	// identity so episode.Start() uses the actual operator — not the API
 	// key's static user.
-	if robotID, err := ccontext.RobotID(ctx); err == nil {
+	if robotID, err := requestctx.RobotID(ctx); err == nil {
 		if op, err := c.robotOperatorUsecase.Get(ctx, robotID); err == nil && op != nil {
 			input.ActiveUserID = &op.UserID
 		}

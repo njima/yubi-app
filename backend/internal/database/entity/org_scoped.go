@@ -7,7 +7,7 @@ import (
 )
 
 // OrgIDFromContext is set at application startup to avoid circular imports
-// between the entity and ccontext packages.
+// between the entity and requestctx packages.
 // Returns the organization ID and true if present, or empty string and false if not.
 var OrgIDFromContext func(ctx context.Context) (string, bool)
 
@@ -27,7 +27,7 @@ var OrgIDFromContext func(ctx context.Context) (string, bool)
 // IMPORTANT: hooks only fire when the entity is used as the primary model via Model().
 // Queries built with TableExpr() bypass hooks entirely and MUST add the org filter manually:
 //
-//	if orgID, err := ccontext.OrganizationID(ctx); err == nil {
+//	if orgID, err := requestctx.OrganizationID(ctx); err == nil {
 //	    q = q.Where("<alias>.organization_id = ?", orgID)
 //	}
 type OrgScoped struct{}

@@ -7,10 +7,10 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 )
 
 type taskTag struct{}
@@ -196,7 +196,7 @@ func (tt *taskTag) GetAvailableTags(ctx context.Context, conn repository.DBConn,
 		Join("JOIN task t ON t.id_natural = tta.task_id").
 		OrderExpr("tt.name ASC")
 
-	if orgID, err := ccontext.OrganizationID(ctx); err == nil && orgID != "" {
+	if orgID, err := requestctx.OrganizationID(ctx); err == nil && orgID != "" {
 		sel = sel.Where("t.organization_id = ?", orgID)
 	}
 	if len(robotTypes) > 0 {

@@ -60,7 +60,7 @@ func TestRepositoryInterfacesDoNotDependOnImplementations(t *testing.T) {
 
 func TestAuthzDoesNotDependOnHTTPBoundary(t *testing.T) {
 	assertNoForbiddenImports(t, "internal/authz", []string{
-		"internal/ccontext",
+		"internal/requestctx",
 		"internal/gen",
 		"internal/interfaces",
 	})
@@ -96,6 +96,17 @@ func TestServerCompositionRootDoesNotLiveUnderInternalApp(t *testing.T) {
 		t.Fatalf("server composition root must live under cmd/server, not internal/app")
 	} else if !os.IsNotExist(err) {
 		t.Fatalf("stat internal/app: %v", err)
+	}
+}
+
+func TestRequestContextHelpersUseDescriptivePackageName(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "ccontext")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("request context helpers must live under internal/requestctx, not internal/ccontext")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/ccontext: %v", err)
 	}
 }
 

@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 )
 
 func (c *controller) GetRobotOperator(ctx context.Context, request openapi.GetRobotOperatorRequestObject) (openapi.GetRobotOperatorResponseObject, error) {
@@ -29,7 +29,7 @@ func (c *controller) SetRobotOperator(ctx context.Context, request openapi.SetRo
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
 
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (c *controller) SetRobotOperator(ctx context.Context, request openapi.SetRo
 }
 
 func (c *controller) ClearRobotOperator(ctx context.Context, request openapi.ClearRobotOperatorRequestObject) (openapi.ClearRobotOperatorResponseObject, error) {
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}

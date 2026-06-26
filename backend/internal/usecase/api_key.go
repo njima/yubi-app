@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/rs/zerolog"
 )
 
@@ -184,15 +184,15 @@ func (a *apiKey) List(ctx context.Context, filter APIKeyListFilter, page, limit 
 }
 
 func (a *apiKey) Create(ctx context.Context, input APIKeyCreateInput) (APIKeyCreateResult, error) {
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil {
 		return APIKeyCreateResult{}, err
 	}
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return APIKeyCreateResult{}, err
 	}
-	userRole, err := ccontext.UserRole(ctx)
+	userRole, err := requestctx.UserRole(ctx)
 	if err != nil {
 		return APIKeyCreateResult{}, err
 	}

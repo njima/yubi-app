@@ -8,10 +8,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/pagination"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
@@ -263,7 +263,7 @@ func (c *controller) CreateEpisode(ctx context.Context, request openapi.CreateEp
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "request body is required"))
 	}
 
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -304,7 +304,7 @@ func (c *controller) CreateEpisodesBulk(ctx context.Context, request openapi.Cre
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "count must be between 1 and 100"))
 	}
 
-	userID, err := ccontext.UserID(ctx)
+	userID, err := requestctx.UserID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +408,7 @@ func (c *controller) UpdateEpisodeById(ctx context.Context, request openapi.Upda
 }
 
 func (c *controller) GetRobotEpisodeById(ctx context.Context, request openapi.GetRobotEpisodeByIdRequestObject) (openapi.GetRobotEpisodeByIdResponseObject, error) {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -460,7 +460,7 @@ func (c *controller) RepeatLastRobotEpisode(ctx context.Context, request openapi
 }
 
 func (c *controller) ListRobotEpisodes(ctx context.Context, request openapi.ListRobotEpisodesRequestObject) (openapi.ListRobotEpisodesResponseObject, error) {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return nil, err
 	}

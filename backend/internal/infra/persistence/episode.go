@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/database/bunconv"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/uptrace/bun"
 )
 
@@ -363,7 +363,7 @@ func (e *episode) Export(ctx context.Context, conn repository.DBConn, filter rep
 
 	var rows []exportRow
 
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}
@@ -418,7 +418,7 @@ func (e *episode) Export(ctx context.Context, conn repository.DBConn, filter rep
 }
 
 func (e *episode) SumDurationByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (int64, error) {
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return 0, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}

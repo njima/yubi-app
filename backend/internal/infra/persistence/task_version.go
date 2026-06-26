@@ -5,11 +5,11 @@ import (
 	"database/sql"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/database/bunconv"
 	"github.com/airoa-org/yubi-app/backend/internal/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/uptrace/bun"
 )
 
@@ -243,7 +243,7 @@ func (tv *taskVersion) attachStats(ctx context.Context, conn repository.DBConn, 
 }
 
 func (tv *taskVersion) SumTargetByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (int64, error) {
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return 0, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}

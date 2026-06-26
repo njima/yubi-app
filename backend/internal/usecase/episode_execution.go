@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/event"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 )
 
 type CreateExecutionInput struct {
@@ -67,12 +67,12 @@ func NewEpisodeExecution(
 }
 
 func (e *episodeExecution) Create(ctx context.Context, input CreateExecutionInput) (string, error) {
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -130,7 +130,7 @@ func (e *episodeExecution) Create(ctx context.Context, input CreateExecutionInpu
 }
 
 func (e *episodeExecution) Start(ctx context.Context, input ExecutionActionInput) error {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return err
 	}
@@ -192,7 +192,7 @@ func (e *episodeExecution) Start(ctx context.Context, input ExecutionActionInput
 }
 
 func (e *episodeExecution) Finish(ctx context.Context, input ExecutionActionInput) error {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return err
 	}
@@ -246,7 +246,7 @@ func (e *episodeExecution) Finish(ctx context.Context, input ExecutionActionInpu
 }
 
 func (e *episodeExecution) Cancel(ctx context.Context, input CancelExecutionInput) error {
-	robotID, err := ccontext.RobotID(ctx)
+	robotID, err := requestctx.RobotID(ctx)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/gin-gonic/gin"
 )
@@ -63,10 +63,10 @@ func robotAuthByAPIKey(c *gin.Context, apiKeyUC usecase.APIKeyUsecase, rawKey st
 	}
 
 	ctx := c.Request.Context()
-	ctx = ccontext.SetUserID(ctx, apiKeyAuth.UserID)
-	ctx = ccontext.SetRobotID(ctx, apiKeyAuth.RobotID)
-	ctx = ccontext.SetOrganizationID(ctx, apiKeyAuth.OrganizationID)
-	ctx = ccontext.SetUserRole(ctx, apiKeyAuth.UserRole)
+	ctx = requestctx.SetUserID(ctx, apiKeyAuth.UserID)
+	ctx = requestctx.SetRobotID(ctx, apiKeyAuth.RobotID)
+	ctx = requestctx.SetOrganizationID(ctx, apiKeyAuth.OrganizationID)
+	ctx = requestctx.SetUserRole(ctx, apiKeyAuth.UserRole)
 	c.Request = c.Request.WithContext(ctx)
 
 	// Debounced update of last_used_at (MarkUsed spawns its own goroutine internally)
@@ -129,10 +129,10 @@ func robotAuthByHeaders(c *gin.Context, userUC usecase.UserUsecase, robotUC usec
 	}
 
 	ctx := c.Request.Context()
-	ctx = ccontext.SetUserID(ctx, userID)
-	ctx = ccontext.SetRobotID(ctx, robotID)
-	ctx = ccontext.SetOrganizationID(ctx, rob.OrganizationID)
-	ctx = ccontext.SetUserRole(ctx, appUser.Role)
+	ctx = requestctx.SetUserID(ctx, userID)
+	ctx = requestctx.SetRobotID(ctx, robotID)
+	ctx = requestctx.SetOrganizationID(ctx, rob.OrganizationID)
+	ctx = requestctx.SetUserRole(ctx, appUser.Role)
 	c.Request = c.Request.WithContext(ctx)
 	c.Next()
 }
@@ -162,9 +162,9 @@ func userAuth(c *gin.Context, userUC usecase.UserUsecase) {
 	}
 
 	ctx := c.Request.Context()
-	ctx = ccontext.SetUserID(ctx, appUser.IDNatural)
-	ctx = ccontext.SetOrganizationID(ctx, appUser.OrganizationID)
-	ctx = ccontext.SetUserRole(ctx, appUser.Role)
+	ctx = requestctx.SetUserID(ctx, appUser.IDNatural)
+	ctx = requestctx.SetOrganizationID(ctx, appUser.OrganizationID)
+	ctx = requestctx.SetUserRole(ctx, appUser.Role)
 	c.Request = c.Request.WithContext(ctx)
 	c.Next()
 }

@@ -13,9 +13,9 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/ccontext"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
 )
 
 const (
@@ -107,7 +107,7 @@ func (u *userImport) Validate(ctx context.Context, csvContent string) (UserImpor
 }
 
 func (u *userImport) Import(ctx context.Context, csvContent string) (UserImportResult, error) {
-	orgID, err := ccontext.OrganizationID(ctx)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil {
 		return UserImportResult{}, err
 	}
