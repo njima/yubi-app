@@ -14,7 +14,7 @@ const backendModule = "github.com/airoa-org/yubi-app/backend/"
 func TestDomainDoesNotDependOnOuterLayers(t *testing.T) {
 	assertNoForbiddenImports(t, "internal/domain", []string{
 		"internal/app",
-		"internal/authz",
+		"internal/domain/authz",
 		"internal/platform/config",
 		"internal/infra/database",
 		"internal/event",
@@ -32,7 +32,7 @@ func TestDomainDoesNotDependOnOuterLayers(t *testing.T) {
 func TestUsecaseDoesNotDependOnOuterLayers(t *testing.T) {
 	assertNoForbiddenImports(t, "internal/usecase", []string{
 		"internal/app",
-		"internal/authz",
+		"internal/domain/authz",
 		"internal/platform/config",
 		"internal/infra/database",
 		"internal/gen",
@@ -46,7 +46,7 @@ func TestUsecaseDoesNotDependOnOuterLayers(t *testing.T) {
 func TestRepositoryInterfacesDoNotDependOnImplementations(t *testing.T) {
 	assertNoForbiddenImports(t, "internal/repository", []string{
 		"internal/app",
-		"internal/authz",
+		"internal/domain/authz",
 		"internal/platform/config",
 		"internal/infra/database",
 		"internal/gen",
@@ -59,12 +59,12 @@ func TestRepositoryInterfacesDoNotDependOnImplementations(t *testing.T) {
 }
 
 func TestAuthzDoesNotDependOnHTTPBoundary(t *testing.T) {
-	assertNoForbiddenImports(t, "internal/authz", []string{
-		"internal/requestctx",
+	assertNoForbiddenImports(t, "internal/domain/authz", []string{
+		"internal/shared/requestctx",
 		"internal/gen",
 		"internal/interfaces",
 	})
-	assertNoForbiddenExternalImports(t, "internal/authz", []string{
+	assertNoForbiddenExternalImports(t, "internal/domain/authz", []string{
 		"github.com/gin-gonic/gin",
 	})
 }
@@ -99,25 +99,36 @@ func TestServerCompositionRootDoesNotLiveUnderInternalApp(t *testing.T) {
 	}
 }
 
-func TestRequestContextHelpersUseDescriptivePackageName(t *testing.T) {
+func TestRequestContextHelpersLiveUnderShared(t *testing.T) {
 	backendRoot := filepath.Clean("../..")
-	path := filepath.Join(backendRoot, "internal", "ccontext")
+	path := filepath.Join(backendRoot, "internal", "requestctx")
 
 	if _, err := os.Stat(path); err == nil {
-		t.Fatalf("request context helpers must live under internal/requestctx, not internal/ccontext")
+		t.Fatalf("request context helpers must live under internal/shared/requestctx, not internal/requestctx")
 	} else if !os.IsNotExist(err) {
-		t.Fatalf("stat internal/ccontext: %v", err)
+		t.Fatalf("stat internal/requestctx: %v", err)
 	}
 }
 
-func TestErrorStackHelperLivesUnderAppError(t *testing.T) {
+func TestApplicationErrorsLiveUnderShared(t *testing.T) {
 	backendRoot := filepath.Clean("../..")
-	path := filepath.Join(backendRoot, "internal", "stack")
+	path := filepath.Join(backendRoot, "internal", "apperror")
 
 	if _, err := os.Stat(path); err == nil {
-		t.Fatalf("error stack helper must live under internal/apperror/stack, not internal/stack")
+		t.Fatalf("application errors must live under internal/shared/apperror, not internal/apperror")
 	} else if !os.IsNotExist(err) {
-		t.Fatalf("stat internal/stack: %v", err)
+		t.Fatalf("stat internal/apperror: %v", err)
+	}
+}
+
+func TestAuthorizationPolicyLivesUnderDomain(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "authz")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("authorization policy must live under internal/domain/authz, not internal/authz")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/authz: %v", err)
 	}
 }
 

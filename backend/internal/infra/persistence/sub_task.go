@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 )
 
 type subtask struct{}

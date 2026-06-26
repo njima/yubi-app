@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/bunconv"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
-	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/uptrace/bun"
 )
 

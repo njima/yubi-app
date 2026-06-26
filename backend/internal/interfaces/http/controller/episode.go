@@ -7,10 +7,10 @@ import (
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 )

@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/authz"
+	"github.com/airoa-org/yubi-app/backend/internal/domain/authz"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 
 	"github.com/gin-gonic/gin"
 )

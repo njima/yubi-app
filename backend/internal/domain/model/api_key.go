@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 

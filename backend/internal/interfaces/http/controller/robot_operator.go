@@ -3,10 +3,10 @@ package controller
 import (
 	"context"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
-	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 )
 
 func (c *controller) GetRobotOperator(ctx context.Context, request openapi.GetRobotOperatorRequestObject) (openapi.GetRobotOperatorResponseObject, error) {

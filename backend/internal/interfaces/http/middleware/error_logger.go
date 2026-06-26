@@ -3,8 +3,8 @@ package middleware
 import (
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"

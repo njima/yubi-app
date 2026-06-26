@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/airoa-org/yubi-app/backend/internal/apperror"
-	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/gin-gonic/gin"
 )

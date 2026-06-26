@@ -54,6 +54,5 @@ func TestOpenAPIImportsStayAtHTTPBoundary(t *testing.T) {
 }
 
 func isAllowedOpenAPIImport(path string) bool {
-	return strings.HasPrefix(path, "internal/interfaces/http/") ||
-		path == "internal/authz/middleware.go"
+	return strings.HasPrefix(path, "internal/interfaces/http/")
 }
