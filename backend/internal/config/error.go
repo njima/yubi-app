@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/airoa-org/yubi-app/backend/internal/stack"
+	"github.com/airoa-org/yubi-app/backend/internal/apperror/stack"
 )
 
 type ErrorKind int

@@ -110,6 +110,17 @@ func TestRequestContextHelpersUseDescriptivePackageName(t *testing.T) {
 	}
 }
 
+func TestErrorStackHelperLivesUnderAppError(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "internal", "stack")
+
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("error stack helper must live under internal/apperror/stack, not internal/stack")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("stat internal/stack: %v", err)
+	}
+}
+
 func assertNoForbiddenImports(t *testing.T, packageDir string, forbiddenPrefixes []string) {
 	t.Helper()
 
