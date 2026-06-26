@@ -151,50 +151,14 @@ func (t *task) List(ctx context.Context, conn repository.DBConn, filter reposito
 	// Dynamic ORDER BY with whitelist to prevent SQL injection
 	sel = applyTaskSortOrder(sel, filter.SortBy, filter.SortOrder)
 
-	if filter.HasApprovedVersion != nil && *filter.HasApprovedVersion {
-		sel = sel.Where("EXISTS (SELECT 1 FROM task_version tv WHERE tv.task_id = t.id_natural AND tv.approval_status = 1)")
-	}
-	if len(filter.Statuses) > 0 {
-		sel = sel.Where("t.status IN (?)", bun.In(filter.Statuses))
-	}
-	if len(filter.Priorities) > 0 {
-		sel = sel.Where("t.priority IN (?)", bun.In(filter.Priorities))
-	}
-	if len(filter.Difficulties) > 0 {
-		sel = sel.Where("t.difficulty IN (?)", bun.In(filter.Difficulties))
-	}
-	if filter.RobotType != nil {
-		sel = sel.Where("t.robot_type = ?", *filter.RobotType)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		sel = sel.Where("t.name ILIKE ?", "%"+escaped+"%")
-	}
+	sel = applyTaskListFilters(sel, filter)
 	if err := sel.Scan(ctx); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to list tasks: %v", err))
 	}
 
 	var total int
 	countSel := conn.NewSelect().Model((*entity.Task)(nil)).ColumnExpr("COUNT(*)")
-	if filter.HasApprovedVersion != nil && *filter.HasApprovedVersion {
-		countSel = countSel.Where("EXISTS (SELECT 1 FROM task_version tv WHERE tv.task_id = t.id_natural AND tv.approval_status = 1)")
-	}
-	if len(filter.Statuses) > 0 {
-		countSel = countSel.Where("t.status IN (?)", bun.In(filter.Statuses))
-	}
-	if len(filter.Priorities) > 0 {
-		countSel = countSel.Where("t.priority IN (?)", bun.In(filter.Priorities))
-	}
-	if len(filter.Difficulties) > 0 {
-		countSel = countSel.Where("t.difficulty IN (?)", bun.In(filter.Difficulties))
-	}
-	if filter.RobotType != nil {
-		countSel = countSel.Where("t.robot_type = ?", *filter.RobotType)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		countSel = countSel.Where("t.name ILIKE ?", "%"+escaped+"%")
-	}
+	countSel = applyTaskListFilters(countSel, filter)
 	if err := countSel.Scan(ctx, &total); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to count tasks: %v", err))
 	}

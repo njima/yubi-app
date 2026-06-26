@@ -95,3 +95,136 @@ func TestApplySiteListFilters_UsedByListAndCountQueries(t *testing.T) {
 		}
 	}
 }
+
+func TestApplyRobotListFilters_UsedByListAndCountQueries(t *testing.T) {
+	siteID := "site-1"
+	locationID := "loc-1"
+	status := repository.RobotFilterStatusReady
+	robotType := "arm"
+	search := "robot_100%"
+	filter := repository.RobotListFilter{
+		SiteID:     &siteID,
+		LocationID: &locationID,
+		Status:     &status,
+		RobotType:  &robotType,
+		Search:     &search,
+	}
+
+	listSQL := captureQuery(t, func(db *bun.DB) *bun.SelectQuery {
+		var robots []entity.Robot
+		return applyRobotListFilters(db.NewSelect().Model(&robots), filter)
+	})
+	var total int
+	countSQL := captureQuery(t, func(db *bun.DB) *bun.SelectQuery {
+		return applyRobotListFilters(db.NewSelect().Model((*entity.Robot)(nil)).ColumnExpr("COUNT(*)"), filter)
+	}, &total)
+
+	for _, sql := range []string{listSQL, countSQL} {
+		if !strings.Contains(sql, "l.site_id = 'site-1'") {
+			t.Fatalf("expected site EXISTS filter in SQL, got:\n%s", sql)
+		}
+		if !strings.Contains(sql, "r.location_id = 'loc-1'") {
+			t.Fatalf("expected location filter in SQL, got:\n%s", sql)
+		}
+		if !strings.Contains(sql, "r.status = 5") {
+			t.Fatalf("expected status filter in SQL, got:\n%s", sql)
+		}
+		if !strings.Contains(sql, "r.robot_type = 'arm'") {
+			t.Fatalf("expected robot type filter in SQL, got:\n%s", sql)
+		}
+		if !strings.Contains(sql, "r.name ILIKE '%robot\\_100\\%%'") {
+			t.Fatalf("expected escaped search filter in SQL, got:\n%s", sql)
+		}
+	}
+}
+
+func TestApplyTaskListFilters_UsedByListAndCountQueries(t *testing.T) {
+	hasApprovedVersion := true
+	robotType := "arm"
+	search := "task_100%"
+	filter := repository.TaskListFilter{
+		HasApprovedVersion: &hasApprovedVersion,
+		Statuses:           []repository.TaskStatus{repository.TaskStatusDoing},
+		Priorities:         []repository.TaskPriority{repository.TaskPriorityHigh},
+		Difficulties:       []repository.TaskDifficulty{repository.TaskDifficultyA},
+		RobotType:          &robotType,
+		Search:             &search,
+	}
+
+	listSQL := captureQuery(t, func(db *bun.DB) *bun.SelectQuery {
+		var tasks []entity.Task
+		return applyTaskListFilters(db.NewSelect().Model(&tasks), filter)
+	})
+	var total int
+	countSQL := captureQuery(t, func(db *bun.DB) *bun.SelectQuery {
+		return applyTaskListFilters(db.NewSelect().Model((*entity.Task)(nil)).ColumnExpr("COUNT(*)"), filter)
+	}, &total)
+
+	for _, sql := range []string{listSQL, countSQL} {
+		for _, want := range []string{
+			"EXISTS (SELECT 1 FROM task_version tv WHERE tv.task_id = t.id_natural AND tv.approval_status = 1)",
+			"t.status IN (1)",
+			"t.priority IN (2)",
+			"t.difficulty IN (1)",
+			"t.robot_type = 'arm'",
+			"t.name ILIKE '%task\\_100\\%%'",
+		} {
+			if !strings.Contains(sql, want) {
+				t.Fatalf("expected %q in SQL, got:\n%s", want, sql)
+			}
+		}
+	}
+}
+
+func TestApplyUserListFilters_UsedByListAndCountQueries(t *testing.T) {
+	locationID := "loc-1"
+	siteID := "site-1"
+	search := "alice_100%"
+	filter := repository.UserListFilter{
+		LocationID: &locationID,
+		SiteID:     &siteID,
+		Search:     &search,
+	}
+
+	listSQL := captureQuery(t, func(db *bun.DB) *bun.SelectQuery {
+		var users []entity.User
+		return applyUserListFilters(db.NewSelect().Model(&users), filter)
+	})
+	var total int
+	countSQL := captureQuery(t, func(db *bun.DB) *bun.SelectQuery {
+		return applyUserListFilters(db.NewSelect().Model((*entity.User)(nil)).ColumnExpr("COUNT(*)"), filter)
+	}, &total)
+
+	for _, sql := range []string{listSQL, countSQL} {
+		for _, want := range []string{
+			"ula.user_id = u.id_natural AND ula.location_id = 'loc-1'",
+			"usa.user_id = u.id_natural AND usa.site_id = 'site-1'",
+			"u.name ILIKE '%alice\\_100\\%%'",
+		} {
+			if !strings.Contains(sql, want) {
+				t.Fatalf("expected %q in SQL, got:\n%s", want, sql)
+			}
+		}
+	}
+}
+
+func TestApplySubTaskListFilters_UsesTaskVersionBeforeTask(t *testing.T) {
+	taskID := "task-1"
+	taskVersionID := "version-1"
+	filter := repository.SubTaskListFilter{
+		TaskID:        &taskID,
+		TaskVersionID: &taskVersionID,
+	}
+
+	sql := captureQuery(t, func(db *bun.DB) *bun.SelectQuery {
+		var subtasks []entity.SubTask
+		return applySubTaskListFilters(db.NewSelect().Model(&subtasks), filter)
+	})
+
+	if !strings.Contains(sql, "task_version_id = 'version-1'") {
+		t.Fatalf("expected task version filter in SQL, got:\n%s", sql)
+	}
+	if strings.Contains(sql, "task_id = 'task-1'") {
+		t.Fatalf("expected task_id filter to be ignored when task_version_id is present, got:\n%s", sql)
+	}
+}

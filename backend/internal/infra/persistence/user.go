@@ -181,44 +181,14 @@ func (u *user) List(ctx context.Context, conn repository.DBConn, filter reposito
 
 	// Dynamic ORDER BY with whitelist to prevent SQL injection
 	sel = applyUserSortOrder(sel, filter.SortBy, filter.SortOrder)
-	if filter.LocationID != nil && *filter.LocationID != "" {
-		sel = sel.Where(`EXISTS (
-			SELECT 1 FROM user_location_assignment ula
-			WHERE ula.user_id = u.id_natural AND ula.location_id = ?
-		)`, *filter.LocationID)
-	}
-	if filter.SiteID != nil && *filter.SiteID != "" {
-		sel = sel.Where(`EXISTS (
-			SELECT 1 FROM user_site_assignment usa
-			WHERE usa.user_id = u.id_natural AND usa.site_id = ?
-		)`, *filter.SiteID)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		sel = sel.Where("u.name ILIKE ?", "%"+escaped+"%")
-	}
+	sel = applyUserListFilters(sel, filter)
 
 	if err := sel.Scan(ctx); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to list users: %v", err))
 	}
 
 	countQ := conn.NewSelect().Model((*entity.User)(nil)).ColumnExpr("COUNT(*)")
-	if filter.LocationID != nil && *filter.LocationID != "" {
-		countQ = countQ.Where(`EXISTS (
-			SELECT 1 FROM user_location_assignment ula
-			WHERE ula.user_id = u.id_natural AND ula.location_id = ?
-		)`, *filter.LocationID)
-	}
-	if filter.SiteID != nil && *filter.SiteID != "" {
-		countQ = countQ.Where(`EXISTS (
-			SELECT 1 FROM user_site_assignment usa
-			WHERE usa.user_id = u.id_natural AND usa.site_id = ?
-		)`, *filter.SiteID)
-	}
-	if filter.Search != nil && *filter.Search != "" {
-		escaped := escapeILIKE(*filter.Search)
-		countQ = countQ.Where("u.name ILIKE ?", "%"+escaped+"%")
-	}
+	countQ = applyUserListFilters(countQ, filter)
 	var total int
 	if err := countQ.Scan(ctx, &total); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to count users: %v", err))
