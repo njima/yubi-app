@@ -3,7 +3,9 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
+import { fetchAndParse } from "@/lib/api/client-fetch";
 import { schemas } from "@/lib/api/generated/api";
+import { withQueryString } from "@/lib/api/query-string";
 
 import { taskSchema, type Task } from "../schemas";
 
@@ -49,44 +51,14 @@ export function useTasksQuery(
   return useQuery({
     queryKey: tasksQueryKeys.list(params),
     queryFn: async () => {
-      const searchParams = new URLSearchParams();
-      if (params?.has_approved_version) {
-        searchParams.append("has_approved_version", "true");
-      }
-      if (params?.page !== undefined) {
-        searchParams.append("page", String(params.page));
-      }
-      if (params?.limit !== undefined) {
-        searchParams.append("limit", String(params.limit));
-      }
-      if (params?.sort_by) {
-        searchParams.append("sort_by", params.sort_by);
-      }
-      if (params?.sort_order) {
-        searchParams.append("sort_order", params.sort_order);
-      }
-      params?.status?.forEach((s) => searchParams.append("status", String(s)));
-      params?.priority?.forEach((p) =>
-        searchParams.append("priority", String(p))
+      return fetchAndParse(
+        withQueryString("/web/api/tasks", {
+          ...params,
+          has_approved_version: params?.has_approved_version || undefined,
+        }),
+        schemas.TaskListResponse,
+        "Failed to fetch tasks"
       );
-      params?.difficulty?.forEach((d) =>
-        searchParams.append("difficulty", String(d))
-      );
-      if (params?.robot_type) {
-        searchParams.append("robot_type", params.robot_type);
-      }
-      if (params?.search) {
-        searchParams.append("search", params.search);
-      }
-      const query = searchParams.toString();
-      const url = `/web/api/tasks${query ? `?${query}` : ""}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch tasks: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return schemas.TaskListResponse.parse(data);
     },
     ...options,
   });
@@ -104,12 +76,11 @@ export function useTaskQuery(
   return useQuery({
     queryKey: tasksQueryKeys.detail(taskId),
     queryFn: async () => {
-      const response = await fetch(`/web/api/tasks/${taskId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch task: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return taskSchema.parse(data);
+      return fetchAndParse(
+        `/web/api/tasks/${taskId}`,
+        taskSchema,
+        "Failed to fetch task"
+      );
     },
     enabled: !!taskId,
     ...options,

@@ -3,7 +3,9 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
+import { fetchJson } from "@/lib/api/client-fetch";
 import { schemas } from "@/lib/api/generated/api";
+import { withQueryString } from "@/lib/api/query-string";
 
 export const robotsQueryKeys = {
   all: ["robots"] as const,
@@ -59,42 +61,10 @@ export function useRobotsQuery(
   return useQuery({
     queryKey: robotsQueryKeys.list(params),
     queryFn: async () => {
-      const searchParams = new URLSearchParams();
-      if (params.site_id) {
-        searchParams.append("site_id", params.site_id);
-      }
-      if (params.location_id) {
-        searchParams.append("location_id", params.location_id);
-      }
-      if (params.status !== undefined) {
-        searchParams.append("status", String(params.status));
-      }
-      if (params.robot_type) {
-        searchParams.append("robot_type", params.robot_type);
-      }
-      if (params.page !== undefined) {
-        searchParams.append("page", String(params.page));
-      }
-      if (params.limit !== undefined) {
-        searchParams.append("limit", String(params.limit));
-      }
-      if (params.search) {
-        searchParams.append("search", params.search);
-      }
-      if (params.sort_by) {
-        searchParams.append("sort_by", params.sort_by);
-      }
-      if (params.sort_order) {
-        searchParams.append("sort_order", params.sort_order);
-      }
-      const query = searchParams.toString();
-      const url = `/web/api/robots${query ? `?${query}` : ""}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch robots: ${response.statusText}`);
-      }
-      const data = await response.json();
+      const data = await fetchJson<RobotListResponse>(
+        withQueryString("/web/api/robots", params),
+        "Failed to fetch robots"
+      );
       const normalized = {
         ...data,
         robots: (data.robots || []).map(normalizeRobot),
@@ -112,11 +82,10 @@ export function useRobotQuery(
   return useQuery({
     queryKey: robotsQueryKeys.detail(robotId),
     queryFn: async () => {
-      const response = await fetch(`/web/api/robots/${robotId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch robot: ${response.statusText}`);
-      }
-      const data = await response.json();
+      const data = await fetchJson<Robot>(
+        `/web/api/robots/${robotId}`,
+        "Failed to fetch robot"
+      );
       const normalized = normalizeRobot(data);
       return schemas.Robot.parse(normalized);
     },

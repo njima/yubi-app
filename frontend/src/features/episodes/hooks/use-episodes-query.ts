@@ -8,7 +8,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
+import { fetchAndParse } from "@/lib/api/client-fetch";
 import { schemas } from "@/lib/api/generated/api";
+import { withQueryString } from "@/lib/api/query-string";
 
 import type { EpisodeCollectionStatusValue } from "@/shared/lib/status-constants";
 
@@ -63,32 +65,11 @@ export function useEpisodesQuery(
   return useQuery<EpisodeListResponse, Error>({
     queryKey: episodesQueryKeys.list(params),
     queryFn: async () => {
-      const queryParams = new URLSearchParams();
-      if (params.task_id) queryParams.set("task_id", params.task_id);
-      if (params.task_version_id)
-        queryParams.set("task_version_id", params.task_version_id);
-      if (params.robot_id) queryParams.set("robot_id", params.robot_id);
-      if (params.user_id) queryParams.set("user_id", params.user_id);
-      params.status?.forEach((s) => queryParams.append("status", String(s)));
-      if (params.started_at_from)
-        queryParams.set("started_at_from", params.started_at_from);
-      if (params.started_at_to)
-        queryParams.set("started_at_to", params.started_at_to);
-      if (params.page !== undefined)
-        queryParams.set("page", String(params.page));
-      if (params.limit !== undefined)
-        queryParams.set("limit", String(params.limit));
-      if (params.sort_by) queryParams.set("sort_by", params.sort_by);
-      if (params.sort_order) queryParams.set("sort_order", params.sort_order);
-      const queryString = queryParams.toString();
-      const url = `/web/api/episodes${queryString ? `?${queryString}` : ""}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch episodes: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return schemas.EpisodeListResponse.parse(data);
+      return fetchAndParse(
+        withQueryString("/web/api/episodes", params),
+        schemas.EpisodeListResponse,
+        "Failed to fetch episodes"
+      );
     },
     ...options,
   });
@@ -106,12 +87,11 @@ export function useEpisodeQuery(
   return useQuery<Episode, Error>({
     queryKey: episodesQueryKeys.detail(episodeId),
     queryFn: async () => {
-      const response = await fetch(`/web/api/episodes/${episodeId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch episode: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return schemas.Episode.parse(data);
+      return fetchAndParse(
+        `/web/api/episodes/${episodeId}`,
+        schemas.Episode,
+        "Failed to fetch episode"
+      );
     },
     ...options,
   });
