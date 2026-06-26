@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/airoa-org/yubi-app/backend/internal/config"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/cache"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/ddtrace"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/persistence"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/storage"
+	"github.com/airoa-org/yubi-app/backend/internal/platform/config"
 	"github.com/airoa-org/yubi-app/backend/internal/platform/log"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/requestctx"
