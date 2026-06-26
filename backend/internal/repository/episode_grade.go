@@ -21,14 +21,14 @@ type EpisodeGradeListItem struct {
 
 type EpisodeGrade interface {
 	// GetAverageMap omits episodes that have no grades from the returned map.
-	GetAverageMap(ctx context.Context, conn DBConn, episodeIDs []string) (map[string]GradeAggregate, error)
+	GetAverageMap(ctx context.Context, conn Conn, episodeIDs []string) (map[string]GradeAggregate, error)
 
-	Upsert(ctx context.Context, conn DBConn, grade model.EpisodeGrade) (model.EpisodeGrade, error)
+	Upsert(ctx context.Context, conn Conn, grade model.EpisodeGrade) (model.EpisodeGrade, error)
 
 	// GetMyGrade returns (nil, nil) when the user has not graded the episode.
-	GetMyGrade(ctx context.Context, conn DBConn, episodeID, userID string) (*model.EpisodeGrade, error)
+	GetMyGrade(ctx context.Context, conn Conn, episodeID, userID string) (*model.EpisodeGrade, error)
 
 	// ListByEpisodeID returns paginated grades for the episode together with
 	// each grader's display name. Total is the unpaginated row count.
-	ListByEpisodeID(ctx context.Context, conn DBConn, episodeID string, limit, offset int) ([]EpisodeGradeListItem, int, error)
+	ListByEpisodeID(ctx context.Context, conn Conn, episodeID string, limit, offset int) ([]EpisodeGradeListItem, int, error)
 }

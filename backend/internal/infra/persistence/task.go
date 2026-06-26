@@ -20,7 +20,7 @@ type task struct{}
 
 func NewTask() *task { return &task{} }
 
-func (t *task) Create(ctx context.Context, conn repository.DBConn, tk model.Task) (model.Task, error) {
+func (t *task) Create(ctx context.Context, conn repository.Conn, tk model.Task) (model.Task, error) {
 	var inserted entity.Task
 
 	dbTk := entity.Task{
@@ -68,7 +68,7 @@ func (t *task) Create(ctx context.Context, conn repository.DBConn, tk model.Task
 	return bunconv.EntityToTaskModel(inserted, insertedVersion), nil
 }
 
-func (t *task) Exists(ctx context.Context, conn repository.DBConn, id string) (bool, error) {
+func (t *task) Exists(ctx context.Context, conn repository.Conn, id string) (bool, error) {
 	exists, err := bunConn(conn).NewSelect().
 		Model((*entity.Task)(nil)).
 		Where("id_natural = ?", id).
@@ -79,7 +79,7 @@ func (t *task) Exists(ctx context.Context, conn repository.DBConn, id string) (b
 	return exists, nil
 }
 
-func (t *task) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Task, error) {
+func (t *task) GetByID(ctx context.Context, conn repository.Conn, id string) (model.Task, error) {
 	var dbt entity.Task
 	if err := bunConn(conn).NewSelect().
 		Model(&dbt).
@@ -140,7 +140,7 @@ func (t *task) GetByID(ctx context.Context, conn repository.DBConn, id string) (
 	return tk, nil
 }
 
-func (t *task) List(ctx context.Context, conn repository.DBConn, filter repository.TaskListFilter, limit, offset int) (model.Tasks, int, error) {
+func (t *task) List(ctx context.Context, conn repository.Conn, filter repository.TaskListFilter, limit, offset int) (model.Tasks, int, error) {
 	var dbts []entity.Task
 
 	sel := bunConn(conn).NewSelect().
@@ -243,7 +243,7 @@ func (t *task) List(ctx context.Context, conn repository.DBConn, filter reposito
 	return res, total, nil
 }
 
-func (t *task) Update(ctx context.Context, conn repository.DBConn, tk model.Task) (model.Task, error) {
+func (t *task) Update(ctx context.Context, conn repository.Conn, tk model.Task) (model.Task, error) {
 	upd := bunConn(conn).NewUpdate().Model((*entity.Task)(nil))
 	hasSet := false
 	if tk.Name != "" {
@@ -313,7 +313,7 @@ func (t *task) Update(ctx context.Context, conn repository.DBConn, tk model.Task
 	return result, nil
 }
 
-func (t *task) ListByIDs(ctx context.Context, conn repository.DBConn, ids []string) (model.Tasks, error) {
+func (t *task) ListByIDs(ctx context.Context, conn repository.Conn, ids []string) (model.Tasks, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
@@ -385,7 +385,7 @@ func modelTaskStatusPtr(status model.TaskStatus) *model.TaskStatus {
 	return &status
 }
 
-func (t *task) Delete(ctx context.Context, conn repository.DBConn, id string) error {
+func (t *task) Delete(ctx context.Context, conn repository.Conn, id string) error {
 	var deletedID int64
 	if err := bunConn(conn).NewDelete().
 		Model((*entity.Task)(nil)).
@@ -409,7 +409,7 @@ var allowedTaskSortColumns = map[string]string{
 	"target_duration_seconds": "(SELECT tv2.target_duration_seconds FROM task_version tv2 WHERE tv2.task_id = t.id_natural ORDER BY tv2.created_at DESC LIMIT 1)",
 }
 
-func (t *task) Export(ctx context.Context, conn repository.DBConn, filter repository.TaskListFilter) ([]repository.TaskExportRow, error) {
+func (t *task) Export(ctx context.Context, conn repository.Conn, filter repository.TaskListFilter) ([]repository.TaskExportRow, error) {
 	var dbts []entity.Task
 
 	sel := bunConn(conn).NewSelect().
@@ -568,7 +568,7 @@ func applyTaskSummaryFilter(sel *bun.SelectQuery, filter repository.TaskSummaryF
 	return sel
 }
 
-func (t *task) GetFilteredTasks(ctx context.Context, conn repository.DBConn, filter repository.TaskSummaryFilter) ([]repository.FilteredTask, error) {
+func (t *task) GetFilteredTasks(ctx context.Context, conn repository.Conn, filter repository.TaskSummaryFilter) ([]repository.FilteredTask, error) {
 	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
@@ -588,7 +588,7 @@ func (t *task) GetFilteredTasks(ctx context.Context, conn repository.DBConn, fil
 	return rows, nil
 }
 
-func (t *task) GetTargetsByTaskIDs(ctx context.Context, conn repository.DBConn, taskIDs []string) (map[string]repository.TaskTargets, error) {
+func (t *task) GetTargetsByTaskIDs(ctx context.Context, conn repository.Conn, taskIDs []string) (map[string]repository.TaskTargets, error) {
 	if len(taskIDs) == 0 {
 		return map[string]repository.TaskTargets{}, nil
 	}
@@ -621,7 +621,7 @@ func (t *task) GetTargetsByTaskIDs(ctx context.Context, conn repository.DBConn, 
 	return result, nil
 }
 
-func (t *task) FindExistingNames(ctx context.Context, conn repository.DBConn, names []string) (map[string]bool, error) {
+func (t *task) FindExistingNames(ctx context.Context, conn repository.Conn, names []string) (map[string]bool, error) {
 	if len(names) == 0 {
 		return map[string]bool{}, nil
 	}
@@ -650,7 +650,7 @@ func (t *task) FindExistingNames(ctx context.Context, conn repository.DBConn, na
 	return result, nil
 }
 
-func (t *task) BulkCreate(ctx context.Context, conn repository.DBConn, items []repository.BulkTaskItem) ([]model.Task, error) {
+func (t *task) BulkCreate(ctx context.Context, conn repository.Conn, items []repository.BulkTaskItem) ([]model.Task, error) {
 	if len(items) == 0 {
 		return nil, nil
 	}
@@ -740,7 +740,7 @@ func (t *task) BulkCreate(ctx context.Context, conn repository.DBConn, items []r
 	return tasks, nil
 }
 
-func (t *task) GetActualsByTaskIDs(ctx context.Context, conn repository.DBConn, taskIDs []string) (map[string]repository.TaskActuals, error) {
+func (t *task) GetActualsByTaskIDs(ctx context.Context, conn repository.Conn, taskIDs []string) (map[string]repository.TaskActuals, error) {
 	if len(taskIDs) == 0 {
 		return map[string]repository.TaskActuals{}, nil
 	}

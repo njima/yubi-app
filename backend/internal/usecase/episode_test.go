@@ -34,21 +34,21 @@ type stubEpisodeGradeRepo struct {
 	lastListOffset  int
 }
 
-func (s *stubEpisodeGradeRepo) GetAverageMap(_ context.Context, _ repository.DBConn, ids []string) (map[string]repository.GradeAggregate, error) {
+func (s *stubEpisodeGradeRepo) GetAverageMap(_ context.Context, _ repository.Conn, ids []string) (map[string]repository.GradeAggregate, error) {
 	s.calledWith = ids
 	return s.aggMap, s.err
 }
 
-func (s *stubEpisodeGradeRepo) Upsert(_ context.Context, _ repository.DBConn, grade model.EpisodeGrade) (model.EpisodeGrade, error) {
+func (s *stubEpisodeGradeRepo) Upsert(_ context.Context, _ repository.Conn, grade model.EpisodeGrade) (model.EpisodeGrade, error) {
 	s.lastUpsertArg = &grade
 	return s.upsertResult, s.upsertErr
 }
 
-func (s *stubEpisodeGradeRepo) GetMyGrade(_ context.Context, _ repository.DBConn, _, _ string) (*model.EpisodeGrade, error) {
+func (s *stubEpisodeGradeRepo) GetMyGrade(_ context.Context, _ repository.Conn, _, _ string) (*model.EpisodeGrade, error) {
 	return s.myGrade, s.myGradeErr
 }
 
-func (s *stubEpisodeGradeRepo) ListByEpisodeID(_ context.Context, _ repository.DBConn, episodeID string, limit, offset int) ([]repository.EpisodeGradeListItem, int, error) {
+func (s *stubEpisodeGradeRepo) ListByEpisodeID(_ context.Context, _ repository.Conn, episodeID string, limit, offset int) ([]repository.EpisodeGradeListItem, int, error) {
 	s.lastListEpisode = episodeID
 	s.lastListLimit = limit
 	s.lastListOffset = offset

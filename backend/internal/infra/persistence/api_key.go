@@ -48,7 +48,7 @@ func apiKeyEntityToModel(e entity.APIKey) model.APIKey {
 	}
 }
 
-func (a *apiKey) FindActiveByHash(ctx context.Context, conn repository.DBConn, keyHashHex string, now time.Time) (model.APIKey, error) {
+func (a *apiKey) FindActiveByHash(ctx context.Context, conn repository.Conn, keyHashHex string, now time.Time) (model.APIKey, error) {
 	// Cross-organization lookup: auth middleware runs before any organization is known,
 	// so OrgIDFromContext returns false and the OrgScoped BeforeSelect hook is a no-op.
 	// We use Model() to keep relations available.
@@ -74,7 +74,7 @@ func (a *apiKey) FindActiveByHash(ctx context.Context, conn repository.DBConn, k
 	return apiKeyEntityToModel(e), nil
 }
 
-func (a *apiKey) TouchLastUsedAt(ctx context.Context, conn repository.DBConn, id int64, at time.Time) error {
+func (a *apiKey) TouchLastUsedAt(ctx context.Context, conn repository.Conn, id int64, at time.Time) error {
 	// Bypass OrgScoped by using TableExpr so this can run without an organization context
 	// (e.g. from a background flusher started after the request returned).
 	_, err := bunConn(conn).NewUpdate().
@@ -89,7 +89,7 @@ func (a *apiKey) TouchLastUsedAt(ctx context.Context, conn repository.DBConn, id
 	return nil
 }
 
-func (a *apiKey) Create(ctx context.Context, conn repository.DBConn, k model.APIKey) (model.APIKey, error) {
+func (a *apiKey) Create(ctx context.Context, conn repository.Conn, k model.APIKey) (model.APIKey, error) {
 	db := entity.APIKey{
 		IDNatural:      k.IDNatural,
 		OrganizationID: k.OrganizationID,
@@ -114,7 +114,7 @@ func (a *apiKey) Create(ctx context.Context, conn repository.DBConn, k model.API
 	return out, nil
 }
 
-func (a *apiKey) GetByNaturalID(ctx context.Context, conn repository.DBConn, idNatural string) (model.APIKey, error) {
+func (a *apiKey) GetByNaturalID(ctx context.Context, conn repository.Conn, idNatural string) (model.APIKey, error) {
 	var e entity.APIKey
 	err := bunConn(conn).NewSelect().
 		Model(&e).
@@ -131,7 +131,7 @@ func (a *apiKey) GetByNaturalID(ctx context.Context, conn repository.DBConn, idN
 	return apiKeyEntityToModel(e), nil
 }
 
-func (a *apiKey) List(ctx context.Context, conn repository.DBConn, filter repository.APIKeyListFilter, limit, offset int) (model.APIKeys, int, error) {
+func (a *apiKey) List(ctx context.Context, conn repository.Conn, filter repository.APIKeyListFilter, limit, offset int) (model.APIKeys, int, error) {
 	var rows []entity.APIKey
 	q := bunConn(conn).NewSelect().
 		Model(&rows).
@@ -170,7 +170,7 @@ func (a *apiKey) List(ctx context.Context, conn repository.DBConn, filter reposi
 	return out, total, nil
 }
 
-func (a *apiKey) Update(ctx context.Context, conn repository.DBConn, k model.APIKey) (model.APIKey, error) {
+func (a *apiKey) Update(ctx context.Context, conn repository.Conn, k model.APIKey) (model.APIKey, error) {
 	upd := bunConn(conn).NewUpdate().Model((*entity.APIKey)(nil))
 
 	// name is always set (validation enforced upstream); allow expires_at to be nilable
@@ -194,7 +194,7 @@ func (a *apiKey) Update(ctx context.Context, conn repository.DBConn, k model.API
 	return a.GetByNaturalID(ctx, conn, k.IDNatural)
 }
 
-func (a *apiKey) Revoke(ctx context.Context, conn repository.DBConn, idNatural string, at time.Time) (model.APIKey, error) {
+func (a *apiKey) Revoke(ctx context.Context, conn repository.Conn, idNatural string, at time.Time) (model.APIKey, error) {
 	var updated entity.APIKey
 	if err := bunConn(conn).NewUpdate().
 		Model((*entity.APIKey)(nil)).

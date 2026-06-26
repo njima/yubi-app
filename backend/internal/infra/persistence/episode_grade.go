@@ -46,7 +46,7 @@ func entityToEpisodeGradeModel(e entity.EpisodeGrade) model.EpisodeGrade {
 	)
 }
 
-func (g *episodeGrade) GetAverageMap(ctx context.Context, conn repository.DBConn, episodeIDs []string) (map[string]repository.GradeAggregate, error) {
+func (g *episodeGrade) GetAverageMap(ctx context.Context, conn repository.Conn, episodeIDs []string) (map[string]repository.GradeAggregate, error) {
 	result := make(map[string]repository.GradeAggregate)
 
 	if len(episodeIDs) == 0 {
@@ -81,7 +81,7 @@ func (g *episodeGrade) GetAverageMap(ctx context.Context, conn repository.DBConn
 	return result, nil
 }
 
-func (g *episodeGrade) Upsert(ctx context.Context, conn repository.DBConn, grade model.EpisodeGrade) (model.EpisodeGrade, error) {
+func (g *episodeGrade) Upsert(ctx context.Context, conn repository.Conn, grade model.EpisodeGrade) (model.EpisodeGrade, error) {
 	dbGrade := episodeGradeModelToEntity(grade)
 
 	var inserted entity.EpisodeGrade
@@ -100,7 +100,7 @@ func (g *episodeGrade) Upsert(ctx context.Context, conn repository.DBConn, grade
 	return entityToEpisodeGradeModel(inserted), nil
 }
 
-func (g *episodeGrade) GetMyGrade(ctx context.Context, conn repository.DBConn, episodeID, userID string) (*model.EpisodeGrade, error) {
+func (g *episodeGrade) GetMyGrade(ctx context.Context, conn repository.Conn, episodeID, userID string) (*model.EpisodeGrade, error) {
 	var row entity.EpisodeGrade
 	if err := bunConn(conn).NewSelect().
 		Model(&row).
@@ -117,7 +117,7 @@ func (g *episodeGrade) GetMyGrade(ctx context.Context, conn repository.DBConn, e
 	return &out, nil
 }
 
-func (g *episodeGrade) ListByEpisodeID(ctx context.Context, conn repository.DBConn, episodeID string, limit, offset int) ([]repository.EpisodeGradeListItem, int, error) {
+func (g *episodeGrade) ListByEpisodeID(ctx context.Context, conn repository.Conn, episodeID string, limit, offset int) ([]repository.EpisodeGradeListItem, int, error) {
 	type joinedRow struct {
 		entity.EpisodeGrade `bun:",extend"`
 		UserName            string `bun:"user_name"`

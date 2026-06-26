@@ -14,25 +14,25 @@ type stubLocationRepo struct {
 	updateArg    model.Location
 }
 
-func (s *stubLocationRepo) Create(ctx context.Context, conn repository.DBConn, loc model.Location) (model.Location, error) {
+func (s *stubLocationRepo) Create(ctx context.Context, conn repository.Conn, loc model.Location) (model.Location, error) {
 	return loc, nil
 }
 
-func (s *stubLocationRepo) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Location, error) {
+func (s *stubLocationRepo) GetByID(ctx context.Context, conn repository.Conn, id string) (model.Location, error) {
 	return s.existing, nil
 }
 
-func (s *stubLocationRepo) List(ctx context.Context, conn repository.DBConn, filter repository.LocationListFilter, limit, offset int) (model.Locations, int, error) {
+func (s *stubLocationRepo) List(ctx context.Context, conn repository.Conn, filter repository.LocationListFilter, limit, offset int) (model.Locations, int, error) {
 	return nil, 0, nil
 }
 
-func (s *stubLocationRepo) Update(ctx context.Context, conn repository.DBConn, loc model.Location) (model.Location, error) {
+func (s *stubLocationRepo) Update(ctx context.Context, conn repository.Conn, loc model.Location) (model.Location, error) {
 	s.updateCalled = true
 	s.updateArg = loc
 	return loc, nil
 }
 
-func (s *stubLocationRepo) Delete(ctx context.Context, conn repository.DBConn, id string) error {
+func (s *stubLocationRepo) Delete(ctx context.Context, conn repository.Conn, id string) error {
 	return nil
 }
 
@@ -42,25 +42,25 @@ type stubSiteRepo struct {
 	updateArg    model.Site
 }
 
-func (s *stubSiteRepo) Create(ctx context.Context, conn repository.DBConn, site model.Site) (model.Site, error) {
+func (s *stubSiteRepo) Create(ctx context.Context, conn repository.Conn, site model.Site) (model.Site, error) {
 	return site, nil
 }
 
-func (s *stubSiteRepo) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Site, error) {
+func (s *stubSiteRepo) GetByID(ctx context.Context, conn repository.Conn, id string) (model.Site, error) {
 	return s.existing, nil
 }
 
-func (s *stubSiteRepo) List(ctx context.Context, conn repository.DBConn, filter repository.SiteListFilter, limit, offset int) (model.Sites, int, error) {
+func (s *stubSiteRepo) List(ctx context.Context, conn repository.Conn, filter repository.SiteListFilter, limit, offset int) (model.Sites, int, error) {
 	return nil, 0, nil
 }
 
-func (s *stubSiteRepo) Update(ctx context.Context, conn repository.DBConn, site model.Site) (model.Site, error) {
+func (s *stubSiteRepo) Update(ctx context.Context, conn repository.Conn, site model.Site) (model.Site, error) {
 	s.updateCalled = true
 	s.updateArg = site
 	return site, nil
 }
 
-func (s *stubSiteRepo) Delete(ctx context.Context, conn repository.DBConn, id string) error {
+func (s *stubSiteRepo) Delete(ctx context.Context, conn repository.Conn, id string) error {
 	return nil
 }
 
@@ -70,25 +70,25 @@ type stubOrganizationRepo struct {
 	updateArg    model.Organization
 }
 
-func (s *stubOrganizationRepo) Create(ctx context.Context, conn repository.DBConn, org model.Organization) (model.Organization, error) {
+func (s *stubOrganizationRepo) Create(ctx context.Context, conn repository.Conn, org model.Organization) (model.Organization, error) {
 	return org, nil
 }
 
-func (s *stubOrganizationRepo) GetByNaturalID(ctx context.Context, conn repository.DBConn, idNatural string) (model.Organization, error) {
+func (s *stubOrganizationRepo) GetByNaturalID(ctx context.Context, conn repository.Conn, idNatural string) (model.Organization, error) {
 	return s.existing, nil
 }
 
-func (s *stubOrganizationRepo) List(ctx context.Context, conn repository.DBConn, limit, offset int) (model.Organizations, int, error) {
+func (s *stubOrganizationRepo) List(ctx context.Context, conn repository.Conn, limit, offset int) (model.Organizations, int, error) {
 	return nil, 0, nil
 }
 
-func (s *stubOrganizationRepo) Update(ctx context.Context, conn repository.DBConn, org model.Organization) (model.Organization, error) {
+func (s *stubOrganizationRepo) Update(ctx context.Context, conn repository.Conn, org model.Organization) (model.Organization, error) {
 	s.updateCalled = true
 	s.updateArg = org
 	return org, nil
 }
 
-func (s *stubOrganizationRepo) Delete(ctx context.Context, conn repository.DBConn, idNatural string) error {
+func (s *stubOrganizationRepo) Delete(ctx context.Context, conn repository.Conn, idNatural string) error {
 	return nil
 }
 

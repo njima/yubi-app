@@ -17,7 +17,7 @@ type taskTag struct{}
 
 func NewTaskTag() *taskTag { return &taskTag{} }
 
-func (t *taskTag) ListCategoryTypes(ctx context.Context, conn repository.DBConn) (model.TaskCategoryTypes, error) {
+func (t *taskTag) ListCategoryTypes(ctx context.Context, conn repository.Conn) (model.TaskCategoryTypes, error) {
 	var rows []entity.TaskCategoryType
 	if err := bunConn(conn).NewSelect().Model(&rows).Order("name ASC").Scan(ctx); err != nil {
 		return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to list task category types: %v", err))
@@ -29,7 +29,7 @@ func (t *taskTag) ListCategoryTypes(ctx context.Context, conn repository.DBConn)
 	return result, nil
 }
 
-func (t *taskTag) GetCategoryTypeByID(ctx context.Context, conn repository.DBConn, id string) (model.TaskCategoryType, error) {
+func (t *taskTag) GetCategoryTypeByID(ctx context.Context, conn repository.Conn, id string) (model.TaskCategoryType, error) {
 	var row entity.TaskCategoryType
 	if err := bunConn(conn).NewSelect().Model(&row).Where("id = ?", id).Scan(ctx); err != nil {
 		if err == sql.ErrNoRows {
@@ -40,7 +40,7 @@ func (t *taskTag) GetCategoryTypeByID(ctx context.Context, conn repository.DBCon
 	return model.TaskCategoryType{ID: row.ID, Slug: row.Slug, Name: row.Name}, nil
 }
 
-func (t *taskTag) ListTags(ctx context.Context, conn repository.DBConn, categoryTypeID *string) (model.TaskTags, error) {
+func (t *taskTag) ListTags(ctx context.Context, conn repository.Conn, categoryTypeID *string) (model.TaskTags, error) {
 	var rows []entity.TaskTag
 	q := bunConn(conn).NewSelect().
 		Model(&rows).
@@ -55,7 +55,7 @@ func (t *taskTag) ListTags(ctx context.Context, conn repository.DBConn, category
 	return toTagModels(rows), nil
 }
 
-func (t *taskTag) CreateTag(ctx context.Context, conn repository.DBConn, tag model.TaskTag) (model.TaskTag, error) {
+func (t *taskTag) CreateTag(ctx context.Context, conn repository.Conn, tag model.TaskTag) (model.TaskTag, error) {
 	row := entity.TaskTag{
 		ID:             tag.ID,
 		Name:           tag.Name,
@@ -67,7 +67,7 @@ func (t *taskTag) CreateTag(ctx context.Context, conn repository.DBConn, tag mod
 	return t.GetTagByID(ctx, conn, row.ID)
 }
 
-func (t *taskTag) GetTagByID(ctx context.Context, conn repository.DBConn, id string) (model.TaskTag, error) {
+func (t *taskTag) GetTagByID(ctx context.Context, conn repository.Conn, id string) (model.TaskTag, error) {
 	var row entity.TaskTag
 	if err := bunConn(conn).NewSelect().
 		Model(&row).
@@ -82,7 +82,7 @@ func (t *taskTag) GetTagByID(ctx context.Context, conn repository.DBConn, id str
 	return toTagModel(row), nil
 }
 
-func (t *taskTag) SetTaskTags(ctx context.Context, conn repository.DBConn, taskID string, tagIDs []string) error {
+func (t *taskTag) SetTaskTags(ctx context.Context, conn repository.Conn, taskID string, tagIDs []string) error {
 	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.TaskTagAssignment)(nil)).
 		Where("task_id = ?", taskID).
@@ -102,7 +102,7 @@ func (t *taskTag) SetTaskTags(ctx context.Context, conn repository.DBConn, taskI
 	return nil
 }
 
-func (t *taskTag) GetTagsByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (model.TaskTags, error) {
+func (t *taskTag) GetTagsByTaskID(ctx context.Context, conn repository.Conn, taskID string) (model.TaskTags, error) {
 	m, err := t.GetTagsByTaskIDs(ctx, conn, []string{taskID})
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (t *taskTag) GetTagsByTaskID(ctx context.Context, conn repository.DBConn, t
 	return m[taskID], nil
 }
 
-func (t *taskTag) GetTagsByTaskIDs(ctx context.Context, conn repository.DBConn, taskIDs []string) (map[string]model.TaskTags, error) {
+func (t *taskTag) GetTagsByTaskIDs(ctx context.Context, conn repository.Conn, taskIDs []string) (map[string]model.TaskTags, error) {
 	if len(taskIDs) == 0 {
 		return map[string]model.TaskTags{}, nil
 	}
@@ -161,7 +161,7 @@ func categoryTypeName(ct *entity.TaskCategoryType) string {
 	return ct.Name
 }
 
-func (t *taskTag) GetTagsByNames(ctx context.Context, conn repository.DBConn, names []string) (model.TaskTags, error) {
+func (t *taskTag) GetTagsByNames(ctx context.Context, conn repository.Conn, names []string) (model.TaskTags, error) {
 	if len(names) == 0 {
 		return model.TaskTags{}, nil
 	}
@@ -177,7 +177,7 @@ func (t *taskTag) GetTagsByNames(ctx context.Context, conn repository.DBConn, na
 	return toTagModels(rows), nil
 }
 
-func (tt *taskTag) GetAvailableTags(ctx context.Context, conn repository.DBConn, robotTypes []string, categoryTypeID *string) (model.TaskTags, error) {
+func (tt *taskTag) GetAvailableTags(ctx context.Context, conn repository.Conn, robotTypes []string, categoryTypeID *string) (model.TaskTags, error) {
 	type tagRow struct {
 		ID               string `bun:"id"`
 		Name             string `bun:"name"`

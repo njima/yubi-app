@@ -17,7 +17,7 @@ type episodeStats struct{}
 func NewEpisodeStats() *episodeStats { return &episodeStats{} }
 
 // UpsertHourly inserts or updates hourly stats (idempotent)
-func (e *episodeStats) UpsertHourly(ctx context.Context, conn repository.DBConn, stats model.EpisodeStats) error {
+func (e *episodeStats) UpsertHourly(ctx context.Context, conn repository.Conn, stats model.EpisodeStats) error {
 	dbEntity := entity.EpisodeStatsHourly{
 		IDNatural:            stats.IDNatural,
 		OrganizationID:       stats.OrganizationID,
@@ -44,7 +44,7 @@ func (e *episodeStats) UpsertHourly(ctx context.Context, conn repository.DBConn,
 }
 
 // UpsertDaily inserts or updates daily stats (idempotent)
-func (e *episodeStats) UpsertDaily(ctx context.Context, conn repository.DBConn, stats model.EpisodeStats) error {
+func (e *episodeStats) UpsertDaily(ctx context.Context, conn repository.Conn, stats model.EpisodeStats) error {
 	dbEntity := entity.EpisodeStatsDaily{
 		IDNatural:            stats.IDNatural,
 		OrganizationID:       stats.OrganizationID,
@@ -71,7 +71,7 @@ func (e *episodeStats) UpsertDaily(ctx context.Context, conn repository.DBConn, 
 }
 
 // UpsertMonthly inserts or updates monthly stats (idempotent)
-func (e *episodeStats) UpsertMonthly(ctx context.Context, conn repository.DBConn, stats model.EpisodeStats) error {
+func (e *episodeStats) UpsertMonthly(ctx context.Context, conn repository.Conn, stats model.EpisodeStats) error {
 	dbEntity := entity.EpisodeStatsMonthly{
 		IDNatural:            stats.IDNatural,
 		OrganizationID:       stats.OrganizationID,
@@ -98,7 +98,7 @@ func (e *episodeStats) UpsertMonthly(ctx context.Context, conn repository.DBConn
 }
 
 // BulkReplaceHourly replaces hourly stats for a given period.
-func (e *episodeStats) BulkReplaceHourly(ctx context.Context, conn repository.DBConn, periodStart time.Time, statsList []model.EpisodeStats) error {
+func (e *episodeStats) BulkReplaceHourly(ctx context.Context, conn repository.Conn, periodStart time.Time, statsList []model.EpisodeStats) error {
 	// Delete all existing rows for this period (handles removed/excluded episodes)
 	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.EpisodeStatsHourly)(nil)).
@@ -136,7 +136,7 @@ func (e *episodeStats) BulkReplaceHourly(ctx context.Context, conn repository.DB
 }
 
 // BulkReplaceDaily replaces daily stats for a given period.
-func (e *episodeStats) BulkReplaceDaily(ctx context.Context, conn repository.DBConn, periodStart time.Time, statsList []model.EpisodeStats) error {
+func (e *episodeStats) BulkReplaceDaily(ctx context.Context, conn repository.Conn, periodStart time.Time, statsList []model.EpisodeStats) error {
 	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.EpisodeStatsDaily)(nil)).
 		Where("period_start = ?", periodStart).
@@ -173,7 +173,7 @@ func (e *episodeStats) BulkReplaceDaily(ctx context.Context, conn repository.DBC
 }
 
 // BulkReplaceMonthly replaces monthly stats for a given period.
-func (e *episodeStats) BulkReplaceMonthly(ctx context.Context, conn repository.DBConn, periodStart time.Time, statsList []model.EpisodeStats) error {
+func (e *episodeStats) BulkReplaceMonthly(ctx context.Context, conn repository.Conn, periodStart time.Time, statsList []model.EpisodeStats) error {
 	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.EpisodeStatsMonthly)(nil)).
 		Where("period_start = ?", periodStart).
@@ -210,7 +210,7 @@ func (e *episodeStats) BulkReplaceMonthly(ctx context.Context, conn repository.D
 }
 
 // ListHourly retrieves hourly stats with filters
-func (e *episodeStats) ListHourly(ctx context.Context, conn repository.DBConn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
+func (e *episodeStats) ListHourly(ctx context.Context, conn repository.Conn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
 	var entities []entity.EpisodeStatsHourly
 
 	query := bunConn(conn).NewSelect().Model(&entities).Order("period_start ASC")
@@ -224,7 +224,7 @@ func (e *episodeStats) ListHourly(ctx context.Context, conn repository.DBConn, f
 }
 
 // ListDaily retrieves daily stats with filters
-func (e *episodeStats) ListDaily(ctx context.Context, conn repository.DBConn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
+func (e *episodeStats) ListDaily(ctx context.Context, conn repository.Conn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
 	var entities []entity.EpisodeStatsDaily
 
 	query := bunConn(conn).NewSelect().Model(&entities).Order("period_start ASC")
@@ -238,7 +238,7 @@ func (e *episodeStats) ListDaily(ctx context.Context, conn repository.DBConn, fi
 }
 
 // ListMonthly retrieves monthly stats with filters
-func (e *episodeStats) ListMonthly(ctx context.Context, conn repository.DBConn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
+func (e *episodeStats) ListMonthly(ctx context.Context, conn repository.Conn, filter repository.EpisodeStatsFilter) (model.EpisodeStatsList, error) {
 	var entities []entity.EpisodeStatsMonthly
 
 	query := bunConn(conn).NewSelect().Model(&entities).Order("period_start ASC")
@@ -252,7 +252,7 @@ func (e *episodeStats) ListMonthly(ctx context.Context, conn repository.DBConn, 
 }
 
 // AggregateEpisodesForPeriod aggregates episode data for a specific time period
-func (e *episodeStats) AggregateEpisodesForPeriod(ctx context.Context, conn repository.DBConn, from, to time.Time) ([]model.AggregatedEpisodeData, error) {
+func (e *episodeStats) AggregateEpisodesForPeriod(ctx context.Context, conn repository.Conn, from, to time.Time) ([]model.AggregatedEpisodeData, error) {
 	type aggregateResult struct {
 		OrganizationID       string `bun:"organization_id"`
 		LocationID           string `bun:"location_id"`
@@ -298,7 +298,7 @@ func (e *episodeStats) AggregateEpisodesForPeriod(ctx context.Context, conn repo
 
 // AggregateByTaskVersion aggregates all-time episode data grouped by task_version_id.
 // Only counts completed episodes (collection_status = 3).
-func (e *episodeStats) AggregateByTaskVersion(ctx context.Context, conn repository.DBConn) ([]model.AggregatedTaskVersionData, error) {
+func (e *episodeStats) AggregateByTaskVersion(ctx context.Context, conn repository.Conn) ([]model.AggregatedTaskVersionData, error) {
 	type aggregateResult struct {
 		TaskVersionID        string `bun:"task_version_id"`
 		TotalDurationSeconds int64  `bun:"total_duration_seconds"`
@@ -336,7 +336,7 @@ func (e *episodeStats) AggregateByTaskVersion(ctx context.Context, conn reposito
 
 // BulkUpsertTaskVersionStats replaces all task version stats with the latest snapshot.
 // Rows not present in statsList are deleted to avoid stale data (e.g. after episode deletion).
-func (e *episodeStats) BulkUpsertTaskVersionStats(ctx context.Context, conn repository.DBConn, statsList []model.TaskVersionStats) error {
+func (e *episodeStats) BulkUpsertTaskVersionStats(ctx context.Context, conn repository.Conn, statsList []model.TaskVersionStats) error {
 	// If no stats, delete all rows (all completed episodes were removed)
 	if len(statsList) == 0 {
 		_, err := bunConn(conn).NewDelete().

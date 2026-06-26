@@ -16,7 +16,7 @@ func NewOperatorYield() *operatorYield { return &operatorYield{} }
 
 func (g *operatorYield) Export(
 	ctx context.Context,
-	conn repository.DBConn,
+	conn repository.Conn,
 	filter repository.OperatorYieldExportFilter,
 ) ([]repository.OperatorYieldExportRow, error) {
 	orgID, err := requestctx.OrganizationID(ctx)

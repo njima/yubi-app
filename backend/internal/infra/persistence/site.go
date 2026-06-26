@@ -15,7 +15,7 @@ type site struct{}
 
 func NewSite() *site { return &site{} }
 
-func (s *site) Create(ctx context.Context, conn repository.DBConn, si model.Site) (model.Site, error) {
+func (s *site) Create(ctx context.Context, conn repository.Conn, si model.Site) (model.Site, error) {
 	var inserted entity.Site
 
 	dbSite := siteModelToEntity(si)
@@ -30,7 +30,7 @@ func (s *site) Create(ctx context.Context, conn repository.DBConn, si model.Site
 	return siteEntityToModel(inserted), nil
 }
 
-func (s *site) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Site, error) {
+func (s *site) GetByID(ctx context.Context, conn repository.Conn, id string) (model.Site, error) {
 	var dbSite entity.Site
 	if err := bunConn(conn).NewSelect().
 		Model(&dbSite).
@@ -45,7 +45,7 @@ func (s *site) GetByID(ctx context.Context, conn repository.DBConn, id string) (
 	return siteEntityToModel(dbSite), nil
 }
 
-func (s *site) List(ctx context.Context, conn repository.DBConn, filter repository.SiteListFilter, limit, offset int) (model.Sites, int, error) {
+func (s *site) List(ctx context.Context, conn repository.Conn, filter repository.SiteListFilter, limit, offset int) (model.Sites, int, error) {
 	var dbSites []entity.Site
 
 	sel := bunConn(conn).NewSelect().
@@ -78,7 +78,7 @@ func (s *site) List(ctx context.Context, conn repository.DBConn, filter reposito
 	return res, total, nil
 }
 
-func (s *site) Update(ctx context.Context, conn repository.DBConn, si model.Site) (model.Site, error) {
+func (s *site) Update(ctx context.Context, conn repository.Conn, si model.Site) (model.Site, error) {
 	var updated entity.Site
 
 	upd := bunConn(conn).NewUpdate().Model((*entity.Site)(nil))
@@ -103,7 +103,7 @@ func (s *site) Update(ctx context.Context, conn repository.DBConn, si model.Site
 	return siteEntityToModel(updated), nil
 }
 
-func (s *site) Delete(ctx context.Context, conn repository.DBConn, id string) error {
+func (s *site) Delete(ctx context.Context, conn repository.Conn, id string) error {
 	var deletedID int64
 	if err := bunConn(conn).NewDelete().
 		Model((*entity.Site)(nil)).

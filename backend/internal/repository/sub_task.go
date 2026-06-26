@@ -12,12 +12,12 @@ type SubTaskListFilter struct {
 }
 
 type SubTask interface {
-	Create(ctx context.Context, conn DBConn, s model.SubTask) (model.SubTask, error)
-	GetByID(ctx context.Context, conn DBConn, id string) (model.SubTask, error)
-	GetByTaskVersionID(ctx context.Context, conn DBConn, taskVersionID string) (model.SubTasks, error)
-	GetMaxOrderIndex(ctx context.Context, conn DBConn, taskVersionID string) (int, error)
-	List(ctx context.Context, conn DBConn, filter SubTaskListFilter, limit, offset int) (model.SubTasks, int, error)
-	Update(ctx context.Context, conn DBConn, s model.SubTask) (model.SubTask, error)
-	UpdateOrderIndices(ctx context.Context, conn DBConn, ids []string) error
-	Delete(ctx context.Context, conn DBConn, id string) error
+	Create(ctx context.Context, conn Conn, s model.SubTask) (model.SubTask, error)
+	GetByID(ctx context.Context, conn Conn, id string) (model.SubTask, error)
+	GetByTaskVersionID(ctx context.Context, conn Conn, taskVersionID string) (model.SubTasks, error)
+	GetMaxOrderIndex(ctx context.Context, conn Conn, taskVersionID string) (int, error)
+	List(ctx context.Context, conn Conn, filter SubTaskListFilter, limit, offset int) (model.SubTasks, int, error)
+	Update(ctx context.Context, conn Conn, s model.SubTask) (model.SubTask, error)
+	UpdateOrderIndices(ctx context.Context, conn Conn, ids []string) error
+	Delete(ctx context.Context, conn Conn, id string) error
 }

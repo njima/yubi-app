@@ -19,7 +19,7 @@ func NewUser() *user {
 	return &user{}
 }
 
-func (u *user) Create(ctx context.Context, conn repository.DBConn, user model.User) (model.User, error) {
+func (u *user) Create(ctx context.Context, conn repository.Conn, user model.User) (model.User, error) {
 	var created entity.User
 
 	dbu := entity.User{
@@ -49,7 +49,7 @@ func (u *user) Create(ctx context.Context, conn repository.DBConn, user model.Us
 	}, nil
 }
 
-func (u *user) Update(ctx context.Context, conn repository.DBConn, user model.User) (model.User, error) {
+func (u *user) Update(ctx context.Context, conn repository.Conn, user model.User) (model.User, error) {
 	upd := bunConn(conn).NewUpdate().Model((*entity.User)(nil))
 	hasSet := false
 	if user.Name != "" {
@@ -86,7 +86,7 @@ func (u *user) Update(ctx context.Context, conn repository.DBConn, user model.Us
 	}, nil
 }
 
-func (u *user) UpdateRole(ctx context.Context, conn repository.DBConn, idNatural string, role model.UserRole) (model.User, error) {
+func (u *user) UpdateRole(ctx context.Context, conn repository.Conn, idNatural string, role model.UserRole) (model.User, error) {
 	var updated entity.User
 	if err := bunConn(conn).NewUpdate().
 		Model((*entity.User)(nil)).
@@ -113,7 +113,7 @@ func (u *user) UpdateRole(ctx context.Context, conn repository.DBConn, idNatural
 	}, nil
 }
 
-func (u *user) GetByNaturalID(ctx context.Context, conn repository.DBConn, IDNatural string) (model.User, error) {
+func (u *user) GetByNaturalID(ctx context.Context, conn repository.Conn, IDNatural string) (model.User, error) {
 	var dbUser entity.User
 
 	if err := bunConn(conn).NewSelect().
@@ -169,7 +169,7 @@ func (u *user) GetByNaturalID(ctx context.Context, conn repository.DBConn, IDNat
 	}, nil
 }
 
-func (u *user) List(ctx context.Context, conn repository.DBConn, filter repository.UserListFilter, limit, offset int) (model.Users, int, error) {
+func (u *user) List(ctx context.Context, conn repository.Conn, filter repository.UserListFilter, limit, offset int) (model.Users, int, error) {
 	var dbUsers []entity.User
 	sel := bunConn(conn).NewSelect().
 		Model(&dbUsers).
@@ -275,7 +275,7 @@ func applyUserSortOrder(sel *bun.SelectQuery, sortBy *repository.UserSortBy, sor
 	return sel.OrderExpr(fmt.Sprintf("%s %s%s", col, order, nullsClause))
 }
 
-func (u *user) ExistsByEmail(ctx context.Context, conn repository.DBConn, email string) (bool, error) {
+func (u *user) ExistsByEmail(ctx context.Context, conn repository.Conn, email string) (bool, error) {
 	exists, err := bunConn(conn).NewSelect().
 		Model((*entity.User)(nil)).
 		Where("email = ?", email).
@@ -286,7 +286,7 @@ func (u *user) ExistsByEmail(ctx context.Context, conn repository.DBConn, email 
 	return exists, nil
 }
 
-func (u *user) ExistsByEmails(ctx context.Context, conn repository.DBConn, emails []string) (map[string]bool, error) {
+func (u *user) ExistsByEmails(ctx context.Context, conn repository.Conn, emails []string) (map[string]bool, error) {
 	if len(emails) == 0 {
 		return map[string]bool{}, nil
 	}
@@ -307,7 +307,7 @@ func (u *user) ExistsByEmails(ctx context.Context, conn repository.DBConn, email
 	return result, nil
 }
 
-func (u *user) Delete(ctx context.Context, conn repository.DBConn, idNatural string) error {
+func (u *user) Delete(ctx context.Context, conn repository.Conn, idNatural string) error {
 	var deletedID int64
 	if err := bunConn(conn).NewDelete().
 		Model((*entity.User)(nil)).

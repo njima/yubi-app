@@ -19,7 +19,7 @@ type stubOperatorYieldRepo struct {
 	err  error
 }
 
-func (s *stubOperatorYieldRepo) Export(_ context.Context, _ repository.DBConn, _ repository.OperatorYieldExportFilter) ([]repository.OperatorYieldExportRow, error) {
+func (s *stubOperatorYieldRepo) Export(_ context.Context, _ repository.Conn, _ repository.OperatorYieldExportFilter) ([]repository.OperatorYieldExportRow, error) {
 	return s.rows, s.err
 }
 

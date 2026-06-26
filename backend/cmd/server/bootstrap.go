@@ -106,7 +106,7 @@ func newApplication(ctx context.Context) (*application, error) {
 	if conf.Datadog.Enabled {
 		db.AddQueryHook(ddtrace.NewBunHook(conf.AppName + "-db"))
 	}
-	txRunner := persistence.NewTxRunner(db)
+	txRunner := persistence.NewTransactionRunner(db)
 	dataAccess := repository.NewDataAccess(db, txRunner)
 
 	eventBuses := newEventBuses()
