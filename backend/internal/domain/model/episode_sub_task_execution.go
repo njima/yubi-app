@@ -16,6 +16,18 @@ const (
 	ExecutionStatusFinished  ExecutionStatus = 3
 )
 
+func (s ExecutionStatus) IsTerminal() bool {
+	return s == ExecutionStatusFinished || s == ExecutionStatusCancelled
+}
+
+func (s ExecutionStatus) IsWorkflowResolved() bool {
+	return s.IsTerminal()
+}
+
+func (s ExecutionStatus) IsSuccessfulCompletion() bool {
+	return s == ExecutionStatusFinished
+}
+
 // EpisodeSubTaskExecution represents the database record for episode_sub_task_execution table
 type EpisodeSubTaskExecution struct {
 	ID               int64
@@ -85,6 +97,18 @@ func (exe EpisodeSubTaskExecution) validate() error {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeValidationError, "episode_sub_task_execution validation failed: %v", err))
 	}
 	return nil
+}
+
+func (exe EpisodeSubTaskExecution) IsTerminal() bool {
+	return exe.ExecutionStatus.IsTerminal()
+}
+
+func (exe EpisodeSubTaskExecution) IsWorkflowResolved() bool {
+	return exe.ExecutionStatus.IsWorkflowResolved()
+}
+
+func (exe EpisodeSubTaskExecution) IsSuccessfulCompletion() bool {
+	return exe.ExecutionStatus.IsSuccessfulCompletion()
 }
 
 // CanStart checks if the execution can be started

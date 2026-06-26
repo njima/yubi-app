@@ -25,6 +25,23 @@ const (
 	TaskResultFailed       TaskResult = 2
 )
 
+func (s SubTaskCollectionStatus) IsTerminal() bool {
+	switch s {
+	case SubTaskCollectionStatusCompleted, SubTaskCollectionStatusSkipped, SubTaskCollectionStatusCancelled:
+		return true
+	default:
+		return false
+	}
+}
+
+func (s SubTaskCollectionStatus) IsWorkflowResolved() bool {
+	return s == SubTaskCollectionStatusCompleted || s == SubTaskCollectionStatusSkipped
+}
+
+func (s SubTaskCollectionStatus) IsSuccessfulCompletion() bool {
+	return s == SubTaskCollectionStatusCompleted
+}
+
 type EpisodeSubTask struct {
 	ID               int64
 	IDNatural        string
@@ -92,6 +109,18 @@ func (est EpisodeSubTask) validate() error {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeValidationError, "episode_sub_task validation failed: %v", err))
 	}
 	return nil
+}
+
+func (est EpisodeSubTask) IsTerminal() bool {
+	return est.CollectionStatus.IsTerminal()
+}
+
+func (est EpisodeSubTask) IsWorkflowResolved() bool {
+	return est.CollectionStatus.IsWorkflowResolved()
+}
+
+func (est EpisodeSubTask) IsSuccessfulCompletion() bool {
+	return est.CollectionStatus.IsSuccessfulCompletion()
 }
 
 func (est *EpisodeSubTask) CanStartProgress() error {

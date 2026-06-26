@@ -347,3 +347,54 @@ func TestEpisodeSubTaskExecution_Cancel(t *testing.T) {
 		})
 	}
 }
+
+func TestExecutionStatusPolicy(t *testing.T) {
+	tests := []struct {
+		name                   string
+		status                 ExecutionStatus
+		wantTerminal           bool
+		wantWorkflowResolved   bool
+		wantSuccessfulComplete bool
+	}{
+		{name: "ready is open", status: ExecutionStatusReady},
+		{name: "started is open", status: ExecutionStatusStarted},
+		{
+			name:                 "cancelled is terminal and resolved",
+			status:               ExecutionStatusCancelled,
+			wantTerminal:         true,
+			wantWorkflowResolved: true,
+		},
+		{
+			name:                   "finished is terminal, resolved, and successful",
+			status:                 ExecutionStatusFinished,
+			wantTerminal:           true,
+			wantWorkflowResolved:   true,
+			wantSuccessfulComplete: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.status.IsTerminal(); got != tt.wantTerminal {
+				t.Errorf("ExecutionStatus.IsTerminal() = %v, want %v", got, tt.wantTerminal)
+			}
+			if got := tt.status.IsWorkflowResolved(); got != tt.wantWorkflowResolved {
+				t.Errorf("ExecutionStatus.IsWorkflowResolved() = %v, want %v", got, tt.wantWorkflowResolved)
+			}
+			if got := tt.status.IsSuccessfulCompletion(); got != tt.wantSuccessfulComplete {
+				t.Errorf("ExecutionStatus.IsSuccessfulCompletion() = %v, want %v", got, tt.wantSuccessfulComplete)
+			}
+
+			exe := newExecutionWithStatus(tt.status)
+			if got := exe.IsTerminal(); got != tt.wantTerminal {
+				t.Errorf("EpisodeSubTaskExecution.IsTerminal() = %v, want %v", got, tt.wantTerminal)
+			}
+			if got := exe.IsWorkflowResolved(); got != tt.wantWorkflowResolved {
+				t.Errorf("EpisodeSubTaskExecution.IsWorkflowResolved() = %v, want %v", got, tt.wantWorkflowResolved)
+			}
+			if got := exe.IsSuccessfulCompletion(); got != tt.wantSuccessfulComplete {
+				t.Errorf("EpisodeSubTaskExecution.IsSuccessfulCompletion() = %v, want %v", got, tt.wantSuccessfulComplete)
+			}
+		})
+	}
+}

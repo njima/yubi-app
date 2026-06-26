@@ -414,3 +414,59 @@ func TestEpisodeSubTask_Cancel(t *testing.T) {
 		})
 	}
 }
+
+func TestSubTaskCollectionStatusPolicy(t *testing.T) {
+	tests := []struct {
+		name                   string
+		status                 SubTaskCollectionStatus
+		wantTerminal           bool
+		wantWorkflowResolved   bool
+		wantSuccessfulComplete bool
+	}{
+		{name: "ready is open", status: SubTaskCollectionStatusReady},
+		{name: "in progress is open", status: SubTaskCollectionStatusInProgress},
+		{
+			name:                   "completed is terminal, resolved, and successful",
+			status:                 SubTaskCollectionStatusCompleted,
+			wantTerminal:           true,
+			wantWorkflowResolved:   true,
+			wantSuccessfulComplete: true,
+		},
+		{
+			name:                 "skipped is terminal and workflow resolved",
+			status:               SubTaskCollectionStatusSkipped,
+			wantTerminal:         true,
+			wantWorkflowResolved: true,
+		},
+		{
+			name:         "cancelled is terminal but unresolved",
+			status:       SubTaskCollectionStatusCancelled,
+			wantTerminal: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.status.IsTerminal(); got != tt.wantTerminal {
+				t.Errorf("SubTaskCollectionStatus.IsTerminal() = %v, want %v", got, tt.wantTerminal)
+			}
+			if got := tt.status.IsWorkflowResolved(); got != tt.wantWorkflowResolved {
+				t.Errorf("SubTaskCollectionStatus.IsWorkflowResolved() = %v, want %v", got, tt.wantWorkflowResolved)
+			}
+			if got := tt.status.IsSuccessfulCompletion(); got != tt.wantSuccessfulComplete {
+				t.Errorf("SubTaskCollectionStatus.IsSuccessfulCompletion() = %v, want %v", got, tt.wantSuccessfulComplete)
+			}
+
+			est := newEpisodeSubTaskWithStatus(tt.status)
+			if got := est.IsTerminal(); got != tt.wantTerminal {
+				t.Errorf("EpisodeSubTask.IsTerminal() = %v, want %v", got, tt.wantTerminal)
+			}
+			if got := est.IsWorkflowResolved(); got != tt.wantWorkflowResolved {
+				t.Errorf("EpisodeSubTask.IsWorkflowResolved() = %v, want %v", got, tt.wantWorkflowResolved)
+			}
+			if got := est.IsSuccessfulCompletion(); got != tt.wantSuccessfulComplete {
+				t.Errorf("EpisodeSubTask.IsSuccessfulCompletion() = %v, want %v", got, tt.wantSuccessfulComplete)
+			}
+		})
+	}
+}

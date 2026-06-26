@@ -149,3 +149,45 @@ func TestMergeGradeAggregates_RepoErrorLeavesEpisodesUntouched(t *testing.T) {
 		t.Errorf("GradeCount should remain 0 on repo error, got %v", episodes[0].GradeCount)
 	}
 }
+
+func TestEpisodeUpdateRejectsDirectStatusTransition(t *testing.T) {
+	uc := &episode{}
+
+	t.Run("allows no-op status update", func(t *testing.T) {
+		status := model.EpisodeStatusRecording
+		ep := model.Episode{
+			IDNatural:      "ep-1",
+			OrganizationID: "org-1",
+			TaskID:         "task-1",
+			LocationID:     "loc-1",
+			RobotID:        "robot-1",
+			UserID:         "user-1",
+			Status:         model.EpisodeStatusRecording,
+		}
+
+		got, err := uc.update(context.Background(), ep, EpisodeUpdateInput{Status: &status})
+		if err != nil {
+			t.Fatalf("episode.update() error = %v, want nil", err)
+		}
+		if got.Status != model.EpisodeStatusRecording {
+			t.Fatalf("episode.update() Status = %v, want %v", got.Status, model.EpisodeStatusRecording)
+		}
+	})
+
+	t.Run("rejects lifecycle status change", func(t *testing.T) {
+		status := model.EpisodeStatusRecording
+		ep := model.Episode{
+			IDNatural:      "ep-1",
+			OrganizationID: "org-1",
+			TaskID:         "task-1",
+			LocationID:     "loc-1",
+			RobotID:        "robot-1",
+			UserID:         "user-1",
+			Status:         model.EpisodeStatusReady,
+		}
+
+		if _, err := uc.update(context.Background(), ep, EpisodeUpdateInput{Status: &status}); err == nil {
+			t.Fatal("episode.update() error = nil, want error")
+		}
+	})
+}
