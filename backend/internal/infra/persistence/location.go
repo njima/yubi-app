@@ -21,12 +21,7 @@ func NewLocation() *location { return &location{} }
 func (l *location) Create(ctx context.Context, conn repository.DBConn, loc model.Location) (model.Location, error) {
 	var inserted entity.Location
 
-	dbLoc := entity.Location{
-		IDNatural:      loc.IDNatural,
-		OrganizationID: loc.OrganizationID,
-		SiteID:         loc.SiteID,
-		Name:           loc.Name,
-	}
+	dbLoc := locationModelToEntity(loc)
 
 	if err := conn.NewInsert().
 		Model(&dbLoc).
@@ -41,18 +36,9 @@ func (l *location) Create(ctx context.Context, conn repository.DBConn, loc model
 		siteName = ""
 	}
 
-	result := model.Location{
-		ID:             inserted.ID,
-		IDNatural:      inserted.IDNatural,
-		OrganizationID: inserted.OrganizationID,
-		SiteID:         inserted.SiteID,
-		SiteName:       siteName,
-		Name:           inserted.Name,
-		CreatedAt:      inserted.CreatedAt,
-		UpdatedAt:      &inserted.UpdatedAt,
-	}
+	inserted.Site = &entity.Site{Name: siteName}
 
-	return result, nil
+	return locationEntityToModel(inserted), nil
 }
 
 func (l *location) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Location, error) {
@@ -68,18 +54,7 @@ func (l *location) GetByID(ctx context.Context, conn repository.DBConn, id strin
 		return model.Location{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to get location: %v", err))
 	}
 
-	loc := model.Location{
-		ID:             dbLoc.ID,
-		IDNatural:      dbLoc.IDNatural,
-		OrganizationID: dbLoc.OrganizationID,
-		SiteID:         dbLoc.SiteID,
-		SiteName:       dbLoc.Site.Name,
-		Name:           dbLoc.Name,
-		CreatedAt:      dbLoc.CreatedAt,
-		UpdatedAt:      &dbLoc.UpdatedAt,
-	}
-
-	return loc, nil
+	return locationEntityToModel(dbLoc), nil
 }
 
 func (l *location) List(ctx context.Context, conn repository.DBConn, filter repository.LocationListFilter, limit, offset int) (model.Locations, int, error) {
@@ -123,20 +98,8 @@ func (l *location) List(ctx context.Context, conn repository.DBConn, filter repo
 
 	res := make(model.Locations, 0, len(dbLocs))
 	for _, dl := range dbLocs {
-		m := &model.Location{
-			ID:             dl.ID,
-			IDNatural:      dl.IDNatural,
-			OrganizationID: dl.OrganizationID,
-			SiteID:         dl.SiteID,
-			SiteName:       dl.Site.Name,
-			Name:           dl.Name,
-			CreatedAt:      dl.CreatedAt,
-		}
-		if !dl.UpdatedAt.IsZero() {
-			t := dl.UpdatedAt
-			m.UpdatedAt = &t
-		}
-		res = append(res, m)
+		m := locationEntityToModel(dl)
+		res = append(res, &m)
 	}
 
 	return res, total, nil
@@ -172,16 +135,9 @@ func (l *location) Update(ctx context.Context, conn repository.DBConn, loc model
 		siteName = ""
 	}
 
-	return model.Location{
-		ID:             updated.ID,
-		IDNatural:      updated.IDNatural,
-		OrganizationID: updated.OrganizationID,
-		SiteID:         updated.SiteID,
-		SiteName:       siteName,
-		Name:           updated.Name,
-		CreatedAt:      updated.CreatedAt,
-		UpdatedAt:      &updated.UpdatedAt,
-	}, nil
+	updated.Site = &entity.Site{Name: siteName}
+
+	return locationEntityToModel(updated), nil
 }
 
 func (l *location) Delete(ctx context.Context, conn repository.DBConn, id string) error {

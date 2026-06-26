@@ -18,11 +18,7 @@ func NewSite() *site { return &site{} }
 func (s *site) Create(ctx context.Context, conn repository.DBConn, si model.Site) (model.Site, error) {
 	var inserted entity.Site
 
-	dbSite := entity.Site{
-		IDNatural:      si.IDNatural,
-		OrganizationID: si.OrganizationID,
-		Name:           si.Name,
-	}
+	dbSite := siteModelToEntity(si)
 
 	if err := conn.NewInsert().
 		Model(&dbSite).
@@ -31,14 +27,7 @@ func (s *site) Create(ctx context.Context, conn repository.DBConn, si model.Site
 		return model.Site{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to create site: %v", err))
 	}
 
-	return model.Site{
-		ID:             inserted.ID,
-		IDNatural:      inserted.IDNatural,
-		OrganizationID: inserted.OrganizationID,
-		Name:           inserted.Name,
-		CreatedAt:      inserted.CreatedAt,
-		UpdatedAt:      &inserted.UpdatedAt,
-	}, nil
+	return siteEntityToModel(inserted), nil
 }
 
 func (s *site) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Site, error) {
@@ -53,14 +42,7 @@ func (s *site) GetByID(ctx context.Context, conn repository.DBConn, id string) (
 		return model.Site{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to get site: %v", err))
 	}
 
-	return model.Site{
-		ID:             dbSite.ID,
-		IDNatural:      dbSite.IDNatural,
-		OrganizationID: dbSite.OrganizationID,
-		Name:           dbSite.Name,
-		CreatedAt:      dbSite.CreatedAt,
-		UpdatedAt:      &dbSite.UpdatedAt,
-	}, nil
+	return siteEntityToModel(dbSite), nil
 }
 
 func (s *site) List(ctx context.Context, conn repository.DBConn, filter repository.SiteListFilter, limit, offset int) (model.Sites, int, error) {
@@ -101,18 +83,8 @@ func (s *site) List(ctx context.Context, conn repository.DBConn, filter reposito
 
 	res := make(model.Sites, 0, len(dbSites))
 	for _, ds := range dbSites {
-		m := &model.Site{
-			ID:             ds.ID,
-			IDNatural:      ds.IDNatural,
-			OrganizationID: ds.OrganizationID,
-			Name:           ds.Name,
-			CreatedAt:      ds.CreatedAt,
-		}
-		if !ds.UpdatedAt.IsZero() {
-			t := ds.UpdatedAt
-			m.UpdatedAt = &t
-		}
-		res = append(res, m)
+		m := siteEntityToModel(ds)
+		res = append(res, &m)
 	}
 
 	return res, total, nil
@@ -140,14 +112,7 @@ func (s *site) Update(ctx context.Context, conn repository.DBConn, si model.Site
 		return model.Site{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to update site: %v", err))
 	}
 
-	return model.Site{
-		ID:             updated.ID,
-		IDNatural:      updated.IDNatural,
-		OrganizationID: updated.OrganizationID,
-		Name:           updated.Name,
-		CreatedAt:      updated.CreatedAt,
-		UpdatedAt:      &updated.UpdatedAt,
-	}, nil
+	return siteEntityToModel(updated), nil
 }
 
 func (s *site) Delete(ctx context.Context, conn repository.DBConn, id string) error {

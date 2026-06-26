@@ -18,11 +18,7 @@ func NewOrganization() *organization { return &organization{} }
 func (o *organization) Create(ctx context.Context, conn repository.DBConn, org model.Organization) (model.Organization, error) {
 	var inserted entity.Organization
 
-	dbOrg := entity.Organization{
-		IDNatural:   org.IDNatural,
-		Name:        org.Name,
-		Description: org.Description,
-	}
+	dbOrg := organizationModelToEntity(org)
 
 	if err := conn.NewInsert().
 		Model(&dbOrg).
@@ -31,16 +27,7 @@ func (o *organization) Create(ctx context.Context, conn repository.DBConn, org m
 		return model.Organization{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to create organization: %v", err))
 	}
 
-	result := model.Organization{
-		ID:          inserted.ID,
-		IDNatural:   inserted.IDNatural,
-		Name:        inserted.Name,
-		Description: inserted.Description,
-		CreatedAt:   inserted.CreatedAt,
-		UpdatedAt:   &inserted.UpdatedAt,
-	}
-
-	return result, nil
+	return organizationEntityToModel(inserted), nil
 }
 
 func (o *organization) GetByNaturalID(ctx context.Context, conn repository.DBConn, idNatural string) (model.Organization, error) {
@@ -56,16 +43,7 @@ func (o *organization) GetByNaturalID(ctx context.Context, conn repository.DBCon
 		return model.Organization{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to get organization: %v", err))
 	}
 
-	domainOrg := model.Organization{
-		ID:          dbOrg.ID,
-		IDNatural:   dbOrg.IDNatural,
-		Name:        dbOrg.Name,
-		Description: dbOrg.Description,
-		CreatedAt:   dbOrg.CreatedAt,
-		UpdatedAt:   &dbOrg.UpdatedAt,
-	}
-
-	return domainOrg, nil
+	return organizationEntityToModel(dbOrg), nil
 }
 
 func (o *organization) List(ctx context.Context, conn repository.DBConn, limit, offset int) (model.Organizations, int, error) {
@@ -91,18 +69,8 @@ func (o *organization) List(ctx context.Context, conn repository.DBConn, limit, 
 
 	orgs := make(model.Organizations, 0, len(dbOrgs))
 	for _, d := range dbOrgs {
-		o := &model.Organization{
-			ID:          d.ID,
-			IDNatural:   d.IDNatural,
-			Name:        d.Name,
-			Description: d.Description,
-			CreatedAt:   d.CreatedAt,
-		}
-		if !d.UpdatedAt.IsZero() {
-			t := d.UpdatedAt
-			o.UpdatedAt = &t
-		}
-		orgs = append(orgs, o)
+		o := organizationEntityToModel(d)
+		orgs = append(orgs, &o)
 	}
 
 	return orgs, total, nil
@@ -134,14 +102,7 @@ func (o *organization) Update(ctx context.Context, conn repository.DBConn, org m
 		return model.Organization{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to update organization: %v", err))
 	}
 
-	return model.Organization{
-		ID:          updated.ID,
-		IDNatural:   updated.IDNatural,
-		Name:        updated.Name,
-		Description: updated.Description,
-		CreatedAt:   updated.CreatedAt,
-		UpdatedAt:   &updated.UpdatedAt,
-	}, nil
+	return organizationEntityToModel(updated), nil
 }
 
 func (o *organization) Delete(ctx context.Context, conn repository.DBConn, idNatural string) error {
