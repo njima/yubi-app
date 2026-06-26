@@ -8,9 +8,7 @@
 import { useTranslation } from "react-i18next";
 
 import {
-  EPISODE_COLLECTION_STATUS,
   type EpisodeCollectionStatusValue,
-  ROBOT_STATUS,
   type RobotStatusValue,
   ROBOT_TYPE,
   type RobotTypeValue,
@@ -18,11 +16,15 @@ import {
   type SubTaskStatusValue,
   TASK_PRIORITY,
   type TaskPriorityValue,
-  TASK_STATUS,
   type TaskStatusValue,
   USER_ROLE,
   type UserRoleValue,
 } from "@/shared/lib/status-constants";
+import {
+  EPISODE_COLLECTION_STATUS_DISPLAY,
+  ROBOT_STATUS_DISPLAY,
+  TASK_STATUS_DISPLAY,
+} from "@/shared/lib/status-display";
 
 /**
  * Hook to get episode collection status label
@@ -31,18 +33,9 @@ export function useEpisodeCollectionStatusLabel() {
   const { t } = useTranslation();
 
   return (status: EpisodeCollectionStatusValue): string => {
-    switch (status) {
-      case EPISODE_COLLECTION_STATUS.READY:
-        return t("status.ready");
-      case EPISODE_COLLECTION_STATUS.RECORDING:
-        return t("status.recording");
-      case EPISODE_COLLECTION_STATUS.CANCEL:
-        return t("status.cancel");
-      case EPISODE_COLLECTION_STATUS.COMPLETED:
-        return t("status.completed");
-      default:
-        return t("status.unknown");
-    }
+    return t(
+      EPISODE_COLLECTION_STATUS_DISPLAY[status]?.labelKey ?? "status.unknown"
+    );
   };
 }
 
@@ -53,22 +46,7 @@ export function useRobotStatusLabel() {
   const { t } = useTranslation();
 
   return (status: RobotStatusValue): string => {
-    switch (status) {
-      case ROBOT_STATUS.ONLINE:
-        return t("status.online");
-      case ROBOT_STATUS.BUSY:
-        return t("status.busy");
-      case ROBOT_STATUS.OFFLINE:
-        return t("status.offline");
-      case ROBOT_STATUS.FAULTED:
-        return t("status.faulted");
-      case ROBOT_STATUS.MAINTENANCE:
-        return t("status.maintenance");
-      case ROBOT_STATUS.READY:
-        return t("status.ready");
-      default:
-        return t("status.unknown");
-    }
+    return t(ROBOT_STATUS_DISPLAY[status]?.labelKey ?? "status.unknown");
   };
 }
 
@@ -165,17 +143,6 @@ export function useTaskStatusLabel() {
   const { t } = useTranslation();
 
   return (status: TaskStatusValue): string => {
-    switch (status) {
-      case TASK_STATUS.PLANNING:
-        return t("status.planning");
-      case TASK_STATUS.DOING:
-        return t("status.doing");
-      case TASK_STATUS.COMPLETED:
-        return t("status.completed");
-      case TASK_STATUS.CANCELED:
-        return t("status.canceled");
-      default:
-        return t("status.unknown");
-    }
+    return t(TASK_STATUS_DISPLAY[status]?.labelKey ?? "status.unknown");
   };
 }
