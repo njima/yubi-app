@@ -14,5 +14,5 @@ type RobotUptimeMetric struct {
 }
 
 type RobotUptimeMetricsRepository interface {
-	WriteBatch(ctx context.Context, conn DBConn, metrics []RobotUptimeMetric) error
+	WriteBatch(ctx context.Context, conn Conn, metrics []RobotUptimeMetric) error
 }

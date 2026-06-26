@@ -17,7 +17,7 @@ func NewFleet() *fleet { return &fleet{} }
 // GetSummary aggregates robot counts by site and robot type.
 // episode_stats/robot_uptime tables don't have site_id,
 // so we JOIN through location to reach site.
-func (f *fleet) GetSummary(ctx context.Context, conn repository.DBConn) ([]repository.FleetSummaryRow, error) {
+func (f *fleet) GetSummary(ctx context.Context, conn repository.Conn) ([]repository.FleetSummaryRow, error) {
 	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
@@ -46,7 +46,7 @@ func (f *fleet) GetSummary(ctx context.Context, conn repository.DBConn) ([]repos
 	return rows, nil
 }
 
-func (f *fleet) GetStats(ctx context.Context, conn repository.DBConn, filter repository.FleetStatsFilter) ([]repository.FleetStatsRow, error) {
+func (f *fleet) GetStats(ctx context.Context, conn repository.Conn, filter repository.FleetStatsFilter) ([]repository.FleetStatsRow, error) {
 	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
@@ -76,7 +76,7 @@ func (f *fleet) GetStats(ctx context.Context, conn repository.DBConn, filter rep
 	return rows, nil
 }
 
-func (f *fleet) GetUptimeStats(ctx context.Context, conn repository.DBConn, filter repository.FleetStatsFilter) ([]repository.FleetUptimeStatsRow, error) {
+func (f *fleet) GetUptimeStats(ctx context.Context, conn repository.Conn, filter repository.FleetStatsFilter) ([]repository.FleetUptimeStatsRow, error) {
 	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
@@ -107,7 +107,7 @@ func (f *fleet) GetUptimeStats(ctx context.Context, conn repository.DBConn, filt
 	return rows, nil
 }
 
-func (f *fleet) GetCollectionTrend(ctx context.Context, conn repository.DBConn, filter repository.FleetTrendFilter) ([]repository.FleetTrendRow, error) {
+func (f *fleet) GetCollectionTrend(ctx context.Context, conn repository.Conn, filter repository.FleetTrendFilter) ([]repository.FleetTrendRow, error) {
 	tableName, err := statsTableForGranularity(filter.Granularity)
 	if err != nil {
 		return nil, err

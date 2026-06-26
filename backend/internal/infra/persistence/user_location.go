@@ -14,7 +14,7 @@ type userLocation struct{}
 
 func NewUserLocation() *userLocation { return &userLocation{} }
 
-func (ul *userLocation) SetUserLocations(ctx context.Context, conn repository.DBConn, userID string, organizationID string, locationIDs []string) error {
+func (ul *userLocation) SetUserLocations(ctx context.Context, conn repository.Conn, userID string, organizationID string, locationIDs []string) error {
 	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.UserLocationAssignment)(nil)).
 		Where("user_id = ?", userID).

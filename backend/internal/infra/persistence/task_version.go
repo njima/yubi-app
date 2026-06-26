@@ -19,7 +19,7 @@ func NewTaskVersion() repository.TaskVersion {
 	return &taskVersion{}
 }
 
-func (tv *taskVersion) Create(ctx context.Context, conn repository.DBConn, m model.TaskVersion) (model.TaskVersion, error) {
+func (tv *taskVersion) Create(ctx context.Context, conn repository.Conn, m model.TaskVersion) (model.TaskVersion, error) {
 	var inserted entity.TaskVersion
 	e := entity.TaskVersion{
 		IDNatural:                       m.IDNatural,
@@ -45,7 +45,7 @@ func (tv *taskVersion) Create(ctx context.Context, conn repository.DBConn, m mod
 	return *bunconv.EntityToTaskVersionModel(inserted), nil
 }
 
-func (tv *taskVersion) Update(ctx context.Context, conn repository.DBConn, m model.TaskVersion) (model.TaskVersion, error) {
+func (tv *taskVersion) Update(ctx context.Context, conn repository.Conn, m model.TaskVersion) (model.TaskVersion, error) {
 	upd := bunConn(conn).NewUpdate().Model((*entity.TaskVersion)(nil))
 	hasSet := false
 	if m.TargetDurationSeconds != nil {
@@ -94,7 +94,7 @@ func (tv *taskVersion) Update(ctx context.Context, conn repository.DBConn, m mod
 	return *bunconv.EntityToTaskVersionModel(updated), nil
 }
 
-func (tv *taskVersion) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.TaskVersion, error) {
+func (tv *taskVersion) GetByID(ctx context.Context, conn repository.Conn, id string) (model.TaskVersion, error) {
 	var e entity.TaskVersion
 	if err := bunConn(conn).NewSelect().
 		Model(&e).
@@ -112,7 +112,7 @@ func (tv *taskVersion) GetByID(ctx context.Context, conn repository.DBConn, id s
 	return *m, nil
 }
 
-func (tv *taskVersion) GetByIDForUpdate(ctx context.Context, conn repository.DBConn, id string) (model.TaskVersion, error) {
+func (tv *taskVersion) GetByIDForUpdate(ctx context.Context, conn repository.Conn, id string) (model.TaskVersion, error) {
 	var e entity.TaskVersion
 	if err := bunConn(conn).NewSelect().
 		Model(&e).
@@ -127,7 +127,7 @@ func (tv *taskVersion) GetByIDForUpdate(ctx context.Context, conn repository.DBC
 	return *bunconv.EntityToTaskVersionModel(e), nil
 }
 
-func (tv *taskVersion) GetLatestApprovedByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (model.TaskVersion, error) {
+func (tv *taskVersion) GetLatestApprovedByTaskID(ctx context.Context, conn repository.Conn, taskID string) (model.TaskVersion, error) {
 	var e entity.TaskVersion
 	if err := bunConn(conn).NewSelect().
 		Model(&e).
@@ -144,7 +144,7 @@ func (tv *taskVersion) GetLatestApprovedByTaskID(ctx context.Context, conn repos
 	return *bunconv.EntityToTaskVersionModel(e), nil
 }
 
-func (tv *taskVersion) Approve(ctx context.Context, conn repository.DBConn, id string) (model.TaskVersion, error) {
+func (tv *taskVersion) Approve(ctx context.Context, conn repository.Conn, id string) (model.TaskVersion, error) {
 	var updated entity.TaskVersion
 	if err := bunConn(conn).NewUpdate().
 		Model((*entity.TaskVersion)(nil)).
@@ -160,7 +160,7 @@ func (tv *taskVersion) Approve(ctx context.Context, conn repository.DBConn, id s
 	return *bunconv.EntityToTaskVersionModel(updated), nil
 }
 
-func (tv *taskVersion) UpdateParameters(ctx context.Context, conn repository.DBConn, id string, parameters []model.TaskVersionParameter) (model.TaskVersion, error) {
+func (tv *taskVersion) UpdateParameters(ctx context.Context, conn repository.Conn, id string, parameters []model.TaskVersionParameter) (model.TaskVersion, error) {
 	var updated entity.TaskVersion
 	if err := bunConn(conn).NewUpdate().
 		Model((*entity.TaskVersion)(nil)).
@@ -176,7 +176,7 @@ func (tv *taskVersion) UpdateParameters(ctx context.Context, conn repository.DBC
 	return *bunconv.EntityToTaskVersionModel(updated), nil
 }
 
-func (tv *taskVersion) ListByIDs(ctx context.Context, conn repository.DBConn, ids []string) (model.TaskVersions, error) {
+func (tv *taskVersion) ListByIDs(ctx context.Context, conn repository.Conn, ids []string) (model.TaskVersions, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
@@ -190,7 +190,7 @@ func (tv *taskVersion) ListByIDs(ctx context.Context, conn repository.DBConn, id
 	return bunconv.EntitiesToTaskVersionModels(versions), nil
 }
 
-func (tv *taskVersion) ListByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (model.TaskVersions, error) {
+func (tv *taskVersion) ListByTaskID(ctx context.Context, conn repository.Conn, taskID string) (model.TaskVersions, error) {
 	var versions []entity.TaskVersion
 	err := bunConn(conn).NewSelect().
 		Model(&versions).
@@ -208,7 +208,7 @@ func (tv *taskVersion) ListByTaskID(ctx context.Context, conn repository.DBConn,
 }
 
 // attachStats fetches task_version_stats and attaches actual values to models.
-func (tv *taskVersion) attachStats(ctx context.Context, conn repository.DBConn, models []*model.TaskVersion) error {
+func (tv *taskVersion) attachStats(ctx context.Context, conn repository.Conn, models []*model.TaskVersion) error {
 	if len(models) == 0 {
 		return nil
 	}
@@ -242,7 +242,7 @@ func (tv *taskVersion) attachStats(ctx context.Context, conn repository.DBConn, 
 	return nil
 }
 
-func (tv *taskVersion) SumTargetByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (int64, error) {
+func (tv *taskVersion) SumTargetByTaskID(ctx context.Context, conn repository.Conn, taskID string) (int64, error) {
 	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return 0, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))

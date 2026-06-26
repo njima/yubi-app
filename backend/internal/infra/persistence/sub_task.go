@@ -15,7 +15,7 @@ type subtask struct{}
 
 func NewSubTask() *subtask { return &subtask{} }
 
-func (s *subtask) Create(ctx context.Context, conn repository.DBConn, st model.SubTask) (model.SubTask, error) {
+func (s *subtask) Create(ctx context.Context, conn repository.Conn, st model.SubTask) (model.SubTask, error) {
 	var inserted entity.SubTask
 	dbSt := entity.SubTask{
 		IDNatural:             st.IDNatural,
@@ -47,7 +47,7 @@ func (s *subtask) Create(ctx context.Context, conn repository.DBConn, st model.S
 	}, nil
 }
 
-func (s *subtask) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.SubTask, error) {
+func (s *subtask) GetByID(ctx context.Context, conn repository.Conn, id string) (model.SubTask, error) {
 	var dbs entity.SubTask
 	if err := bunConn(conn).NewSelect().
 		Model(&dbs).
@@ -77,7 +77,7 @@ func (s *subtask) GetByID(ctx context.Context, conn repository.DBConn, id string
 	return res, nil
 }
 
-func (s *subtask) GetMaxOrderIndex(ctx context.Context, conn repository.DBConn, taskVersionID string) (int, error) {
+func (s *subtask) GetMaxOrderIndex(ctx context.Context, conn repository.Conn, taskVersionID string) (int, error) {
 	var maxIndex int
 	err := bunConn(conn).NewSelect().
 		Model((*entity.SubTask)(nil)).
@@ -90,7 +90,7 @@ func (s *subtask) GetMaxOrderIndex(ctx context.Context, conn repository.DBConn, 
 	return maxIndex, nil
 }
 
-func (s *subtask) GetByTaskVersionID(ctx context.Context, conn repository.DBConn, taskVersionID string) (model.SubTasks, error) {
+func (s *subtask) GetByTaskVersionID(ctx context.Context, conn repository.Conn, taskVersionID string) (model.SubTasks, error) {
 	var dbs []entity.SubTask
 	if err := bunConn(conn).NewSelect().
 		Model(&dbs).
@@ -122,7 +122,7 @@ func (s *subtask) GetByTaskVersionID(ctx context.Context, conn repository.DBConn
 	return res, nil
 }
 
-func (s *subtask) List(ctx context.Context, conn repository.DBConn, filter repository.SubTaskListFilter, limit, offset int) (model.SubTasks, int, error) {
+func (s *subtask) List(ctx context.Context, conn repository.Conn, filter repository.SubTaskListFilter, limit, offset int) (model.SubTasks, int, error) {
 	var dbs []entity.SubTask
 	sel := bunConn(conn).NewSelect().
 		Model(&dbs).
@@ -166,7 +166,7 @@ func (s *subtask) List(ctx context.Context, conn repository.DBConn, filter repos
 	return res, total, nil
 }
 
-func (s *subtask) Update(ctx context.Context, conn repository.DBConn, st model.SubTask) (model.SubTask, error) {
+func (s *subtask) Update(ctx context.Context, conn repository.Conn, st model.SubTask) (model.SubTask, error) {
 	upd := bunConn(conn).NewUpdate().Model((*entity.SubTask)(nil))
 	hasSet := false
 	if st.Name != "" {
@@ -217,7 +217,7 @@ func (s *subtask) Update(ctx context.Context, conn repository.DBConn, st model.S
 	return result, nil
 }
 
-func (s *subtask) UpdateOrderIndices(ctx context.Context, conn repository.DBConn, ids []string) error {
+func (s *subtask) UpdateOrderIndices(ctx context.Context, conn repository.Conn, ids []string) error {
 	now := time.Now().UTC()
 	for i, id := range ids {
 		_, err := bunConn(conn).NewUpdate().
@@ -233,7 +233,7 @@ func (s *subtask) UpdateOrderIndices(ctx context.Context, conn repository.DBConn
 	return nil
 }
 
-func (s *subtask) Delete(ctx context.Context, conn repository.DBConn, id string) error {
+func (s *subtask) Delete(ctx context.Context, conn repository.Conn, id string) error {
 	var deletedID int64
 	if err := bunConn(conn).NewDelete().
 		Model((*entity.SubTask)(nil)).

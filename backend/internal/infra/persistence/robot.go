@@ -32,7 +32,7 @@ func leaderStatusToEntity(ls *model.LeaderStatus) *uint {
 	return &v
 }
 
-func (r *robot) Create(ctx context.Context, conn repository.DBConn, rob model.Robot) (model.Robot, error) {
+func (r *robot) Create(ctx context.Context, conn repository.Conn, rob model.Robot) (model.Robot, error) {
 	var inserted entity.Robot
 	dbRob := entity.Robot{
 		IDNatural:            rob.IDNatural,
@@ -59,7 +59,7 @@ func (r *robot) Create(ctx context.Context, conn repository.DBConn, rob model.Ro
 	return r.GetByID(ctx, conn, inserted.IDNatural)
 }
 
-func (r *robot) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Robot, error) {
+func (r *robot) GetByID(ctx context.Context, conn repository.Conn, id string) (model.Robot, error) {
 	var dbRob entity.Robot
 	if err := bunConn(conn).NewSelect().
 		Model(&dbRob).
@@ -77,7 +77,7 @@ func (r *robot) GetByID(ctx context.Context, conn repository.DBConn, id string) 
 	return robotEntityToModel(dbRob), nil
 }
 
-func (r *robot) List(ctx context.Context, conn repository.DBConn, filter repository.RobotListFilter, limit, offset int) (model.Robots, int, error) {
+func (r *robot) List(ctx context.Context, conn repository.Conn, filter repository.RobotListFilter, limit, offset int) (model.Robots, int, error) {
 	var dbRobs []entity.Robot
 
 	sel := bunConn(conn).NewSelect().
@@ -117,7 +117,7 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 	return res, total, nil
 }
 
-func (r *robot) ListTypes(ctx context.Context, conn repository.DBConn, filter repository.RobotTypeFilter) ([]string, error) {
+func (r *robot) ListTypes(ctx context.Context, conn repository.Conn, filter repository.RobotTypeFilter) ([]string, error) {
 	var types []string
 	sel := bunConn(conn).NewSelect().
 		Model((*entity.Robot)(nil)).
@@ -158,7 +158,7 @@ func (r *robot) ListTypes(ctx context.Context, conn repository.DBConn, filter re
 	return types, nil
 }
 
-func (r *robot) Update(ctx context.Context, conn repository.DBConn, rob model.Robot) (model.Robot, error) {
+func (r *robot) Update(ctx context.Context, conn repository.Conn, rob model.Robot) (model.Robot, error) {
 	robotTypeStr := ""
 	if rob.RobotType != nil {
 		robotTypeStr = *rob.RobotType
@@ -198,7 +198,7 @@ func (r *robot) Update(ctx context.Context, conn repository.DBConn, rob model.Ro
 	return r.GetByID(ctx, conn, updated.IDNatural)
 }
 
-func (r *robot) Delete(ctx context.Context, conn repository.DBConn, id string) error {
+func (r *robot) Delete(ctx context.Context, conn repository.Conn, id string) error {
 	var deletedID int64
 	if err := bunConn(conn).NewDelete().
 		Model((*entity.Robot)(nil)).

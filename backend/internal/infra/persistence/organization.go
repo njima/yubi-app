@@ -15,7 +15,7 @@ type organization struct{}
 
 func NewOrganization() *organization { return &organization{} }
 
-func (o *organization) Create(ctx context.Context, conn repository.DBConn, org model.Organization) (model.Organization, error) {
+func (o *organization) Create(ctx context.Context, conn repository.Conn, org model.Organization) (model.Organization, error) {
 	var inserted entity.Organization
 
 	dbOrg := organizationModelToEntity(org)
@@ -30,7 +30,7 @@ func (o *organization) Create(ctx context.Context, conn repository.DBConn, org m
 	return organizationEntityToModel(inserted), nil
 }
 
-func (o *organization) GetByNaturalID(ctx context.Context, conn repository.DBConn, idNatural string) (model.Organization, error) {
+func (o *organization) GetByNaturalID(ctx context.Context, conn repository.Conn, idNatural string) (model.Organization, error) {
 	var dbOrg entity.Organization
 
 	if err := bunConn(conn).NewSelect().
@@ -46,7 +46,7 @@ func (o *organization) GetByNaturalID(ctx context.Context, conn repository.DBCon
 	return organizationEntityToModel(dbOrg), nil
 }
 
-func (o *organization) List(ctx context.Context, conn repository.DBConn, limit, offset int) (model.Organizations, int, error) {
+func (o *organization) List(ctx context.Context, conn repository.Conn, limit, offset int) (model.Organizations, int, error) {
 	var dbOrgs []entity.Organization
 
 	sel := bunConn(conn).NewSelect().
@@ -76,7 +76,7 @@ func (o *organization) List(ctx context.Context, conn repository.DBConn, limit, 
 	return orgs, total, nil
 }
 
-func (o *organization) Update(ctx context.Context, conn repository.DBConn, org model.Organization) (model.Organization, error) {
+func (o *organization) Update(ctx context.Context, conn repository.Conn, org model.Organization) (model.Organization, error) {
 	var updated entity.Organization
 
 	upd := bunConn(conn).NewUpdate().Model((*entity.Organization)(nil))
@@ -105,7 +105,7 @@ func (o *organization) Update(ctx context.Context, conn repository.DBConn, org m
 	return organizationEntityToModel(updated), nil
 }
 
-func (o *organization) Delete(ctx context.Context, conn repository.DBConn, idNatural string) error {
+func (o *organization) Delete(ctx context.Context, conn repository.Conn, idNatural string) error {
 	var deletedID int64
 	if err := bunConn(conn).NewDelete().
 		Model((*entity.Organization)(nil)).

@@ -6,7 +6,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type bunDBConn interface {
+type bunConnection interface {
 	NewInsert() *bun.InsertQuery
 	NewSelect() *bun.SelectQuery
 	NewRaw(query string, args ...any) *bun.RawQuery
@@ -14,8 +14,8 @@ type bunDBConn interface {
 	NewDelete() *bun.DeleteQuery
 }
 
-func bunConn(conn repository.DBConn) bunDBConn {
-	c, ok := conn.(bunDBConn)
+func bunConn(conn repository.Conn) bunConnection {
+	c, ok := conn.(bunConnection)
 	if !ok {
 		panic("persistence requires a bun-compatible database connection")
 	}

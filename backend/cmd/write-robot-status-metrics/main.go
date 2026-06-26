@@ -78,7 +78,7 @@ func run(ctx context.Context) error {
 	robotRepo := persistence.NewRobot()
 	robotUptimeDeltaRepo := cache.NewRobotUptimeDelta(redisClient)
 	robotUptimeMetricsRepo := persistence.NewRobotUptimeMetrics()
-	dataAccess := repository.NewDataAccess(db, persistence.NewTxRunner(db))
+	dataAccess := repository.NewDataAccess(db, persistence.NewTransactionRunner(db))
 
 	writer := usecase.NewRobotUptimeMetricsWriter(robotRepo, robotUptimeDeltaRepo, robotUptimeMetricsRepo, dataAccess, logger)
 

@@ -41,5 +41,5 @@ type OperatorYieldExportRow struct {
 }
 
 type OperatorYield interface {
-	Export(ctx context.Context, conn DBConn, filter OperatorYieldExportFilter) ([]OperatorYieldExportRow, error)
+	Export(ctx context.Context, conn Conn, filter OperatorYieldExportFilter) ([]OperatorYieldExportRow, error)
 }

@@ -51,8 +51,8 @@ type FleetTrendRow struct {
 }
 
 type Fleet interface {
-	GetSummary(ctx context.Context, conn DBConn) ([]FleetSummaryRow, error)
-	GetStats(ctx context.Context, conn DBConn, filter FleetStatsFilter) ([]FleetStatsRow, error)
-	GetUptimeStats(ctx context.Context, conn DBConn, filter FleetStatsFilter) ([]FleetUptimeStatsRow, error)
-	GetCollectionTrend(ctx context.Context, conn DBConn, filter FleetTrendFilter) ([]FleetTrendRow, error)
+	GetSummary(ctx context.Context, conn Conn) ([]FleetSummaryRow, error)
+	GetStats(ctx context.Context, conn Conn, filter FleetStatsFilter) ([]FleetStatsRow, error)
+	GetUptimeStats(ctx context.Context, conn Conn, filter FleetStatsFilter) ([]FleetUptimeStatsRow, error)
+	GetCollectionTrend(ctx context.Context, conn Conn, filter FleetTrendFilter) ([]FleetTrendRow, error)
 }

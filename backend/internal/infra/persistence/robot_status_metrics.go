@@ -19,7 +19,7 @@ func NewRobotUptimeMetrics() *robotUptimeMetrics {
 // so flushes that span an hour boundary write to the correct hour bucket.
 // On conflict, uptime_seconds is incremented rather than replaced, so partial
 // flushes within the same hour are additive.
-func (r *robotUptimeMetrics) WriteBatch(ctx context.Context, conn repository.DBConn, metrics []repository.RobotUptimeMetric) error {
+func (r *robotUptimeMetrics) WriteBatch(ctx context.Context, conn repository.Conn, metrics []repository.RobotUptimeMetric) error {
 	if len(metrics) == 0 {
 		return nil
 	}

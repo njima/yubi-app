@@ -14,7 +14,7 @@ type userSite struct{}
 
 func NewUserSite() *userSite { return &userSite{} }
 
-func (us *userSite) SetUserSites(ctx context.Context, conn repository.DBConn, userID string, organizationID string, siteIDs []string) error {
+func (us *userSite) SetUserSites(ctx context.Context, conn repository.Conn, userID string, organizationID string, siteIDs []string) error {
 	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.UserSiteAssignment)(nil)).
 		Where("user_id = ?", userID).

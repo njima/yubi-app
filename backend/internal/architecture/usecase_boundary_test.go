@@ -3,6 +3,7 @@ package architecture_test
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -48,7 +49,7 @@ func TestUsecaseDoesNotImportBun(t *testing.T) {
 	}
 }
 
-func TestUsecaseDoesNotDependOnRawDBConnOrTxRunner(t *testing.T) {
+func TestUsecaseDoesNotDependOnRawConnOrTransactionRunner(t *testing.T) {
 	backendRoot := filepath.Clean("../..")
 	usecaseRoot := filepath.Join(backendRoot, "internal", "usecase")
 
@@ -69,7 +70,7 @@ func TestUsecaseDoesNotDependOnRawDBConnOrTxRunner(t *testing.T) {
 			return err
 		}
 		text := string(content)
-		if !strings.Contains(text, "repository.DBConn") && !strings.Contains(text, "repository.TxRunner") {
+		if !containsRepositoryType(text, "Conn") && !containsRepositoryType(text, "TransactionRunner") {
 			return nil
 		}
 		rel, err := filepath.Rel(backendRoot, path)
@@ -83,8 +84,13 @@ func TestUsecaseDoesNotDependOnRawDBConnOrTxRunner(t *testing.T) {
 		t.Fatalf("walk backend/internal/usecase: %v", err)
 	}
 	if len(violations) > 0 {
-		t.Fatalf("usecase must depend on repository.DataAccess instead of raw DBConn/TxRunner; violations: %s", strings.Join(violations, ", "))
+		t.Fatalf("usecase must depend on repository.DataAccess instead of raw Conn/TransactionRunner; violations: %s", strings.Join(violations, ", "))
 	}
+}
+
+func containsRepositoryType(text, typeName string) bool {
+	pattern := regexp.MustCompile(`repository\.` + regexp.QuoteMeta(typeName) + `([^A-Za-z0-9_]|$)`)
+	return pattern.MatchString(text)
 }
 
 func TestUsecaseTransactionCallbacksUseLocalConn(t *testing.T) {

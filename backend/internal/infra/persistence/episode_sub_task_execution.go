@@ -14,7 +14,7 @@ type episodeSubTaskExecution struct{}
 
 func NewEpisodeSubTaskExecution() *episodeSubTaskExecution { return &episodeSubTaskExecution{} }
 
-func (e *episodeSubTaskExecution) Create(ctx context.Context, conn repository.DBConn, execution model.EpisodeSubTaskExecution) (model.EpisodeSubTaskExecution, error) {
+func (e *episodeSubTaskExecution) Create(ctx context.Context, conn repository.Conn, execution model.EpisodeSubTaskExecution) (model.EpisodeSubTaskExecution, error) {
 	var inserted entity.EpisodeSubTaskExecution
 	dbExe := entity.EpisodeSubTaskExecution{
 		IDNatural:        execution.IDNatural,
@@ -45,7 +45,7 @@ func (e *episodeSubTaskExecution) Create(ctx context.Context, conn repository.DB
 	), nil
 }
 
-func (e *episodeSubTaskExecution) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.EpisodeSubTaskExecution, error) {
+func (e *episodeSubTaskExecution) GetByID(ctx context.Context, conn repository.Conn, id string) (model.EpisodeSubTaskExecution, error) {
 	var dbExe entity.EpisodeSubTaskExecution
 
 	if err := bunConn(conn).NewSelect().
@@ -68,7 +68,7 @@ func (e *episodeSubTaskExecution) GetByID(ctx context.Context, conn repository.D
 	), nil
 }
 
-func (e *episodeSubTaskExecution) GetByEpisodeSubTaskIDs(ctx context.Context, conn repository.DBConn, ids []string) (model.EpisodeSubTaskExecutions, error) {
+func (e *episodeSubTaskExecution) GetByEpisodeSubTaskIDs(ctx context.Context, conn repository.Conn, ids []string) (model.EpisodeSubTaskExecutions, error) {
 	if len(ids) == 0 {
 		return model.EpisodeSubTaskExecutions{}, nil
 	}
@@ -102,7 +102,7 @@ func (e *episodeSubTaskExecution) GetByEpisodeSubTaskIDs(ctx context.Context, co
 	return result, nil
 }
 
-func (e *episodeSubTaskExecution) Update(ctx context.Context, conn repository.DBConn, execution model.EpisodeSubTaskExecution) error {
+func (e *episodeSubTaskExecution) Update(ctx context.Context, conn repository.Conn, execution model.EpisodeSubTaskExecution) error {
 	dbExe := entity.EpisodeSubTaskExecution{
 		ID:               execution.ID,
 		IDNatural:        execution.IDNatural,
@@ -123,7 +123,7 @@ func (e *episodeSubTaskExecution) Update(ctx context.Context, conn repository.DB
 	return nil
 }
 
-func (e *episodeSubTaskExecution) CountStartedBySubTaskID(ctx context.Context, conn repository.DBConn, episodeSubTaskID string) (int, error) {
+func (e *episodeSubTaskExecution) CountStartedBySubTaskID(ctx context.Context, conn repository.Conn, episodeSubTaskID string) (int, error) {
 	count, err := bunConn(conn).NewSelect().
 		Model((*entity.EpisodeSubTaskExecution)(nil)).
 		Where("episode_sub_task_id = ?", episodeSubTaskID).
@@ -137,7 +137,7 @@ func (e *episodeSubTaskExecution) CountStartedBySubTaskID(ctx context.Context, c
 	return count, nil
 }
 
-func (e *episodeSubTaskExecution) BulkCancelByEpisodeID(ctx context.Context, conn repository.DBConn, episodeID string) error {
+func (e *episodeSubTaskExecution) BulkCancelByEpisodeID(ctx context.Context, conn repository.Conn, episodeID string) error {
 	// Cancel all executions that belong to subtasks of the given episode
 	if _, err := bunConn(conn).NewUpdate().
 		Model((*entity.EpisodeSubTaskExecution)(nil)).

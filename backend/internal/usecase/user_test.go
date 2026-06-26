@@ -17,37 +17,37 @@ type stubUserRepo struct {
 	updateArg    model.User
 }
 
-func (s *stubUserRepo) Create(ctx context.Context, conn repository.DBConn, user model.User) (model.User, error) {
+func (s *stubUserRepo) Create(ctx context.Context, conn repository.Conn, user model.User) (model.User, error) {
 	return user, nil
 }
 
-func (s *stubUserRepo) Update(ctx context.Context, conn repository.DBConn, user model.User) (model.User, error) {
+func (s *stubUserRepo) Update(ctx context.Context, conn repository.Conn, user model.User) (model.User, error) {
 	s.updateCalled = true
 	s.updateArg = user
 	return user, nil
 }
 
-func (s *stubUserRepo) UpdateRole(ctx context.Context, conn repository.DBConn, idNatural string, role model.UserRole) (model.User, error) {
+func (s *stubUserRepo) UpdateRole(ctx context.Context, conn repository.Conn, idNatural string, role model.UserRole) (model.User, error) {
 	return model.User{}, nil
 }
 
-func (s *stubUserRepo) GetByNaturalID(ctx context.Context, conn repository.DBConn, idNatural string) (model.User, error) {
+func (s *stubUserRepo) GetByNaturalID(ctx context.Context, conn repository.Conn, idNatural string) (model.User, error) {
 	return s.existing, nil
 }
 
-func (s *stubUserRepo) ExistsByEmail(ctx context.Context, conn repository.DBConn, email string) (bool, error) {
+func (s *stubUserRepo) ExistsByEmail(ctx context.Context, conn repository.Conn, email string) (bool, error) {
 	return false, nil
 }
 
-func (s *stubUserRepo) ExistsByEmails(ctx context.Context, conn repository.DBConn, emails []string) (map[string]bool, error) {
+func (s *stubUserRepo) ExistsByEmails(ctx context.Context, conn repository.Conn, emails []string) (map[string]bool, error) {
 	return nil, nil
 }
 
-func (s *stubUserRepo) List(ctx context.Context, conn repository.DBConn, filter repository.UserListFilter, limit, offset int) (model.Users, int, error) {
+func (s *stubUserRepo) List(ctx context.Context, conn repository.Conn, filter repository.UserListFilter, limit, offset int) (model.Users, int, error) {
 	return nil, 0, nil
 }
 
-func (s *stubUserRepo) Delete(ctx context.Context, conn repository.DBConn, idNatural string) error {
+func (s *stubUserRepo) Delete(ctx context.Context, conn repository.Conn, idNatural string) error {
 	return nil
 }
 

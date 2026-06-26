@@ -18,7 +18,7 @@ type location struct{}
 
 func NewLocation() *location { return &location{} }
 
-func (l *location) Create(ctx context.Context, conn repository.DBConn, loc model.Location) (model.Location, error) {
+func (l *location) Create(ctx context.Context, conn repository.Conn, loc model.Location) (model.Location, error) {
 	var inserted entity.Location
 
 	dbLoc := locationModelToEntity(loc)
@@ -41,7 +41,7 @@ func (l *location) Create(ctx context.Context, conn repository.DBConn, loc model
 	return locationEntityToModel(inserted), nil
 }
 
-func (l *location) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Location, error) {
+func (l *location) GetByID(ctx context.Context, conn repository.Conn, id string) (model.Location, error) {
 	var dbLoc entity.Location
 	if err := bunConn(conn).NewSelect().
 		Model(&dbLoc).
@@ -57,7 +57,7 @@ func (l *location) GetByID(ctx context.Context, conn repository.DBConn, id strin
 	return locationEntityToModel(dbLoc), nil
 }
 
-func (l *location) List(ctx context.Context, conn repository.DBConn, filter repository.LocationListFilter, limit, offset int) (model.Locations, int, error) {
+func (l *location) List(ctx context.Context, conn repository.Conn, filter repository.LocationListFilter, limit, offset int) (model.Locations, int, error) {
 	var dbLocs []entity.Location
 
 	sel := bunConn(conn).NewSelect().
@@ -92,7 +92,7 @@ func (l *location) List(ctx context.Context, conn repository.DBConn, filter repo
 	return res, total, nil
 }
 
-func (l *location) Update(ctx context.Context, conn repository.DBConn, loc model.Location) (model.Location, error) {
+func (l *location) Update(ctx context.Context, conn repository.Conn, loc model.Location) (model.Location, error) {
 	var updated entity.Location
 
 	upd := bunConn(conn).NewUpdate().Model((*entity.Location)(nil))
@@ -127,7 +127,7 @@ func (l *location) Update(ctx context.Context, conn repository.DBConn, loc model
 	return locationEntityToModel(updated), nil
 }
 
-func (l *location) Delete(ctx context.Context, conn repository.DBConn, id string) error {
+func (l *location) Delete(ctx context.Context, conn repository.Conn, id string) error {
 	var deletedID int64
 	if err := bunConn(conn).NewDelete().
 		Model((*entity.Location)(nil)).
@@ -142,7 +142,7 @@ func (l *location) Delete(ctx context.Context, conn repository.DBConn, id string
 	return nil
 }
 
-func fetchSiteName(ctx context.Context, conn repository.DBConn, siteID string) (string, error) {
+func fetchSiteName(ctx context.Context, conn repository.Conn, siteID string) (string, error) {
 	var site entity.Site
 	if err := bunConn(conn).NewSelect().
 		Model(&site).

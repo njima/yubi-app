@@ -19,7 +19,7 @@ type episode struct{}
 
 func NewEpisode() *episode { return &episode{} }
 
-func (e *episode) Create(ctx context.Context, conn repository.DBConn, ep model.Episode) (model.Episode, error) {
+func (e *episode) Create(ctx context.Context, conn repository.Conn, ep model.Episode) (model.Episode, error) {
 	var inserted entity.Episode
 
 	dbEp := entity.Episode{
@@ -55,7 +55,7 @@ func (e *episode) Create(ctx context.Context, conn repository.DBConn, ep model.E
 	return bunconv.EntityToEpisodeModel(inserted, taskVersion), nil
 }
 
-func (e *episode) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Episode, error) {
+func (e *episode) GetByID(ctx context.Context, conn repository.Conn, id string) (model.Episode, error) {
 	var d entity.Episode
 	if err := bunConn(conn).NewSelect().
 		Model(&d).
@@ -91,7 +91,7 @@ func (e *episode) GetByID(ctx context.Context, conn repository.DBConn, id string
 // Returns (nil, nil) if the robot has no episodes at all. The hot path (the
 // robot has a Recording episode) is one indexed lookup; the cold path runs
 // up to four indexed lookups and only fires on idle robots.
-func (e *episode) GetCurrentRobotEpisode(ctx context.Context, conn repository.DBConn, robotID string) (*model.Episode, error) {
+func (e *episode) GetCurrentRobotEpisode(ctx context.Context, conn repository.Conn, robotID string) (*model.Episode, error) {
 	type candidate struct {
 		status    model.EpisodeStatus
 		orderExpr string
@@ -185,7 +185,7 @@ func applyStartedAtFilter(sel *bun.SelectQuery, filter repository.EpisodeListFil
 	return sel
 }
 
-func (e *episode) List(ctx context.Context, conn repository.DBConn, filter repository.EpisodeListFilter, limit, offset int) (model.Episodes, int, error) {
+func (e *episode) List(ctx context.Context, conn repository.Conn, filter repository.EpisodeListFilter, limit, offset int) (model.Episodes, int, error) {
 	var ds []entity.Episode
 	sel := bunConn(conn).NewSelect().
 		Model(&ds).
@@ -293,7 +293,7 @@ func (e *episode) List(ctx context.Context, conn repository.DBConn, filter repos
 	return res, total, nil
 }
 
-func (e *episode) Update(ctx context.Context, conn repository.DBConn, ep model.Episode) (model.Episode, error) {
+func (e *episode) Update(ctx context.Context, conn repository.Conn, ep model.Episode) (model.Episode, error) {
 	dbEp := entity.Episode{
 		IDNatural:        ep.IDNatural,
 		TaskVersionID:    ep.TaskVersionID,
@@ -331,7 +331,7 @@ func (e *episode) Update(ctx context.Context, conn repository.DBConn, ep model.E
 	return bunconv.EntityToEpisodeModel(updated, taskVersion), nil
 }
 
-func (e *episode) Delete(ctx context.Context, conn repository.DBConn, id string) error {
+func (e *episode) Delete(ctx context.Context, conn repository.Conn, id string) error {
 	var deletedID int64
 	if err := bunConn(conn).NewDelete().
 		Model((*entity.Episode)(nil)).
@@ -346,7 +346,7 @@ func (e *episode) Delete(ctx context.Context, conn repository.DBConn, id string)
 	return nil
 }
 
-func (e *episode) Export(ctx context.Context, conn repository.DBConn, filter repository.EpisodeExportFilter) ([]repository.EpisodeExportRow, error) {
+func (e *episode) Export(ctx context.Context, conn repository.Conn, filter repository.EpisodeExportFilter) ([]repository.EpisodeExportRow, error) {
 	type exportRow struct {
 		IDNatural     string              `bun:"id_natural"`
 		TaskID        string              `bun:"task_id"`
@@ -417,7 +417,7 @@ func (e *episode) Export(ctx context.Context, conn repository.DBConn, filter rep
 	return result, nil
 }
 
-func (e *episode) SumDurationByTaskID(ctx context.Context, conn repository.DBConn, taskID string) (int64, error) {
+func (e *episode) SumDurationByTaskID(ctx context.Context, conn repository.Conn, taskID string) (int64, error) {
 	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil || orgID == "" {
 		return 0, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))

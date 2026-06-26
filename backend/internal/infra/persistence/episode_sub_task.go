@@ -13,7 +13,7 @@ type episodeSubTask struct{}
 
 func NewEpisodeSubTask() *episodeSubTask { return &episodeSubTask{} }
 
-func (e *episodeSubTask) BulkCreate(ctx context.Context, conn repository.DBConn, subtasks []model.EpisodeSubTask) error {
+func (e *episodeSubTask) BulkCreate(ctx context.Context, conn repository.Conn, subtasks []model.EpisodeSubTask) error {
 	if len(subtasks) == 0 {
 		return nil
 	}
@@ -38,7 +38,7 @@ func (e *episodeSubTask) BulkCreate(ctx context.Context, conn repository.DBConn,
 	return nil
 }
 
-func (e *episodeSubTask) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.EpisodeSubTask, error) {
+func (e *episodeSubTask) GetByID(ctx context.Context, conn repository.Conn, id string) (model.EpisodeSubTask, error) {
 	var dbSt entity.EpisodeSubTask
 
 	if err := bunConn(conn).NewSelect().
@@ -60,7 +60,7 @@ func (e *episodeSubTask) GetByID(ctx context.Context, conn repository.DBConn, id
 	), nil
 }
 
-func (e *episodeSubTask) GetByEpisodeID(ctx context.Context, conn repository.DBConn, episodeID string) (model.EpisodeSubTasks, error) {
+func (e *episodeSubTask) GetByEpisodeID(ctx context.Context, conn repository.Conn, episodeID string) (model.EpisodeSubTasks, error) {
 	var dbSubtasks []entity.EpisodeSubTask
 
 	if err := bunConn(conn).NewSelect().
@@ -88,7 +88,7 @@ func (e *episodeSubTask) GetByEpisodeID(ctx context.Context, conn repository.DBC
 	return result, nil
 }
 
-func (e *episodeSubTask) Update(ctx context.Context, conn repository.DBConn, subtask model.EpisodeSubTask) error {
+func (e *episodeSubTask) Update(ctx context.Context, conn repository.Conn, subtask model.EpisodeSubTask) error {
 	dbSt := entity.EpisodeSubTask{
 		ID:               subtask.ID,
 		IDNatural:        subtask.IDNatural,
@@ -108,7 +108,7 @@ func (e *episodeSubTask) Update(ctx context.Context, conn repository.DBConn, sub
 	return nil
 }
 
-func (e *episodeSubTask) BulkCancelByEpisodeID(ctx context.Context, conn repository.DBConn, episodeID string) error {
+func (e *episodeSubTask) BulkCancelByEpisodeID(ctx context.Context, conn repository.Conn, episodeID string) error {
 	if _, err := bunConn(conn).NewUpdate().
 		Model((*entity.EpisodeSubTask)(nil)).
 		Set("collection_status = ?", model.SubTaskCollectionStatusCancelled).

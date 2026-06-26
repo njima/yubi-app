@@ -61,6 +61,45 @@ func TestRepositoryInterfacesDoNotDependOnImplementations(t *testing.T) {
 	})
 }
 
+func TestRepositoryConnectionAbstractionsUseStorageAgnosticNames(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	repositoryRoot := filepath.Join(backendRoot, "internal", "repository")
+
+	var violations []string
+	err := filepath.WalkDir(repositoryRoot, func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) != ".go" {
+			return nil
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		text := string(content)
+		if !strings.Contains(text, "DBConn") && !strings.Contains(text, "TxRunner") {
+			return nil
+		}
+		rel, err := filepath.Rel(backendRoot, path)
+		if err != nil {
+			return err
+		}
+		violations = append(violations, rel)
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walk internal/repository: %v", err)
+	}
+	if len(violations) > 0 {
+		t.Fatalf("repository connection abstractions should use storage-agnostic names: %s", strings.Join(violations, ", "))
+	}
+}
+
 func TestAuthzDoesNotDependOnHTTPBoundary(t *testing.T) {
 	assertNoForbiddenImports(t, "internal/domain/authz", []string{
 		"internal/shared/requestctx",

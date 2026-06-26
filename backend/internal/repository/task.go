@@ -51,19 +51,19 @@ type TaskActuals struct {
 }
 
 type Task interface {
-	Create(ctx context.Context, conn DBConn, t model.Task) (model.Task, error)
-	Exists(ctx context.Context, conn DBConn, id string) (bool, error)
-	GetByID(ctx context.Context, conn DBConn, id string) (model.Task, error)
-	List(ctx context.Context, conn DBConn, filter TaskListFilter, limit, offset int) (model.Tasks, int, error)
-	Update(ctx context.Context, conn DBConn, t model.Task) (model.Task, error)
-	Delete(ctx context.Context, conn DBConn, id string) error
-	ListByIDs(ctx context.Context, conn DBConn, ids []string) (model.Tasks, error)
-	GetFilteredTasks(ctx context.Context, conn DBConn, filter TaskSummaryFilter) ([]FilteredTask, error)
-	GetTargetsByTaskIDs(ctx context.Context, conn DBConn, taskIDs []string) (map[string]TaskTargets, error)
-	GetActualsByTaskIDs(ctx context.Context, conn DBConn, taskIDs []string) (map[string]TaskActuals, error)
-	FindExistingNames(ctx context.Context, conn DBConn, names []string) (map[string]bool, error)
-	BulkCreate(ctx context.Context, conn DBConn, items []BulkTaskItem) ([]model.Task, error)
-	Export(ctx context.Context, conn DBConn, filter TaskListFilter) ([]TaskExportRow, error)
+	Create(ctx context.Context, conn Conn, t model.Task) (model.Task, error)
+	Exists(ctx context.Context, conn Conn, id string) (bool, error)
+	GetByID(ctx context.Context, conn Conn, id string) (model.Task, error)
+	List(ctx context.Context, conn Conn, filter TaskListFilter, limit, offset int) (model.Tasks, int, error)
+	Update(ctx context.Context, conn Conn, t model.Task) (model.Task, error)
+	Delete(ctx context.Context, conn Conn, id string) error
+	ListByIDs(ctx context.Context, conn Conn, ids []string) (model.Tasks, error)
+	GetFilteredTasks(ctx context.Context, conn Conn, filter TaskSummaryFilter) ([]FilteredTask, error)
+	GetTargetsByTaskIDs(ctx context.Context, conn Conn, taskIDs []string) (map[string]TaskTargets, error)
+	GetActualsByTaskIDs(ctx context.Context, conn Conn, taskIDs []string) (map[string]TaskActuals, error)
+	FindExistingNames(ctx context.Context, conn Conn, names []string) (map[string]bool, error)
+	BulkCreate(ctx context.Context, conn Conn, items []BulkTaskItem) ([]model.Task, error)
+	Export(ctx context.Context, conn Conn, filter TaskListFilter) ([]TaskExportRow, error)
 }
 
 // TaskExportRow holds the data for a single row in the task export CSV.
