@@ -20,13 +20,7 @@ func (c *controller) ListOrganizations(ctx context.Context, request openapi.List
 
 	respOrgs := make([]openapi.OrganizationResponse, 0, len(orgs))
 	for _, o := range orgs {
-		respOrgs = append(respOrgs, openapi.OrganizationResponse{
-			OrganizationId: o.IDNatural,
-			DisplayName:    o.Name,
-			Description:    o.Description,
-			CreatedAt:      &o.CreatedAt,
-			UpdatedAt:      o.UpdatedAt,
-		})
+		respOrgs = append(respOrgs, organizationResponse(*o))
 	}
 
 	return openapi.ListOrganizations200JSONResponse{
@@ -54,13 +48,7 @@ func (c *controller) CreateOrganization(ctx context.Context, request openapi.Cre
 		return nil, err
 	}
 
-	return openapi.CreateOrganization201JSONResponse{
-		OrganizationId: org.IDNatural,
-		DisplayName:    org.Name,
-		Description:    org.Description,
-		CreatedAt:      &org.CreatedAt,
-		UpdatedAt:      org.UpdatedAt,
-	}, nil
+	return openapi.CreateOrganization201JSONResponse(organizationResponse(org)), nil
 }
 
 func (c *controller) DeleteOrganizationById(ctx context.Context, request openapi.DeleteOrganizationByIdRequestObject) (openapi.DeleteOrganizationByIdResponseObject, error) {
@@ -76,13 +64,7 @@ func (c *controller) GetOrganizationById(ctx context.Context, request openapi.Ge
 		return nil, err
 	}
 
-	return openapi.GetOrganizationById200JSONResponse{
-		OrganizationId: org.IDNatural,
-		DisplayName:    org.Name,
-		Description:    org.Description,
-		CreatedAt:      &org.CreatedAt,
-		UpdatedAt:      org.UpdatedAt,
-	}, nil
+	return openapi.GetOrganizationById200JSONResponse(organizationResponse(org)), nil
 }
 
 func (c *controller) UpdateOrganizationById(ctx context.Context, request openapi.UpdateOrganizationByIdRequestObject) (openapi.UpdateOrganizationByIdResponseObject, error) {
@@ -108,11 +90,5 @@ func (c *controller) UpdateOrganizationById(ctx context.Context, request openapi
 		return nil, err
 	}
 
-	return openapi.UpdateOrganizationById200JSONResponse{
-		OrganizationId: org.IDNatural,
-		DisplayName:    org.Name,
-		Description:    org.Description,
-		CreatedAt:      &org.CreatedAt,
-		UpdatedAt:      org.UpdatedAt,
-	}, nil
+	return openapi.UpdateOrganizationById200JSONResponse(organizationResponse(org)), nil
 }

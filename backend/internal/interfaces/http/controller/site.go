@@ -24,16 +24,7 @@ func (c *controller) ListSites(ctx context.Context, request openapi.ListSitesReq
 
 	result := make([]openapi.Site, 0, len(sites))
 	for _, s := range sites {
-		site := openapi.Site{
-			Id:             s.IDNatural,
-			Name:           s.Name,
-			OrganizationId: s.OrganizationID,
-			CreatedAt:      &s.CreatedAt,
-		}
-		if s.UpdatedAt != nil {
-			site.UpdatedAt = s.UpdatedAt
-		}
-		result = append(result, site)
+		result = append(result, siteResponse(*s))
 	}
 
 	return openapi.ListSites200JSONResponse{
@@ -59,13 +50,7 @@ func (c *controller) CreateSite(ctx context.Context, request openapi.CreateSiteR
 		return nil, err
 	}
 
-	return openapi.CreateSite201JSONResponse{
-		Id:             site.IDNatural,
-		Name:           site.Name,
-		OrganizationId: site.OrganizationID,
-		CreatedAt:      &site.CreatedAt,
-		UpdatedAt:      site.UpdatedAt,
-	}, nil
+	return openapi.CreateSite201JSONResponse(siteResponse(site)), nil
 }
 
 func (c *controller) GetSiteById(ctx context.Context, request openapi.GetSiteByIdRequestObject) (openapi.GetSiteByIdResponseObject, error) {
@@ -74,13 +59,7 @@ func (c *controller) GetSiteById(ctx context.Context, request openapi.GetSiteByI
 		return nil, err
 	}
 
-	return openapi.GetSiteById200JSONResponse{
-		Id:             site.IDNatural,
-		Name:           site.Name,
-		OrganizationId: site.OrganizationID,
-		CreatedAt:      &site.CreatedAt,
-		UpdatedAt:      site.UpdatedAt,
-	}, nil
+	return openapi.GetSiteById200JSONResponse(siteResponse(site)), nil
 }
 
 func (c *controller) UpdateSiteById(ctx context.Context, request openapi.UpdateSiteByIdRequestObject) (openapi.UpdateSiteByIdResponseObject, error) {
@@ -96,13 +75,7 @@ func (c *controller) UpdateSiteById(ctx context.Context, request openapi.UpdateS
 		return nil, err
 	}
 
-	return openapi.UpdateSiteById200JSONResponse{
-		Id:             site.IDNatural,
-		Name:           site.Name,
-		OrganizationId: site.OrganizationID,
-		CreatedAt:      &site.CreatedAt,
-		UpdatedAt:      site.UpdatedAt,
-	}, nil
+	return openapi.UpdateSiteById200JSONResponse(siteResponse(site)), nil
 }
 
 func (c *controller) DeleteSiteById(ctx context.Context, request openapi.DeleteSiteByIdRequestObject) (openapi.DeleteSiteByIdResponseObject, error) {
