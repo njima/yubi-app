@@ -12,6 +12,8 @@ import { z } from "zod";
 import { schemas } from "@/lib/api/generated/api";
 
 import { type Task } from "../schemas";
+import { taskCompletionTrendQueryKeys } from "./use-task-completion-trend-query";
+import { taskSummaryQueryKeys } from "./use-task-summary-query";
 import { tasksQueryKeys } from "./use-tasks-query";
 
 type TaskCreateInput = z.infer<typeof schemas.TaskCreate>;
@@ -52,6 +54,12 @@ export function useCreateTaskMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: tasksQueryKeys.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskSummaryQueryKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskCompletionTrendQueryKeys.all,
       });
       toast.success("Task created successfully");
     },

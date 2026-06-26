@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { fleetSummaryQueryKeys } from "./use-fleet-summary-query";
+import { robotTypesQueryKeys } from "./use-robot-types-query";
 import { robotsQueryKeys } from "./use-robots-query";
 
 /**
@@ -38,12 +39,18 @@ export function useDeleteRobotMutation() {
         throw new Error(`Failed to delete robot: ${response.statusText}`);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: robotsQueryKeys.lists(),
       });
       queryClient.invalidateQueries({
+        queryKey: robotsQueryKeys.detail(variables.robotId),
+      });
+      queryClient.invalidateQueries({
         queryKey: fleetSummaryQueryKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: robotTypesQueryKeys.all,
       });
       toast.success("Robot deleted successfully");
     },

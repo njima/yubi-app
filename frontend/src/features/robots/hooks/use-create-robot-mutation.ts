@@ -12,6 +12,7 @@ import { z } from "zod";
 import { schemas } from "@/lib/api/generated/api";
 
 import { fleetSummaryQueryKeys } from "./use-fleet-summary-query";
+import { robotTypesQueryKeys } from "./use-robot-types-query";
 import { robotsQueryKeys } from "./use-robots-query";
 
 type RobotCreate = z.infer<typeof schemas.RobotCreate>;
@@ -47,6 +48,9 @@ export function useCreateRobotMutation() {
       });
       queryClient.invalidateQueries({
         queryKey: fleetSummaryQueryKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: robotTypesQueryKeys.all,
       });
       toast.success("Robot created successfully");
     },

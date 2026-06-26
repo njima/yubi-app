@@ -51,12 +51,12 @@ export function useUpdateEpisodeMutation() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: episodesQueryKeys.lists(),
       });
       queryClient.invalidateQueries({
-        queryKey: episodesQueryKeys.details(),
+        queryKey: episodesQueryKeys.detail(variables.episodeId),
       });
       toast.success("Episode updated successfully");
     },

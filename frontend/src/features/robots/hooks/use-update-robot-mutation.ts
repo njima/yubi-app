@@ -12,6 +12,7 @@ import { z } from "zod";
 import { schemas } from "@/lib/api/generated/api";
 
 import { fleetSummaryQueryKeys } from "./use-fleet-summary-query";
+import { robotTypesQueryKeys } from "./use-robot-types-query";
 import { robotsQueryKeys } from "./use-robots-query";
 
 type RobotUpdate = z.infer<typeof schemas.RobotUpdate>;
@@ -48,12 +49,18 @@ export function useUpdateRobotMutation() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: robotsQueryKeys.all,
+        queryKey: robotsQueryKeys.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: robotsQueryKeys.detail(variables.robotId),
       });
       queryClient.invalidateQueries({
         queryKey: fleetSummaryQueryKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: robotTypesQueryKeys.all,
       });
       toast.success("Robot updated successfully");
     },
