@@ -56,6 +56,9 @@ func TestRepositoryInterfacesDoNotDependOnImplementations(t *testing.T) {
 		"internal/stack",
 		"internal/usecase",
 	})
+	assertNoForbiddenExternalImports(t, "internal/repository", []string{
+		"github.com/uptrace/bun",
+	})
 }
 
 func TestAuthzDoesNotDependOnHTTPBoundary(t *testing.T) {
@@ -277,7 +280,7 @@ func assertNoForbiddenExternalImports(t *testing.T, packageDir string, forbidden
 		t.Fatalf("walk %s: %v", packageDir, err)
 	}
 	if len(violations) > 0 {
-		t.Fatalf("%s must not import forbidden HTTP boundary packages: %s", packageDir, strings.Join(violations, ", "))
+		t.Fatalf("%s must not import forbidden external packages: %s", packageDir, strings.Join(violations, ", "))
 	}
 }
 

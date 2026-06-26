@@ -48,7 +48,7 @@ func (r *robot) Create(ctx context.Context, conn repository.DBConn, rob model.Ro
 		RobotConfig:          rob.RobotConfig,
 	}
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbRob).
 		Returning("id_natural").
 		Scan(ctx, &inserted); err != nil {
@@ -61,7 +61,7 @@ func (r *robot) Create(ctx context.Context, conn repository.DBConn, rob model.Ro
 
 func (r *robot) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Robot, error) {
 	var dbRob entity.Robot
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbRob).
 		Relation("Organization").
 		Relation("Location").
@@ -80,7 +80,7 @@ func (r *robot) GetByID(ctx context.Context, conn repository.DBConn, id string) 
 func (r *robot) List(ctx context.Context, conn repository.DBConn, filter repository.RobotListFilter, limit, offset int) (model.Robots, int, error) {
 	var dbRobs []entity.Robot
 
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		Model(&dbRobs).
 		Relation("Organization").
 		Relation("Location").
@@ -98,7 +98,7 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 	}
 
 	var total int
-	countSel := conn.NewSelect().
+	countSel := bunConn(conn).NewSelect().
 		Model((*entity.Robot)(nil)).
 		ColumnExpr("COUNT(*)")
 
@@ -119,7 +119,7 @@ func (r *robot) List(ctx context.Context, conn repository.DBConn, filter reposit
 
 func (r *robot) ListTypes(ctx context.Context, conn repository.DBConn, filter repository.RobotTypeFilter) ([]string, error) {
 	var types []string
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		Model((*entity.Robot)(nil)).
 		ColumnExpr("DISTINCT robot_type").
 		Where("robot_type != ''")
@@ -182,7 +182,7 @@ func (r *robot) Update(ctx context.Context, conn repository.DBConn, rob model.Ro
 	}
 
 	var updated entity.Robot
-	if err := conn.NewUpdate().
+	if err := bunConn(conn).NewUpdate().
 		Model(&dbRob).
 		Where("id_natural = ?", rob.IDNatural).
 		ExcludeColumn("id", "id_natural", "organization_id", "created_at").
@@ -200,7 +200,7 @@ func (r *robot) Update(ctx context.Context, conn repository.DBConn, rob model.Ro
 
 func (r *robot) Delete(ctx context.Context, conn repository.DBConn, id string) error {
 	var deletedID int64
-	if err := conn.NewDelete().
+	if err := bunConn(conn).NewDelete().
 		Model((*entity.Robot)(nil)).
 		Where("id_natural = ?", id).
 		Returning("id").

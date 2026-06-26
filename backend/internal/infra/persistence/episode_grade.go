@@ -60,7 +60,7 @@ func (g *episodeGrade) GetAverageMap(ctx context.Context, conn repository.DBConn
 	}
 
 	var rows []aggRow
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model((*entity.EpisodeGrade)(nil)).
 		ColumnExpr("episode_id").
 		ColumnExpr("AVG(grade) AS average").
@@ -85,7 +85,7 @@ func (g *episodeGrade) Upsert(ctx context.Context, conn repository.DBConn, grade
 	dbGrade := episodeGradeModelToEntity(grade)
 
 	var inserted entity.EpisodeGrade
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbGrade).
 		On("CONFLICT (episode_id, user_id) DO UPDATE").
 		Set("grade = EXCLUDED.grade").
@@ -102,7 +102,7 @@ func (g *episodeGrade) Upsert(ctx context.Context, conn repository.DBConn, grade
 
 func (g *episodeGrade) GetMyGrade(ctx context.Context, conn repository.DBConn, episodeID, userID string) (*model.EpisodeGrade, error) {
 	var row entity.EpisodeGrade
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&row).
 		Where("episode_id = ?", episodeID).
 		Where("user_id = ?", userID).
@@ -124,7 +124,7 @@ func (g *episodeGrade) ListByEpisodeID(ctx context.Context, conn repository.DBCo
 	}
 
 	var rows []joinedRow
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model((*entity.EpisodeGrade)(nil)).
 		ColumnExpr("eg.*").
 		ColumnExpr(`"user".name AS user_name`).
@@ -138,7 +138,7 @@ func (g *episodeGrade) ListByEpisodeID(ctx context.Context, conn repository.DBCo
 	}
 
 	var total int
-	count, err := conn.NewSelect().
+	count, err := bunConn(conn).NewSelect().
 		Model((*entity.EpisodeGrade)(nil)).
 		Where("eg.episode_id = ?", episodeID).
 		Count(ctx)

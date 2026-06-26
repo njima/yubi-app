@@ -15,7 +15,7 @@ type userSite struct{}
 func NewUserSite() *userSite { return &userSite{} }
 
 func (us *userSite) SetUserSites(ctx context.Context, conn repository.DBConn, userID string, organizationID string, siteIDs []string) error {
-	if _, err := conn.NewDelete().
+	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.UserSiteAssignment)(nil)).
 		Where("user_id = ?", userID).
 		Exec(ctx); err != nil {
@@ -32,7 +32,7 @@ func (us *userSite) SetUserSites(ctx context.Context, conn repository.DBConn, us
 		OrganizationID string `bun:"organization_id"`
 	}
 	var sites []siteRow
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		TableExpr("site").
 		Column("id_natural", "organization_id").
 		Where("id_natural IN (?)", bun.In(siteIDs)).
@@ -61,7 +61,7 @@ func (us *userSite) SetUserSites(ctx context.Context, conn repository.DBConn, us
 			OrganizationID: siteOrgID,
 		})
 	}
-	if _, err := conn.NewInsert().Model(&rows).Exec(ctx); err != nil {
+	if _, err := bunConn(conn).NewInsert().Model(&rows).Exec(ctx); err != nil {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to insert user site assignments: %v", err))
 	}
 	return nil

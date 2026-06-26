@@ -37,7 +37,7 @@ func (e *episode) Create(ctx context.Context, conn repository.DBConn, ep model.E
 		ParameterValues:  bunconv.ParameterValuesToJSON(ep.ParameterValues),
 	}
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbEp).
 		Returning("*").
 		Scan(ctx, &inserted); err != nil {
@@ -45,7 +45,7 @@ func (e *episode) Create(ctx context.Context, conn repository.DBConn, ep model.E
 	}
 
 	var taskVersion entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&taskVersion).
 		Where("id_natural = ?", inserted.TaskVersionID).
 		Scan(ctx); err != nil {
@@ -57,7 +57,7 @@ func (e *episode) Create(ctx context.Context, conn repository.DBConn, ep model.E
 
 func (e *episode) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Episode, error) {
 	var d entity.Episode
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&d).
 		Where("id_natural = ?", id).
 		Scan(ctx); err != nil {
@@ -68,7 +68,7 @@ func (e *episode) GetByID(ctx context.Context, conn repository.DBConn, id string
 	}
 
 	var taskVersion entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&taskVersion).
 		Where("id_natural = ?", d.TaskVersionID).
 		Scan(ctx); err != nil {
@@ -105,7 +105,7 @@ func (e *episode) GetCurrentRobotEpisode(ctx context.Context, conn repository.DB
 	}
 	for _, c := range candidates {
 		var d entity.Episode
-		q := conn.NewSelect().
+		q := bunConn(conn).NewSelect().
 			Model(&d).
 			Where("e.robot_id = ?", robotID).
 			Where("e.collection_status = ?", int(c.status))
@@ -121,7 +121,7 @@ func (e *episode) GetCurrentRobotEpisode(ctx context.Context, conn repository.DB
 		}
 
 		var taskVersion entity.TaskVersion
-		if err := conn.NewSelect().
+		if err := bunConn(conn).NewSelect().
 			Model(&taskVersion).
 			Where("id_natural = ?", d.TaskVersionID).
 			Scan(ctx); err != nil {
@@ -187,7 +187,7 @@ func applyStartedAtFilter(sel *bun.SelectQuery, filter repository.EpisodeListFil
 
 func (e *episode) List(ctx context.Context, conn repository.DBConn, filter repository.EpisodeListFilter, limit, offset int) (model.Episodes, int, error) {
 	var ds []entity.Episode
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		Model(&ds).
 		Limit(limit).
 		Offset(offset)
@@ -230,7 +230,7 @@ func (e *episode) List(ctx context.Context, conn repository.DBConn, filter repos
 	}
 
 	var total int
-	countSel := conn.NewSelect().
+	countSel := bunConn(conn).NewSelect().
 		Model((*entity.Episode)(nil)).
 		ColumnExpr("COUNT(*)")
 
@@ -267,7 +267,7 @@ func (e *episode) List(ctx context.Context, conn repository.DBConn, filter repos
 	}
 
 	var taskVersions []entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&taskVersions).
 		Where("id_natural IN (?)", bun.In(taskVersionIDs)).
 		Scan(ctx); err != nil {
@@ -308,7 +308,7 @@ func (e *episode) Update(ctx context.Context, conn repository.DBConn, ep model.E
 	}
 
 	var updated entity.Episode
-	if err := conn.NewUpdate().
+	if err := bunConn(conn).NewUpdate().
 		Model(&dbEp).
 		Where("id_natural = ?", ep.IDNatural).
 		ExcludeColumn("id", "id_natural", "organization_id", "created_at", "parameter_values").
@@ -321,7 +321,7 @@ func (e *episode) Update(ctx context.Context, conn repository.DBConn, ep model.E
 	}
 
 	var taskVersion entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&taskVersion).
 		Where("id_natural = ?", updated.TaskVersionID).
 		Scan(ctx); err != nil {
@@ -333,7 +333,7 @@ func (e *episode) Update(ctx context.Context, conn repository.DBConn, ep model.E
 
 func (e *episode) Delete(ctx context.Context, conn repository.DBConn, id string) error {
 	var deletedID int64
-	if err := conn.NewDelete().
+	if err := bunConn(conn).NewDelete().
 		Model((*entity.Episode)(nil)).
 		Where("id_natural = ?", id).
 		Returning("id").
@@ -368,7 +368,7 @@ func (e *episode) Export(ctx context.Context, conn repository.DBConn, filter rep
 		return nil, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "organization context required"))
 	}
 
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		TableExpr("episode AS e").
 		Join("JOIN task_version AS tv ON tv.id_natural = e.task_version_id").
 		ColumnExpr("e.id_natural, tv.task_id, e.task_version_id, e.robot_id, e.location_id, e.user_id, e.recorded_by, e.collection_status, e.started_at, e.finished_at, e.created_at").
@@ -425,7 +425,7 @@ func (e *episode) SumDurationByTaskID(ctx context.Context, conn repository.DBCon
 
 	var total int64
 
-	err = conn.NewSelect().
+	err = bunConn(conn).NewSelect().
 		TableExpr("episode AS e").
 		Join("JOIN task_version AS tv ON tv.id_natural = e.task_version_id").
 		ColumnExpr("COALESCE(SUM(EXTRACT(EPOCH FROM (e.finished_at - e.started_at))::bigint), 0)").

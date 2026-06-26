@@ -131,7 +131,7 @@ func applySubTaskListFilters(sel *bun.SelectQuery, filter repository.SubTaskList
 // map. bun only consults a NamedArgAppender when args has length 1, so the
 // whole map must be passed as the sole argument:
 //
-//	conn.NewRaw("SELECT ... WHERE id = ?id", namedSQLArgs{"id": x})
+//	bunConn(conn).NewRaw("SELECT ... WHERE id = ?id", namedSQLArgs{"id": x})
 //
 // Prefer over positional ? when a query has many parameters or reuses the
 // same value multiple times.

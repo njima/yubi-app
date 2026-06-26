@@ -19,7 +19,7 @@ func NewTaskTag() *taskTag { return &taskTag{} }
 
 func (t *taskTag) ListCategoryTypes(ctx context.Context, conn repository.DBConn) (model.TaskCategoryTypes, error) {
 	var rows []entity.TaskCategoryType
-	if err := conn.NewSelect().Model(&rows).Order("name ASC").Scan(ctx); err != nil {
+	if err := bunConn(conn).NewSelect().Model(&rows).Order("name ASC").Scan(ctx); err != nil {
 		return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to list task category types: %v", err))
 	}
 	result := make(model.TaskCategoryTypes, 0, len(rows))
@@ -31,7 +31,7 @@ func (t *taskTag) ListCategoryTypes(ctx context.Context, conn repository.DBConn)
 
 func (t *taskTag) GetCategoryTypeByID(ctx context.Context, conn repository.DBConn, id string) (model.TaskCategoryType, error) {
 	var row entity.TaskCategoryType
-	if err := conn.NewSelect().Model(&row).Where("id = ?", id).Scan(ctx); err != nil {
+	if err := bunConn(conn).NewSelect().Model(&row).Where("id = ?", id).Scan(ctx); err != nil {
 		if err == sql.ErrNoRows {
 			return model.TaskCategoryType{}, apperror.NewError(apperror.NewMessage(apperror.CodeBadRequest, "task category type not found: id=%s", id))
 		}
@@ -42,7 +42,7 @@ func (t *taskTag) GetCategoryTypeByID(ctx context.Context, conn repository.DBCon
 
 func (t *taskTag) ListTags(ctx context.Context, conn repository.DBConn, categoryTypeID *string) (model.TaskTags, error) {
 	var rows []entity.TaskTag
-	q := conn.NewSelect().
+	q := bunConn(conn).NewSelect().
 		Model(&rows).
 		Relation("CategoryType").
 		Order("tt.name ASC")
@@ -61,7 +61,7 @@ func (t *taskTag) CreateTag(ctx context.Context, conn repository.DBConn, tag mod
 		Name:           tag.Name,
 		CategoryTypeID: tag.CategoryTypeID,
 	}
-	if _, err := conn.NewInsert().Model(&row).Exec(ctx); err != nil {
+	if _, err := bunConn(conn).NewInsert().Model(&row).Exec(ctx); err != nil {
 		return model.TaskTag{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to create task tag: %v", err))
 	}
 	return t.GetTagByID(ctx, conn, row.ID)
@@ -69,7 +69,7 @@ func (t *taskTag) CreateTag(ctx context.Context, conn repository.DBConn, tag mod
 
 func (t *taskTag) GetTagByID(ctx context.Context, conn repository.DBConn, id string) (model.TaskTag, error) {
 	var row entity.TaskTag
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&row).
 		Relation("CategoryType").
 		Where("tt.id = ?", id).
@@ -83,7 +83,7 @@ func (t *taskTag) GetTagByID(ctx context.Context, conn repository.DBConn, id str
 }
 
 func (t *taskTag) SetTaskTags(ctx context.Context, conn repository.DBConn, taskID string, tagIDs []string) error {
-	if _, err := conn.NewDelete().
+	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.TaskTagAssignment)(nil)).
 		Where("task_id = ?", taskID).
 		Exec(ctx); err != nil {
@@ -96,7 +96,7 @@ func (t *taskTag) SetTaskTags(ctx context.Context, conn repository.DBConn, taskI
 	for _, tid := range tagIDs {
 		rows = append(rows, entity.TaskTagAssignment{TaskID: taskID, TagID: tid})
 	}
-	if _, err := conn.NewInsert().Model(&rows).Exec(ctx); err != nil {
+	if _, err := bunConn(conn).NewInsert().Model(&rows).Exec(ctx); err != nil {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to insert task tag assignments: %v", err))
 	}
 	return nil
@@ -115,7 +115,7 @@ func (t *taskTag) GetTagsByTaskIDs(ctx context.Context, conn repository.DBConn, 
 		return map[string]model.TaskTags{}, nil
 	}
 	var assignments []entity.TaskTagAssignment
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&assignments).
 		Relation("Tag.CategoryType").
 		Where("tta.task_id IN (?)", bun.In(taskIDs)).
@@ -166,7 +166,7 @@ func (t *taskTag) GetTagsByNames(ctx context.Context, conn repository.DBConn, na
 		return model.TaskTags{}, nil
 	}
 	var rows []entity.TaskTag
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&rows).
 		Relation("CategoryType").
 		Where("tt.name IN (?)", bun.In(names)).
@@ -187,7 +187,7 @@ func (tt *taskTag) GetAvailableTags(ctx context.Context, conn repository.DBConn,
 
 	var rows []tagRow
 
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		TableExpr("task_tag AS tt").
 		ColumnExpr("DISTINCT tt.id, tt.name, tt.category_type_id").
 		ColumnExpr("tct.name AS category_type_name").

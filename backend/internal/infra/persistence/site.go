@@ -20,7 +20,7 @@ func (s *site) Create(ctx context.Context, conn repository.DBConn, si model.Site
 
 	dbSite := siteModelToEntity(si)
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbSite).
 		Returning("*").
 		Scan(ctx, &inserted); err != nil {
@@ -32,7 +32,7 @@ func (s *site) Create(ctx context.Context, conn repository.DBConn, si model.Site
 
 func (s *site) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Site, error) {
 	var dbSite entity.Site
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbSite).
 		Where("id_natural = ?", id).
 		Scan(ctx); err != nil {
@@ -48,7 +48,7 @@ func (s *site) GetByID(ctx context.Context, conn repository.DBConn, id string) (
 func (s *site) List(ctx context.Context, conn repository.DBConn, filter repository.SiteListFilter, limit, offset int) (model.Sites, int, error) {
 	var dbSites []entity.Site
 
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		Model(&dbSites).
 		Order("created_at DESC").
 		Limit(limit).
@@ -61,7 +61,7 @@ func (s *site) List(ctx context.Context, conn repository.DBConn, filter reposito
 	}
 
 	var total int
-	countSel := conn.NewSelect().
+	countSel := bunConn(conn).NewSelect().
 		Model((*entity.Site)(nil)).
 		ColumnExpr("COUNT(*)")
 	countSel = applySiteListFilters(countSel, filter)
@@ -81,7 +81,7 @@ func (s *site) List(ctx context.Context, conn repository.DBConn, filter reposito
 func (s *site) Update(ctx context.Context, conn repository.DBConn, si model.Site) (model.Site, error) {
 	var updated entity.Site
 
-	upd := conn.NewUpdate().Model((*entity.Site)(nil))
+	upd := bunConn(conn).NewUpdate().Model((*entity.Site)(nil))
 	hasSet := false
 	if si.Name != "" {
 		upd = upd.Set("name = ?", si.Name)
@@ -105,7 +105,7 @@ func (s *site) Update(ctx context.Context, conn repository.DBConn, si model.Site
 
 func (s *site) Delete(ctx context.Context, conn repository.DBConn, id string) error {
 	var deletedID int64
-	if err := conn.NewDelete().
+	if err := bunConn(conn).NewDelete().
 		Model((*entity.Site)(nil)).
 		Where("id_natural = ?", id).
 		Returning("id").

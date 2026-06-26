@@ -36,7 +36,7 @@ func (t *task) Create(ctx context.Context, conn repository.DBConn, tk model.Task
 		RobotType:      tk.RobotType,
 	}
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbTk).
 		Returning("*").
 		Scan(ctx, &inserted); err != nil {
@@ -58,7 +58,7 @@ func (t *task) Create(ctx context.Context, conn repository.DBConn, tk model.Task
 		ApprovalStatus: model.ApprovalStatusDraft,
 	}
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbTaskVersion).
 		Returning("*").
 		Scan(ctx, &insertedVersion); err != nil {
@@ -69,7 +69,7 @@ func (t *task) Create(ctx context.Context, conn repository.DBConn, tk model.Task
 }
 
 func (t *task) Exists(ctx context.Context, conn repository.DBConn, id string) (bool, error) {
-	exists, err := conn.NewSelect().
+	exists, err := bunConn(conn).NewSelect().
 		Model((*entity.Task)(nil)).
 		Where("id_natural = ?", id).
 		Exists(ctx)
@@ -81,7 +81,7 @@ func (t *task) Exists(ctx context.Context, conn repository.DBConn, id string) (b
 
 func (t *task) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Task, error) {
 	var dbt entity.Task
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbt).
 		Where("id_natural = ?", id).
 		Scan(ctx); err != nil {
@@ -106,7 +106,7 @@ func (t *task) GetByID(ctx context.Context, conn repository.DBConn, id string) (
 	}
 
 	var tv entity.TaskVersion
-	err := conn.NewSelect().
+	err := bunConn(conn).NewSelect().
 		Model(&tv).
 		Where("task_id = ?", dbt.IDNatural).
 		Order("created_at DESC").
@@ -123,7 +123,7 @@ func (t *task) GetByID(ctx context.Context, conn repository.DBConn, id string) (
 		tk.TargetEpisodeCount = tv.TargetEpisodeCount
 
 		var stats entity.TaskVersionStats
-		statsErr := conn.NewSelect().
+		statsErr := bunConn(conn).NewSelect().
 			Model(&stats).
 			Where("task_version_id = ?", tv.IDNatural).
 			Scan(ctx)
@@ -143,7 +143,7 @@ func (t *task) GetByID(ctx context.Context, conn repository.DBConn, id string) (
 func (t *task) List(ctx context.Context, conn repository.DBConn, filter repository.TaskListFilter, limit, offset int) (model.Tasks, int, error) {
 	var dbts []entity.Task
 
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		Model(&dbts).
 		Limit(limit).
 		Offset(offset)
@@ -157,7 +157,7 @@ func (t *task) List(ctx context.Context, conn repository.DBConn, filter reposito
 	}
 
 	var total int
-	countSel := conn.NewSelect().Model((*entity.Task)(nil)).ColumnExpr("COUNT(*)")
+	countSel := bunConn(conn).NewSelect().Model((*entity.Task)(nil)).ColumnExpr("COUNT(*)")
 	countSel = applyTaskListFilters(countSel, filter)
 	if err := countSel.Scan(ctx, &total); err != nil {
 		return nil, 0, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to count tasks: %v", err))
@@ -173,7 +173,7 @@ func (t *task) List(ctx context.Context, conn repository.DBConn, filter reposito
 	}
 
 	var taskVersions []entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&taskVersions).
 		Where("task_id IN (?)", bun.In(taskIDs)).
 		Order("created_at DESC").
@@ -197,7 +197,7 @@ func (t *task) List(ctx context.Context, conn repository.DBConn, filter reposito
 	statsMap := make(map[string]*entity.TaskVersionStats)
 	if len(versionIDs) > 0 {
 		var stats []entity.TaskVersionStats
-		if err := conn.NewSelect().
+		if err := bunConn(conn).NewSelect().
 			Model(&stats).
 			Where("task_version_id IN (?)", bun.In(versionIDs)).
 			Scan(ctx); err != nil && err != sql.ErrNoRows {
@@ -244,7 +244,7 @@ func (t *task) List(ctx context.Context, conn repository.DBConn, filter reposito
 }
 
 func (t *task) Update(ctx context.Context, conn repository.DBConn, tk model.Task) (model.Task, error) {
-	upd := conn.NewUpdate().Model((*entity.Task)(nil))
+	upd := bunConn(conn).NewUpdate().Model((*entity.Task)(nil))
 	hasSet := false
 	if tk.Name != "" {
 		upd = upd.Set("name = ?", tk.Name)
@@ -319,7 +319,7 @@ func (t *task) ListByIDs(ctx context.Context, conn repository.DBConn, ids []stri
 	}
 
 	var dbts []entity.Task
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbts).
 		Where("id_natural IN (?)", bun.In(ids)).
 		Scan(ctx); err != nil {
@@ -387,7 +387,7 @@ func modelTaskStatusPtr(status model.TaskStatus) *model.TaskStatus {
 
 func (t *task) Delete(ctx context.Context, conn repository.DBConn, id string) error {
 	var deletedID int64
-	if err := conn.NewDelete().
+	if err := bunConn(conn).NewDelete().
 		Model((*entity.Task)(nil)).
 		Where("id_natural = ?", id).
 		Returning("id").
@@ -412,7 +412,7 @@ var allowedTaskSortColumns = map[string]string{
 func (t *task) Export(ctx context.Context, conn repository.DBConn, filter repository.TaskListFilter) ([]repository.TaskExportRow, error) {
 	var dbts []entity.Task
 
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		Model(&dbts).
 		Limit(repository.MaxTaskBatchSize + 1).
 		OrderExpr("t.created_at ASC")
@@ -445,7 +445,7 @@ func (t *task) Export(ctx context.Context, conn repository.DBConn, filter reposi
 
 	// Get latest approved version per task
 	var approvedVersions []entity.TaskVersion
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&approvedVersions).
 		Where("task_id IN (?)", bun.In(taskIDs)).
 		Where("approval_status = ?", model.ApprovalStatusApproved).
@@ -471,7 +471,7 @@ func (t *task) Export(ctx context.Context, conn repository.DBConn, filter reposi
 	subtasksByVersionID := make(map[string][]string)
 	if len(approvedVersionIDs) > 0 {
 		var subtasks []entity.SubTask
-		if err := conn.NewSelect().
+		if err := bunConn(conn).NewSelect().
 			Model(&subtasks).
 			Where("task_version_id IN (?)", bun.In(approvedVersionIDs)).
 			Order("task_version_id ASC", "order_index ASC").
@@ -575,7 +575,7 @@ func (t *task) GetFilteredTasks(ctx context.Context, conn repository.DBConn, fil
 	}
 
 	var rows []repository.FilteredTask
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		TableExpr("task AS t").
 		ColumnExpr("t.id_natural, t.deadline, t.status").
 		Where("t.organization_id = ?", orgID)
@@ -599,7 +599,7 @@ func (t *task) GetTargetsByTaskIDs(ctx context.Context, conn repository.DBConn, 
 	}
 
 	var rows []repository.TaskTargets
-	err = conn.NewSelect().
+	err = bunConn(conn).NewSelect().
 		TableExpr("task_version").
 		ColumnExpr("task_id").
 		ColumnExpr("COALESCE(SUM(COALESCE(target_duration_seconds, 0)), 0) AS target_duration").
@@ -634,7 +634,7 @@ func (t *task) FindExistingNames(ctx context.Context, conn repository.DBConn, na
 	var rows []struct {
 		Name string `bun:"name"`
 	}
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		TableExpr("task AS t").
 		ColumnExpr("t.name").
 		Where("t.organization_id = ?", orgID).
@@ -673,7 +673,7 @@ func (t *task) BulkCreate(ctx context.Context, conn repository.DBConn, items []r
 		})
 	}
 
-	if _, err := conn.NewInsert().
+	if _, err := bunConn(conn).NewInsert().
 		Model(&dbTasks).
 		Exec(ctx); err != nil {
 		return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to bulk create tasks: %v", err))
@@ -701,7 +701,7 @@ func (t *task) BulkCreate(ctx context.Context, conn repository.DBConn, items []r
 		})
 	}
 
-	if _, err := conn.NewInsert().
+	if _, err := bunConn(conn).NewInsert().
 		Model(&dbVersions).
 		Exec(ctx); err != nil {
 		return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to bulk create task versions: %v", err))
@@ -730,7 +730,7 @@ func (t *task) BulkCreate(ctx context.Context, conn repository.DBConn, items []r
 	}
 
 	if len(dbSubtasks) > 0 {
-		if _, err := conn.NewInsert().
+		if _, err := bunConn(conn).NewInsert().
 			Model(&dbSubtasks).
 			Exec(ctx); err != nil {
 			return nil, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to bulk create subtasks: %v", err))
@@ -751,7 +751,7 @@ func (t *task) GetActualsByTaskIDs(ctx context.Context, conn repository.DBConn, 
 	}
 
 	var rows []repository.TaskActuals
-	err = conn.NewSelect().
+	err = bunConn(conn).NewSelect().
 		TableExpr("task_version AS tv").
 		Join("JOIN task_version_stats tvs ON tvs.task_version_id = tv.id_natural").
 		ColumnExpr("tv.task_id").

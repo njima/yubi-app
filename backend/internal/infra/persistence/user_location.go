@@ -15,7 +15,7 @@ type userLocation struct{}
 func NewUserLocation() *userLocation { return &userLocation{} }
 
 func (ul *userLocation) SetUserLocations(ctx context.Context, conn repository.DBConn, userID string, organizationID string, locationIDs []string) error {
-	if _, err := conn.NewDelete().
+	if _, err := bunConn(conn).NewDelete().
 		Model((*entity.UserLocationAssignment)(nil)).
 		Where("user_id = ?", userID).
 		Exec(ctx); err != nil {
@@ -32,7 +32,7 @@ func (ul *userLocation) SetUserLocations(ctx context.Context, conn repository.DB
 		OrganizationID string `bun:"organization_id"`
 	}
 	var locations []locationRow
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		TableExpr("location").
 		Column("id_natural", "organization_id").
 		Where("id_natural IN (?)", bun.In(locationIDs)).
@@ -61,7 +61,7 @@ func (ul *userLocation) SetUserLocations(ctx context.Context, conn repository.DB
 			OrganizationID: locOrgID,
 		})
 	}
-	if _, err := conn.NewInsert().Model(&rows).Exec(ctx); err != nil {
+	if _, err := bunConn(conn).NewInsert().Model(&rows).Exec(ctx); err != nil {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to insert user location assignments: %v", err))
 	}
 	return nil

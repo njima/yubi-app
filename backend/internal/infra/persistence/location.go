@@ -23,7 +23,7 @@ func (l *location) Create(ctx context.Context, conn repository.DBConn, loc model
 
 	dbLoc := locationModelToEntity(loc)
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbLoc).
 		Returning("*").
 		Scan(ctx, &inserted); err != nil {
@@ -43,7 +43,7 @@ func (l *location) Create(ctx context.Context, conn repository.DBConn, loc model
 
 func (l *location) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.Location, error) {
 	var dbLoc entity.Location
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbLoc).
 		Relation("Site").
 		Where("l.id_natural = ?", id).
@@ -60,7 +60,7 @@ func (l *location) GetByID(ctx context.Context, conn repository.DBConn, id strin
 func (l *location) List(ctx context.Context, conn repository.DBConn, filter repository.LocationListFilter, limit, offset int) (model.Locations, int, error) {
 	var dbLocs []entity.Location
 
-	sel := conn.NewSelect().
+	sel := bunConn(conn).NewSelect().
 		Model(&dbLocs).
 		Relation("Site").
 		Limit(limit).
@@ -75,7 +75,7 @@ func (l *location) List(ctx context.Context, conn repository.DBConn, filter repo
 	}
 
 	var total int
-	countSel := conn.NewSelect().
+	countSel := bunConn(conn).NewSelect().
 		Model((*entity.Location)(nil)).
 		ColumnExpr("COUNT(*)")
 	countSel = applyLocationListFilters(countSel, filter)
@@ -95,7 +95,7 @@ func (l *location) List(ctx context.Context, conn repository.DBConn, filter repo
 func (l *location) Update(ctx context.Context, conn repository.DBConn, loc model.Location) (model.Location, error) {
 	var updated entity.Location
 
-	upd := conn.NewUpdate().Model((*entity.Location)(nil))
+	upd := bunConn(conn).NewUpdate().Model((*entity.Location)(nil))
 	hasSet := false
 	if loc.Name != "" {
 		upd = upd.Set("name = ?", loc.Name)
@@ -129,7 +129,7 @@ func (l *location) Update(ctx context.Context, conn repository.DBConn, loc model
 
 func (l *location) Delete(ctx context.Context, conn repository.DBConn, id string) error {
 	var deletedID int64
-	if err := conn.NewDelete().
+	if err := bunConn(conn).NewDelete().
 		Model((*entity.Location)(nil)).
 		Where("id_natural = ?", id).
 		Returning("id").
@@ -144,7 +144,7 @@ func (l *location) Delete(ctx context.Context, conn repository.DBConn, id string
 
 func fetchSiteName(ctx context.Context, conn repository.DBConn, siteID string) (string, error) {
 	var site entity.Site
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&site).
 		Column("name").
 		Where("id_natural = ?", siteID).

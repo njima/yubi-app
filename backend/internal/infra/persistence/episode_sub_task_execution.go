@@ -25,7 +25,7 @@ func (e *episodeSubTaskExecution) Create(ctx context.Context, conn repository.DB
 		FinishedAt:       execution.FinishedAt,
 	}
 
-	if err := conn.NewInsert().
+	if err := bunConn(conn).NewInsert().
 		Model(&dbExe).
 		Returning("*").
 		Scan(ctx, &inserted); err != nil {
@@ -48,7 +48,7 @@ func (e *episodeSubTaskExecution) Create(ctx context.Context, conn repository.DB
 func (e *episodeSubTaskExecution) GetByID(ctx context.Context, conn repository.DBConn, id string) (model.EpisodeSubTaskExecution, error) {
 	var dbExe entity.EpisodeSubTaskExecution
 
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbExe).
 		Where("id_natural = ?", id).
 		Scan(ctx); err != nil {
@@ -75,7 +75,7 @@ func (e *episodeSubTaskExecution) GetByEpisodeSubTaskIDs(ctx context.Context, co
 
 	var dbExecs []entity.EpisodeSubTaskExecution
 
-	if err := conn.NewSelect().
+	if err := bunConn(conn).NewSelect().
 		Model(&dbExecs).
 		Where("episode_sub_task_id IN (?)", bun.In(ids)).
 		Order("created_at ASC").
@@ -113,7 +113,7 @@ func (e *episodeSubTaskExecution) Update(ctx context.Context, conn repository.DB
 		FinishedAt:       execution.FinishedAt,
 	}
 
-	if _, err := conn.NewUpdate().
+	if _, err := bunConn(conn).NewUpdate().
 		Model(&dbExe).
 		WherePK().
 		Exec(ctx); err != nil {
@@ -124,7 +124,7 @@ func (e *episodeSubTaskExecution) Update(ctx context.Context, conn repository.DB
 }
 
 func (e *episodeSubTaskExecution) CountStartedBySubTaskID(ctx context.Context, conn repository.DBConn, episodeSubTaskID string) (int, error) {
-	count, err := conn.NewSelect().
+	count, err := bunConn(conn).NewSelect().
 		Model((*entity.EpisodeSubTaskExecution)(nil)).
 		Where("episode_sub_task_id = ?", episodeSubTaskID).
 		Where("execution_status = ?", model.ExecutionStatusStarted).
@@ -139,7 +139,7 @@ func (e *episodeSubTaskExecution) CountStartedBySubTaskID(ctx context.Context, c
 
 func (e *episodeSubTaskExecution) BulkCancelByEpisodeID(ctx context.Context, conn repository.DBConn, episodeID string) error {
 	// Cancel all executions that belong to subtasks of the given episode
-	if _, err := conn.NewUpdate().
+	if _, err := bunConn(conn).NewUpdate().
 		Model((*entity.EpisodeSubTaskExecution)(nil)).
 		Set("execution_status = ?", model.ExecutionStatusCancelled).
 		Where("episode_sub_task_id IN (SELECT id_natural FROM episode_sub_task WHERE episode_id = ?)", episodeID).
