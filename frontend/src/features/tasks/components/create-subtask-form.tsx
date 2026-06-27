@@ -8,7 +8,7 @@ import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,9 +16,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import { useCreateSubTaskMutation } from "@/features/tasks/hooks/use-create-subtask-mutation";
 import { useMeQuery } from "@/features/users";

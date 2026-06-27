@@ -14,7 +14,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { LayoutRenderer } from "@/shared/components/layout-renderer";
 import type { LayoutContext } from "@/shared/lib/layout-registry";
 import { DEFAULT_TELEOP_VIEWS } from "@/shared/lib/layout-types";
 import {
@@ -22,8 +21,10 @@ import {
   USER_ROLE,
 } from "@/shared/lib/status-constants";
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
+
+import { LayoutRenderer } from "@/components/layout/layout-renderer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 import {
   useRobotQuery,

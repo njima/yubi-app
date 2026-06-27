@@ -15,18 +15,23 @@ import { useTranslation } from "react-i18next";
 import { useEpisodeCollectionStatusLabel } from "@/shared/hooks/use-status-labels";
 import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
 import { parseEpisodeCollectionStatus } from "@/shared/lib/status-utils";
-import { DateRangePicker, type DateRange } from "@/shared/ui/date-range-picker";
+
+import {
+  DateRangePicker,
+  type DateRange,
+} from "@/components/ui/date-range-picker";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+} from "@/components/ui/dropdown-menu";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import {
   CreateEpisodeDialog,
   episodeStatusOptions,
+  ExportMenu,
   useEpisodesQuery,
   useEpisodesListStream,
 } from "@/features/episodes";
@@ -41,8 +46,6 @@ import {
 } from "@/features/tasks";
 import { usePermission } from "@/features/users";
 import { useUsersQuery, useUserSearchOptions } from "@/features/users";
-
-import { ExportMenu } from "./_components/export-menu";
 
 const validSortBy = [
   "task",

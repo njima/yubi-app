@@ -7,8 +7,8 @@ import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export type ParameterDefinition = z.infer<typeof schemas.TaskVersionParameter>;
 

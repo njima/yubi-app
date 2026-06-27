@@ -7,7 +7,8 @@ import { z } from "zod";
 import { schemas } from "@/lib/api/generated/api";
 
 import { truncateUuid } from "@/shared/lib/format";
-import { Button } from "@/shared/ui/button";
+
+import { Button } from "@/components/ui/button";
 
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DeleteLocationDialog } from "./delete-location-dialog";

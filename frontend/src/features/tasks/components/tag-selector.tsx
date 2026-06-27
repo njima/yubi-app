@@ -4,10 +4,14 @@ import { Check, ChevronDown, Plus, Search, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Badge } from "@/shared/ui/badge";
-import { Label } from "@/shared/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import { useCreateTaskTagMutation } from "../hooks/use-create-task-tag-mutation";
 import {

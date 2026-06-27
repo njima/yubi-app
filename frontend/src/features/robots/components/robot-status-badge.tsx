@@ -6,7 +6,8 @@ import {
   type RobotStatusValue,
 } from "@/shared/lib/status-constants";
 import { ROBOT_STATUS_DISPLAY } from "@/shared/lib/status-display";
-import { Badge } from "@/shared/ui/badge";
+
+import { Badge } from "@/components/ui/badge";
 
 interface RobotStatusBadgeProps {
   statusCode: number;

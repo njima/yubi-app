@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
 
 import { APPROVAL_STATUS } from "@/shared/lib/status-constants";
-import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { secondsToHoursMinutes } from "../../lib/duration";
 import { TagCategoryBadge } from "../tag-category-badge";

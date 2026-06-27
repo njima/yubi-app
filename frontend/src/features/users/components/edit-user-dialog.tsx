@@ -9,8 +9,9 @@ import { schemas } from "@/lib/api/generated/api";
 
 import { useUserRoleLabel } from "@/shared/hooks/use-status-labels";
 import { USER_ROLE, type UserRoleValue } from "@/shared/lib/status-constants";
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+} from "@/components/ui/dialog";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import { useLocationSearchOptions } from "@/features/locations";
 import { useSiteSearchOptions } from "@/features/sites";

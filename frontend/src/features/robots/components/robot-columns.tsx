@@ -6,8 +6,13 @@ import Link from "next/link";
 
 import { truncateUuid } from "@/shared/lib/format";
 import { ROBOT_STATUS, USER_ROLE } from "@/shared/lib/status-constants";
-import { Button } from "@/shared/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
+
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   ConsecutiveFaultDaysBadge,

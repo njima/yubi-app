@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface TeachMeBizCardProps {
   manualUrl?: string;

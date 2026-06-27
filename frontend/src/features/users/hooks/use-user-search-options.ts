@@ -3,9 +3,10 @@
 import { useCallback, useMemo } from "react";
 
 import { useSearchState } from "@/shared/hooks/use-search-state";
-import type { SearchableSelectOption } from "@/shared/ui/searchable-select";
 
 import { useUsersQuery } from "./use-users-query";
+
+import type { SearchableSelectOption } from "@/components/ui/searchable-select";
 
 export function useUserSearchOptions() {
   const { debouncedSearch, selectedLabel, setSelectedLabel, onSearch } =

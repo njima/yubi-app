@@ -11,9 +11,10 @@ import { useTranslation } from "react-i18next";
 
 import { useFormatAbsoluteTime } from "@/shared/hooks/use-date-formatters";
 import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Label } from "@/shared/ui/label";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import {
   ApiKeyDataTable,

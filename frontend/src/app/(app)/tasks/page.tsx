@@ -28,14 +28,15 @@ import {
   parseTaskDifficulty,
   getTaskDifficultyLabel,
 } from "@/shared/lib/status-utils";
-import { type DateRange } from "@/shared/ui/date-range-picker";
+
+import { type DateRange } from "@/components/ui/date-range-picker";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+} from "@/components/ui/dropdown-menu";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import { useRobotsQuery } from "@/features/robots";
 import {

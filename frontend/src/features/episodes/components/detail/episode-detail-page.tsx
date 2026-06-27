@@ -7,9 +7,10 @@ import { useTranslation } from "react-i18next";
 
 import { formatDateTime } from "@/shared/lib/date-utils";
 import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useLocationsQuery } from "@/features/locations";
 import {

@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 
 import { formatUptime } from "@/shared/lib/date-utils";
 import { LEADER_STATUS, ROBOT_STATUS } from "@/shared/lib/status-constants";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useLocationQuery } from "@/features/locations";
 import { useOrganizationQuery } from "@/features/organizations";

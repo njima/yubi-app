@@ -3,7 +3,7 @@
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { ParameterizedName } from "@/shared/components/parameterized-name";
+import { ParameterizedName } from "@/features/tasks";
 
 export function GateOverlay({ level }: { level: number }) {
   const { t } = useTranslation();

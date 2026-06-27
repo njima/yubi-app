@@ -4,8 +4,8 @@ import { Star } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useEpisodeGradesQuery } from "../../hooks/use-episode-grades-query";
 import { useMyEpisodeGradeQuery } from "../../hooks/use-my-episode-grade-query";

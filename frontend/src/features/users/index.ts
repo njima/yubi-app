@@ -10,3 +10,4 @@ export { useCreateUserMutation } from "./hooks/use-create-user-mutation";
 export { EditUserDialog } from "./components/edit-user-dialog";
 export { EditDisplayNameDialog } from "./components/edit-display-name-dialog";
 export { CreateUserDialog } from "./components/create-user-dialog";
+export { SwitchUserDialog } from "./components/switch-user-dialog";

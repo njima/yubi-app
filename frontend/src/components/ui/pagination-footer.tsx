@@ -4,14 +4,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PAGE_SIZE_OPTIONS } from "@/shared/lib/pagination";
-import { Button } from "@/shared/ui/button";
+
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
+} from "@/components/ui/select";
 
 interface PaginationFooterProps {
   page: number;

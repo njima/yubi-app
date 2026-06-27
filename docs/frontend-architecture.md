@@ -32,6 +32,10 @@ frontend/
 │   │   │   └── profile/        # User profile
 │   │   └── api/                # API route handlers (proxy to backend)
 │   │
+│   ├── components/             # Domain-neutral React components
+│   │   ├── layout/             # App shell and reusable layout components
+│   │   └── ui/                 # shadcn-style UI primitives
+│   │
 │   ├── features/               # Feature modules (domain-driven)
 │   │   ├── episodes/           # Episode CRUD, hooks, components
 │   │   ├── locations/          # Location management
@@ -53,11 +57,9 @@ frontend/
 │   │       └── session.ts      # getUserId(), getUserSession()
 │   │
 │   └── shared/                 # Shared code across features
-│       ├── components/         # Shared renderers and reusable components
 │       ├── hooks/              # Shared hooks (status labels, etc.)
 │       ├── lib/                # Utilities (date, status constants)
-│       ├── providers/          # React providers (QueryProvider)
-│       └── ui/                 # UI primitives (Button, Dialog, Table)
+│       └── providers/          # React providers (QueryProvider)
 │
 ├── public/                     # Static assets
 ├── next.config.ts              # Next.js configuration
@@ -99,12 +101,24 @@ Keep dependency direction explicit:
 
 ```text
 app -> features -> shared
+app -> components
 app/api -> lib/api
 features -> lib/api, shared
+features -> components
 lib/api -> generated, auth
 ```
 
 `shared` must not import concrete feature modules. If shared rendering needs feature-specific behavior, register it from the feature layer through a registry, as teleoperation layout components do. Cross-feature imports should go through a small public API from the target feature.
+
+Use `app/**/page.tsx` and `app/**/layout.tsx` as thin route entrypoints. Prefer `features/*/components` for feature-owned page composition and `components/layout` for app shell components such as navigation. Avoid adding `app/**/_components` unless the component is tiny route glue that cannot reasonably belong to a feature or shared component area.
+
+### Component Placement
+
+- `components/ui`: shadcn-style primitives such as `Button`, `Dialog`, `Table`, and `DropdownMenu`.
+- `components/layout`: domain-neutral layout and app shell components such as `TopNav` and `LayoutRenderer`.
+- `features/*/components`: feature-owned UI, including page-level composition such as list pages and export menus.
+- `app/**`: route entrypoints, route groups, layouts, and API routes. Keep route-local components rare and small.
+- `shared/*`: cross-cutting hooks, providers, and utilities. Do not place React UI primitives here.
 
 ### API Code Generation
 

@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { useTranslation } from "react-i18next";
 
-import { PaginationFooter } from "@/shared/ui/pagination-footer";
+import { PaginationFooter } from "@/components/ui/pagination-footer";
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
+} from "@/components/ui/table";
 
 interface EpisodeDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

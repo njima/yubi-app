@@ -6,9 +6,14 @@ import Link from "next/link";
 
 import { toDateTimeLocalValue } from "@/shared/lib/date-utils";
 import { truncateUuid } from "@/shared/lib/format";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { EditTaskDialog } from "./edit-task-dialog";

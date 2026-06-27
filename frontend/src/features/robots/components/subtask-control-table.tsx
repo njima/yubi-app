@@ -5,11 +5,11 @@ import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { ParameterizedName } from "@/shared/components/parameterized-name";
 import { useSubtaskCollectionStatusConfig } from "@/shared/hooks/use-subtask-collection-status-config";
 import { formatDuration, formatTime } from "@/shared/lib/date-utils";
 import { SUBTASK_COLLECTION_STATUS } from "@/shared/lib/status-constants";
-import { Badge } from "@/shared/ui/badge";
+
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -17,13 +17,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
+} from "@/components/ui/table";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/shared/ui/tooltip";
+} from "@/components/ui/tooltip";
+
+import { ParameterizedName } from "@/features/tasks";
 
 type EpisodeSubTask = z.infer<typeof schemas.EpisodeSubTask>;
 

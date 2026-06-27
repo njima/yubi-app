@@ -18,7 +18,8 @@ import {
   TASK_STATUS,
 } from "@/shared/lib/status-constants";
 import { getTaskDifficultyLabel } from "@/shared/lib/status-utils";
-import { Button } from "@/shared/ui/button";
+
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -26,11 +27,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
-import { Separator } from "@/shared/ui/separator";
-import { Textarea } from "@/shared/ui/textarea";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 
 import { useRobotsQuery } from "@/features/robots";
 import { useCreateSubTaskMutation } from "@/features/tasks/hooks/use-create-subtask-mutation";

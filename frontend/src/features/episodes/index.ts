@@ -6,6 +6,7 @@ export {
   ExportEpisodesDialog,
   type ExportEpisodesInitialFilters,
 } from "./components/export-episodes-dialog";
+export { ExportMenu } from "./components/export-menu";
 export { CreateEpisodeDialog } from "./components/create-episode-dialog";
 export { CreateEpisodeForm } from "./components/create-episode-form";
 export { EpisodeDetailPage } from "./components/detail";

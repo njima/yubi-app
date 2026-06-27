@@ -32,6 +32,10 @@ frontend/
 │   │   │   └── profile/        # User profile
 │   │   └── api/                # API route handlers (backend への proxy)
 │   │
+│   ├── components/             # domain-neutral React components
+│   │   ├── layout/             # app shell and reusable layout components
+│   │   └── ui/                 # shadcn-style UI primitives
+│   │
 │   ├── features/               # feature modules (domain-driven)
 │   │   ├── episodes/           # Episode CRUD, hooks, components
 │   │   ├── locations/          # Location management
@@ -53,11 +57,9 @@ frontend/
 │   │       └── session.ts      # getUserId(), getUserSession()
 │   │
 │   └── shared/                 # features 横断の shared code
-│       ├── components/         # shared renderers and reusable components
 │       ├── hooks/              # shared hooks (status labels など)
 │       ├── lib/                # utilities (date, status constants)
-│       ├── providers/          # React providers (QueryProvider)
-│       └── ui/                 # UI primitives (Button, Dialog, Table)
+│       └── providers/          # React providers (QueryProvider)
 │
 ├── public/                     # static assets
 ├── next.config.ts              # Next.js configuration
@@ -99,12 +101,24 @@ dependency direction は次の形に保ちます。
 
 ```text
 app -> features -> shared
+app -> components
 app/api -> lib/api
 features -> lib/api, shared
+features -> components
 lib/api -> generated, auth
 ```
 
 `shared` は concrete feature modules を import しません。shared rendering に feature-specific behavior が必要な場合は、teleoperation layout components のように feature layer から registry に登録します。feature 間の import は、target feature の小さな public API 経由にします。
+
+`app/**/page.tsx` と `app/**/layout.tsx` は薄い route entrypoint として扱います。feature-owned page composition は `features/*/components`、navigation などの app shell components は `components/layout` に置きます。`app/**/_components` は、feature や shared component area に自然に置けない小さな route glue に限ります。
+
+### Component Placement
+
+- `components/ui`: `Button`、`Dialog`、`Table`、`DropdownMenu` などの shadcn-style primitives。
+- `components/layout`: `TopNav` や `LayoutRenderer` などの domain-neutral layout / app shell components。
+- `features/*/components`: list pages や export menus を含む feature-owned UI。
+- `app/**`: route entrypoints、route groups、layouts、API routes。route-local components は少数かつ小さく保ちます。
+- `shared/*`: cross-cutting hooks、providers、utilities。React UI primitives はここに置きません。
 
 ### API Code Generation
 

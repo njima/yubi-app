@@ -8,7 +8,7 @@ import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -24,8 +24,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 import { useUpdateLocationMutation } from "../hooks/use-update-location-mutation";
 

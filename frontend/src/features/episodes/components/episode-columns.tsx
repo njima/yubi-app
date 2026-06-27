@@ -8,7 +8,8 @@ import { z } from "zod";
 import { schemas } from "@/lib/api/generated/api";
 
 import { formatDateTime } from "@/shared/lib/date-utils";
-import { Button } from "@/shared/ui/button";
+
+import { Button } from "@/components/ui/button";
 
 import { DataTableColumnHeader } from "@/features/tasks/components/data-table-column-header";
 

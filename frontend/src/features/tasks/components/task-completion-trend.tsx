@@ -14,9 +14,10 @@ import {
 } from "recharts";
 
 import { CHART_PALETTE } from "@/shared/lib/chart-colors";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { type DateRange } from "@/shared/ui/date-range-picker";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type DateRange } from "@/components/ui/date-range-picker";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import { useTaskCompletionTrendQuery } from "../hooks/use-task-completion-trend-query";
 import { secondsToHoursMinutes } from "../lib/duration";

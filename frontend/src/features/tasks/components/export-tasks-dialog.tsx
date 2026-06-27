@@ -15,8 +15,9 @@ import {
   TASK_DIFFICULTY,
 } from "@/shared/lib/status-constants";
 import { getTaskDifficultyLabel } from "@/shared/lib/status-utils";
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -25,9 +26,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Label } from "@/shared/ui/label";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import { useRobotsQuery } from "@/features/robots";
 

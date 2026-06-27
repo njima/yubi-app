@@ -8,7 +8,8 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { APPROVAL_STATUS } from "@/shared/lib/status-constants";
-import { Button } from "@/shared/ui/button";
+
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -17,8 +18,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+} from "@/components/ui/form";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import { useCreateEpisodeMutation } from "@/features/episodes";
 import { useTaskSearchOptions, useTaskVersionsQuery } from "@/features/tasks";

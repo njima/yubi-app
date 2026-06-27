@@ -9,8 +9,9 @@ import { schemas } from "@/lib/api/generated/api";
 
 import { useEpisodeCollectionStatusLabel } from "@/shared/hooks/use-status-labels";
 import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
-import { Button } from "@/shared/ui/button";
-import { DateTimePicker } from "@/shared/ui/datetime-picker";
+
+import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Form,
   FormControl,
@@ -19,9 +20,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
-import { Textarea } from "@/shared/ui/textarea";
+} from "@/components/ui/form";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Textarea } from "@/components/ui/textarea";
 
 import { useUserSearchOptions } from "@/features/users";
 

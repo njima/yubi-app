@@ -15,7 +15,8 @@ import type {
   TaskPriorityValue,
   TaskStatusValue,
 } from "@/shared/lib/status-constants";
-import { Button } from "@/shared/ui/button";
+
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -23,12 +24,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   SearchableSelect,
   type SearchableSelectOption,
-} from "@/shared/ui/searchable-select";
+} from "@/components/ui/searchable-select";
 
 import { useLocationsQuery } from "@/features/locations";
 import { useRobotSearchOptions, useRobotQuery } from "@/features/robots";

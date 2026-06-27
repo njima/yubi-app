@@ -2,8 +2,8 @@
 
 import { useTranslation } from "react-i18next";
 
-import { Slider } from "@/shared/ui/slider";
-import { Textarea } from "@/shared/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 
 import { getGradeColor } from "../lib/grade-color";
 

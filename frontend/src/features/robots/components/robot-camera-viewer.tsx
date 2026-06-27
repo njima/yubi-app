@@ -10,8 +10,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { buildMjpegStreamUrl, buildMjpegViewerUrl } from "@/shared/lib/mjpeg";
-import { Button } from "@/shared/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { MjpegViewer } from "./mjpeg-viewer";
 import { extractCameras, extractHostPort } from "../lib/camera-utils";

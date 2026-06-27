@@ -4,7 +4,8 @@ import {
   LEADER_STATUS,
   type LeaderStatusValue,
 } from "@/shared/lib/status-constants";
-import { Badge } from "@/shared/ui/badge";
+
+import { Badge } from "@/components/ui/badge";
 
 const statusStyles: Record<LeaderStatusValue, string> = {
   [LEADER_STATUS.READY]:

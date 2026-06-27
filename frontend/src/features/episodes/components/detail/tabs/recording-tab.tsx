@@ -13,8 +13,8 @@ import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
+} from "@/components/ui/table";
 
 import { useEpisodeRecordingsQuery } from "../../../hooks/use-episode-recordings-query";
 

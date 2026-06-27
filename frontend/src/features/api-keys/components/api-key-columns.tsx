@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { Badge } from "@/shared/ui/badge";
+import { Badge } from "@/components/ui/badge";
 
 import { RevokeApiKeyDialog } from "./revoke-api-key-dialog";
 

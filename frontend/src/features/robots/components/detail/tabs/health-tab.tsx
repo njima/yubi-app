@@ -6,7 +6,8 @@ import { z } from "zod";
 import { schemas } from "@/lib/api/generated/api";
 
 import { cn } from "@/shared/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { GateStatusBadge } from "../../gate-status-badge";
 
