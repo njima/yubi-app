@@ -1,4 +1,5 @@
 // Components
+export { RobotListPage } from "./components/robot-list-page";
 export { CreateRobotDialog } from "./components/create-robot-dialog";
 export { CreateRobotForm } from "./components/create-robot-form";
 export { DeleteRobotDialog } from "./components/delete-robot-dialog";

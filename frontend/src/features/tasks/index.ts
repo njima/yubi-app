@@ -1,4 +1,5 @@
 // Task Components
+export { TaskListPage } from "./components/task-list-page";
 export { CreateTaskDialog } from "./components/create-task-dialog";
 export { ImportTasksDialog } from "./components/import-tasks-dialog";
 export { ExportTasksDialog } from "./components/export-tasks-dialog";

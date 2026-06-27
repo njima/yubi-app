@@ -37,9 +37,12 @@ frontend/
 │   │   └── ui/                 # shadcn-style UI primitives
 │   │
 │   ├── features/               # feature modules (domain-driven)
+│   │   ├── api-keys/           # API key management
+│   │   ├── dashboard/          # Dashboard composition
 │   │   ├── episodes/           # Episode CRUD, hooks, components
 │   │   ├── locations/          # Location management
 │   │   ├── organizations/      # Organization management
+│   │   ├── reporting/          # reporting and export workflows
 │   │   ├── robots/             # Robot CRUD, status, camera viewer
 │   │   ├── tasks/              # Task management
 │   │   └── users/              # User CRUD, roles
@@ -116,7 +119,7 @@ lib/api -> generated, auth
 
 - `components/ui`: `Button`、`Dialog`、`Table`、`DropdownMenu` などの shadcn-style primitives。
 - `components/layout`: `TopNav` や `LayoutRenderer` などの domain-neutral layout / app shell components。
-- `features/*/components`: list pages や export menus を含む feature-owned UI。
+- `features/*/components`: list pages や export menus を含む feature-owned UI。feature modules は page と 1:1 でなくてもよく、`reporting` のような capability modules も許容します。
 - `app/**`: route entrypoints、route groups、layouts、API routes。route-local components は少数かつ小さく保ちます。
 - `shared/*`: cross-cutting hooks、providers、utilities。React UI primitives はここに置きません。
 

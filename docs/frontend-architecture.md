@@ -37,9 +37,12 @@ frontend/
 │   │   └── ui/                 # shadcn-style UI primitives
 │   │
 │   ├── features/               # Feature modules (domain-driven)
+│   │   ├── api-keys/           # API key management
+│   │   ├── dashboard/          # Dashboard composition
 │   │   ├── episodes/           # Episode CRUD, hooks, components
 │   │   ├── locations/          # Location management
 │   │   ├── organizations/      # Organization management
+│   │   ├── reporting/          # Reporting and export workflows
 │   │   ├── robots/             # Robot CRUD, status, camera viewer
 │   │   ├── tasks/              # Task management
 │   │   └── users/              # User CRUD, roles
@@ -116,7 +119,7 @@ Use `app/**/page.tsx` and `app/**/layout.tsx` as thin route entrypoints. Prefer 
 
 - `components/ui`: shadcn-style primitives such as `Button`, `Dialog`, `Table`, and `DropdownMenu`.
 - `components/layout`: domain-neutral layout and app shell components such as `TopNav` and `LayoutRenderer`.
-- `features/*/components`: feature-owned UI, including page-level composition such as list pages and export menus.
+- `features/*/components`: feature-owned UI, including page-level composition such as list pages and export menus. Feature modules do not have to map 1:1 to pages; capability modules such as `reporting` are allowed.
 - `app/**`: route entrypoints, route groups, layouts, and API routes. Keep route-local components rare and small.
 - `shared/*`: cross-cutting hooks, providers, and utilities. Do not place React UI primitives here.
 

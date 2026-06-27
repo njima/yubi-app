@@ -10,6 +10,7 @@ export { useUpdateLocationMutation } from "./hooks/use-update-location-mutation"
 export { useDeleteLocationMutation } from "./hooks/use-delete-location-mutation";
 
 // Components
+export { LocationListPage } from "./components/location-list-page";
 export { CreateLocationDialog } from "./components/create-location-dialog";
 export { EditLocationDialog } from "./components/edit-location-dialog";
 export { DeleteLocationDialog } from "./components/delete-location-dialog";
