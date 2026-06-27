@@ -67,6 +67,7 @@ infra/database (entities, ORM)
 - **Dependency direction**: Outer layers depend on inner layers, never the reverse
 - **Domain models** use `Init*()` constructors for creation with validation, `New*()` for reconstruction from DB
 - **Status policy** belongs in domain models; usecases should call lifecycle helpers such as `Start`, `Finish`, and `Cancel` instead of setting lifecycle state directly
+- See [Backend Status Policy](./backend-status-policy.md) for stored vs. derived status rules
 - **Usecase files** may be split by workflow (for example, episode lifecycle vs. recording/stat lookups) while sharing the same usecase type
 - **HTTP stream presenters** live under `interfaces/http/handler` and keep OpenAPI response construction out of stream control flow
 - **Dual ID system**: `ID` (int64, internal PK) + `IDNatural` (UUID, exposed via API)
