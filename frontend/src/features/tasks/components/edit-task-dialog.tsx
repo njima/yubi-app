@@ -8,6 +8,7 @@ import {
   type TaskDifficultyValue,
   type TaskPriorityValue,
 } from "@/shared/lib/status-constants";
+
 import {
   Dialog,
   DialogContent,
@@ -15,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
+} from "@/components/ui/dialog";
 
 import { type TaskTag } from "../schemas";
 import { EditTaskForm } from "./edit-task-form";

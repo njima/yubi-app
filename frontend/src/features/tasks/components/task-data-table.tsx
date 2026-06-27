@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { useTranslation } from "react-i18next";
 
-import { PaginationFooter } from "@/shared/ui/pagination-footer";
+import { PaginationFooter } from "@/components/ui/pagination-footer";
 import {
   Table,
   TableBody,
@@ -18,8 +18,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
-import { TooltipProvider } from "@/shared/ui/tooltip";
+} from "@/components/ui/table";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface TaskDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

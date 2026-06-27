@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
+} from "@/components/ui/table";
 
 import { useEpisodeStatsQuery } from "../../../hooks/use-episode-stats-query";
 

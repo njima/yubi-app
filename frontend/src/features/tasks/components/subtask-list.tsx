@@ -21,7 +21,7 @@ import { GripVertical, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 
 import { useSubTasksByVersionQuery } from "@/features/tasks/hooks/use-subtasks-by-version-query";
 import { useSubTasksQuery } from "@/features/tasks/hooks/use-subtasks-query";

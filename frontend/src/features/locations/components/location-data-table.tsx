@@ -17,8 +17,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
-import { TooltipProvider } from "@/shared/ui/tooltip";
+} from "@/components/ui/table";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface LocationDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

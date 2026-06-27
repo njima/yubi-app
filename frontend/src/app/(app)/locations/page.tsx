@@ -11,8 +11,9 @@ import { Suspense, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
-import { PaginationFooter } from "@/shared/ui/pagination-footer";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+
+import { PaginationFooter } from "@/components/ui/pagination-footer";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import {
   useLocationsQuery,

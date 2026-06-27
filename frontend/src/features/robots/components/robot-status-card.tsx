@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 
 import { formatUptime } from "@/shared/lib/date-utils";
 import { ROBOT_STATUS } from "@/shared/lib/status-constants";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { BATTERY_THRESHOLDS } from "../schemas/robot";
 

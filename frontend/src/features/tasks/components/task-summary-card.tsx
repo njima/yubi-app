@@ -3,15 +3,18 @@
 import { ChevronDown, ListTodo, Clock, Film } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { DateRangePicker, type DateRange } from "@/shared/ui/date-range-picker";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DateRangePicker,
+  type DateRange,
+} from "@/components/ui/date-range-picker";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+} from "@/components/ui/dropdown-menu";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import { useRobotsQuery } from "@/features/robots";
 

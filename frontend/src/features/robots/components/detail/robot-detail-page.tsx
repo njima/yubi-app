@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
 import { USER_ROLE } from "@/shared/lib/status-constants";
-import { Button } from "@/shared/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { TooltipProvider } from "@/shared/ui/tooltip";
+
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { useMeQuery } from "@/features/users";
 

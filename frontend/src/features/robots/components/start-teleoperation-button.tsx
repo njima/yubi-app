@@ -5,8 +5,13 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
 import { ROBOT_STATUS } from "@/shared/lib/status-constants";
-import { Button } from "@/shared/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
+
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import type { Robot } from "../schemas/robot";
 

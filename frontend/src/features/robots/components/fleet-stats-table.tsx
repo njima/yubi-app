@@ -5,14 +5,15 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { THRESHOLD_COLORS } from "@/shared/lib/chart-colors";
+
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/shared/ui/card";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+} from "@/components/ui/card";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   Table,
   TableBody,
@@ -20,7 +21,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
+} from "@/components/ui/table";
 
 import {
   useFleetStatsQuery,

@@ -16,8 +16,9 @@ import {
 } from "@/shared/hooks/use-date-formatters";
 import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
 import { ROBOT_STATUS, USER_ROLE } from "@/shared/lib/status-constants";
-import { PaginationFooter } from "@/shared/ui/pagination-footer";
-import { SearchableSelect } from "@/shared/ui/searchable-select";
+
+import { PaginationFooter } from "@/components/ui/pagination-footer";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 import {
   useLocationsQuery,

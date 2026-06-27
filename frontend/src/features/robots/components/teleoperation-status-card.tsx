@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 
 import { formatUptime } from "@/shared/lib/date-utils";
 import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { GateGroupGrid, GateStatusBadge } from "./gate-status-badge";
 import { BATTERY_THRESHOLDS } from "../schemas/robot";

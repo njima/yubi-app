@@ -4,13 +4,14 @@ import { z } from "zod";
 import { schemas } from "@/lib/api/generated/api";
 
 import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
+
+import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/shared/ui/tooltip";
+} from "@/components/ui/tooltip";
 
 type GateConditionStatus = z.infer<typeof schemas.GateConditionStatus>;
 type GateGroupStatus = z.infer<typeof schemas.GateGroupStatus>;

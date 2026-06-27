@@ -4,19 +4,20 @@ import { ChevronDown, Download } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
+
+import { ExportOperatorYieldDialog } from "@/features/reports";
 
 import {
   ExportEpisodesDialog,
   type ExportEpisodesInitialFilters,
-} from "@/features/episodes";
-import { ExportOperatorYieldDialog } from "@/features/reports";
+} from "./export-episodes-dialog";
 
 type ExportMenuProps = {
   initialFilters?: ExportEpisodesInitialFilters;

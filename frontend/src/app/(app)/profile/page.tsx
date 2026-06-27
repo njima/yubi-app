@@ -5,9 +5,10 @@ import { useTranslation } from "react-i18next";
 
 import { useUserRoleLabel } from "@/shared/hooks/use-status-labels";
 import type { UserRoleValue } from "@/shared/lib/status-constants";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useMeQuery, EditDisplayNameDialog } from "@/features/users";
 

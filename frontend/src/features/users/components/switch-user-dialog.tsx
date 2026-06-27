@@ -8,18 +8,18 @@ import { toast } from "sonner";
 import { useSession } from "@/lib/auth/session-context";
 import { switchUser } from "@/lib/auth/switch-user";
 
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { DropdownMenuItem } from "@/shared/ui/dropdown-menu";
-import { Input } from "@/shared/ui/input";
+} from "@/components/ui/dialog";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 
-import { useUsersQuery } from "@/features/users";
+import { useUsersQuery } from "../hooks/use-users-query";
 
 export function SwitchUserDialog() {
   const { t } = useTranslation();

@@ -30,6 +30,7 @@ export { getTaskColumns } from "./components/task-columns";
 // Task Summary Components
 export { TaskSummaryCard } from "./components/task-summary-card";
 export { TaskCompletionTrend } from "./components/task-completion-trend";
+export { ParameterizedName } from "./components/parameterized-name";
 
 // Task Hooks
 export { useTasksQuery, useTaskQuery } from "./hooks/use-tasks-query";

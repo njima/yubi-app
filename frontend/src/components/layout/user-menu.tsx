@@ -4,7 +4,7 @@ import { User } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,11 +12,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
-import { useMeQuery } from "@/features/users";
-
-import { SwitchUserDialog } from "./switch-user-dialog";
+import { SwitchUserDialog, useMeQuery } from "@/features/users";
 
 export function UserMenu() {
   const { t } = useTranslation();

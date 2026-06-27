@@ -6,9 +6,9 @@ import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
 
-import { ParameterizedName } from "@/shared/components/parameterized-name";
 import { SUBTASK_COLLECTION_STATUS } from "@/shared/lib/status-constants";
 import { cn } from "@/shared/lib/utils";
+
 import {
   Table,
   TableBody,
@@ -16,7 +16,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
+} from "@/components/ui/table";
+
+import { ParameterizedName } from "@/features/tasks";
 
 type EpisodeSubTask = z.infer<typeof schemas.EpisodeSubTask>;
 

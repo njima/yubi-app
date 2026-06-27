@@ -6,7 +6,8 @@ import {
   type EpisodeCollectionStatusValue,
 } from "@/shared/lib/status-constants";
 import { EPISODE_COLLECTION_STATUS_DISPLAY } from "@/shared/lib/status-display";
-import { Badge } from "@/shared/ui/badge";
+
+import { Badge } from "@/components/ui/badge";
 
 interface EpisodeStatusBadgeProps {
   status?: number;

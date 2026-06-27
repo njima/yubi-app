@@ -8,8 +8,8 @@ import {
 } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-import { FormItem, FormLabel } from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
+import { FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 interface DurationInputProps<T extends FieldValues> {
   control: Control<T>;

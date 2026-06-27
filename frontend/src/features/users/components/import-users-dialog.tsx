@@ -15,7 +15,7 @@ import type {
   UserImportResponse,
 } from "@/lib/api/backend-client";
 
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
+} from "@/components/ui/dialog";
 
 import {
   useValidateUserImportMutation,

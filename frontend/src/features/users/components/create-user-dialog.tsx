@@ -8,7 +8,8 @@ import { z } from "zod";
 
 import { useUserRoleLabel } from "@/shared/hooks/use-status-labels";
 import { USER_ROLE, type UserRoleValue } from "@/shared/lib/status-constants";
-import { Button } from "@/shared/ui/button";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -24,15 +25,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
+} from "@/components/ui/select";
 
 import {
   type CreateUserData,
