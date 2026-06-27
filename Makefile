@@ -130,8 +130,8 @@ fe-typecheck: ## Run TypeScript typecheck
 	$(FE_EXEC) npx tsc --noEmit
 
 .PHONY: fe-ci
-fe-ci: ## Run all frontend CI checks (lint, format, typecheck, build)
-	$(FE_EXEC) sh -c 'npm run lint && npm run format:check && npx tsc --noEmit && npm run build'
+fe-ci: ## Run all frontend CI checks (lint, import boundaries, format, typecheck, build)
+	$(FE_EXEC) sh -c 'npm run lint && npm run lint:boundaries && npm run format:check && npx tsc --noEmit && npm run build'
 
 .PHONY: fe-generate-api
 fe-generate-api: ## Generate frontend API client from OpenAPI spec

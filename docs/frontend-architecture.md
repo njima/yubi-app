@@ -118,10 +118,12 @@ Use `app/**/page.tsx` and `app/**/layout.tsx` as thin route entrypoints. Prefer 
 ### Component Placement
 
 - `components/ui`: shadcn-style primitives such as `Button`, `Dialog`, `Table`, and `DropdownMenu`.
-- `components/layout`: domain-neutral layout and app shell components such as `TopNav` and `LayoutRenderer`.
+- `components/layout`: app shell and reusable layout components such as `TopNav` and `LayoutRenderer`. App shell components may compose feature state such as the current user menu.
 - `features/*/components`: feature-owned UI, including page-level composition such as list pages and export menus. Feature modules do not have to map 1:1 to pages; capability modules such as `reporting` are allowed.
 - `app/**`: route entrypoints, route groups, layouts, and API routes. Keep route-local components rare and small.
 - `shared/*`: cross-cutting hooks, providers, and utilities. Do not place React UI primitives here.
+
+Run `npm run lint:boundaries` in the frontend container, or `make fe-ci`, to check import boundary rules.
 
 ### API Code Generation
 
