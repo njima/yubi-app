@@ -67,6 +67,7 @@ infra/database (entities, ORM)
 - **Dependency direction**: outer layers が inner layers に依存し、逆方向には依存しない
 - **Domain models**: creation と validation には `Init*()` constructors、DB からの reconstruction には `New*()` を使う
 - **Status policy**: lifecycle/status の方針は domain model に置く。usecase は lifecycle state を直接変更せず、`Start`、`Finish`、`Cancel` などの helper を使う
+- 保存する status と派生させる status のルールは [Backend Status Policy](./backend-status-policy.md) を参照する
 - **Usecase files**: 同じ usecase type を共有しつつ、episode lifecycle と recording/stat lookup のように workflow 単位でファイルを分ける
 - **HTTP stream presenters**: `interfaces/http/handler` 配下に置き、OpenAPI response construction を stream control flow から分離する
 - **Dual ID system**: `ID` (int64, internal PK) + `IDNatural` (UUID, API に公開)

@@ -566,6 +566,57 @@ func newRobotWithStatus(status RobotStatus) Robot {
 	return r
 }
 
+func TestRobotStatusPolicy(t *testing.T) {
+	tests := []struct {
+		name                    string
+		status                  RobotStatus
+		wantPersistentOperation bool
+		wantConnectionOnly      bool
+	}{
+		{
+			name:               "online is connection-only display state",
+			status:             RobotStatusOnline,
+			wantConnectionOnly: true,
+		},
+		{
+			name:                    "busy is persistent operation state",
+			status:                  RobotStatusBusy,
+			wantPersistentOperation: true,
+		},
+		{
+			name:               "offline is connection-only display state",
+			status:             RobotStatusOffline,
+			wantConnectionOnly: true,
+		},
+		{
+			name:                    "faulted is persistent operation state",
+			status:                  RobotStatusFaulted,
+			wantPersistentOperation: true,
+		},
+		{
+			name:                    "maintenance is persistent operation state",
+			status:                  RobotStatusMaintenance,
+			wantPersistentOperation: true,
+		},
+		{
+			name:                    "ready is persistent operation state",
+			status:                  RobotStatusReady,
+			wantPersistentOperation: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.status.IsPersistentOperationStatus(); got != tt.wantPersistentOperation {
+				t.Errorf("RobotStatus.IsPersistentOperationStatus() = %v, want %v", got, tt.wantPersistentOperation)
+			}
+			if got := tt.status.IsConnectionOnlyStatus(); got != tt.wantConnectionOnly {
+				t.Errorf("RobotStatus.IsConnectionOnlyStatus() = %v, want %v", got, tt.wantConnectionOnly)
+			}
+		})
+	}
+}
+
 func TestRobot_ResolvedStatusDoesNotMutateOperationStatus(t *testing.T) {
 	tests := []struct {
 		name           string
