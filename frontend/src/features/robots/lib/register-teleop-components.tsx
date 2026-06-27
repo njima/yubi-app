@@ -1,8 +1,7 @@
 "use client";
 
-import { registerLayoutComponent } from "@/shared/lib/layout-registry";
-import { isCameraItem } from "@/shared/lib/layout-types";
-
+import { registerLayoutComponent } from "@/features/robots/lib/teleop-layout-registry";
+import { isCameraItem } from "@/features/robots/lib/teleop-layout-types";
 import { TeachMeBizCard } from "@/features/tasks";
 
 import {

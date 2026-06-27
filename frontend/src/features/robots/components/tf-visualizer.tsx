@@ -2,7 +2,7 @@
 
 import { useTranslation } from "react-i18next";
 
-import type { LayoutContext } from "@/shared/lib/layout-registry";
+import type { LayoutContext } from "@/features/robots/lib/teleop-layout-registry";
 
 interface TfVisualizerProps {
   ctx: LayoutContext;

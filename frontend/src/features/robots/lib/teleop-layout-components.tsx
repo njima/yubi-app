@@ -12,14 +12,17 @@ import { useTranslation } from "react-i18next";
 
 import type { schemas } from "@/lib/api/generated/api";
 
-import type { LayoutContext, LayoutCamera } from "@/shared/lib/layout-registry";
-import type { CameraLayoutItem } from "@/shared/lib/layout-types";
 import { SUBTASK_COLLECTION_STATUS } from "@/shared/lib/status-constants";
 import { cn } from "@/shared/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import type {
+  LayoutContext,
+  LayoutCamera,
+} from "@/features/robots/lib/teleop-layout-registry";
+import type { CameraLayoutItem } from "@/features/robots/lib/teleop-layout-types";
 import { ParameterizedName } from "@/features/tasks";
 
 import { CameraView } from "../components/camera-view";

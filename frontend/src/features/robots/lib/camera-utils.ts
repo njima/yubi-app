@@ -1,5 +1,5 @@
-import type { LayoutCamera } from "@/shared/lib/layout-registry";
-import type { RobotLayoutConfig } from "@/shared/lib/layout-types";
+import type { LayoutCamera } from "@/features/robots/lib/teleop-layout-registry";
+import type { RobotLayoutConfig } from "@/features/robots/lib/teleop-layout-types";
 
 export type Camera = LayoutCamera;
 

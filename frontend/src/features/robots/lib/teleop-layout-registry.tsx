@@ -2,7 +2,7 @@
 
 import type { schemas } from "@/lib/api/generated/api";
 
-import type { LayoutItem } from "./layout-types";
+import type { LayoutItem } from "./teleop-layout-types";
 import type { ReactNode } from "react";
 import type { z } from "zod";
 
