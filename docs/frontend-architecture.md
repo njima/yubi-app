@@ -118,8 +118,8 @@ Use `app/**/page.tsx` and `app/**/layout.tsx` as thin route entrypoints. Prefer 
 ### Component Placement
 
 - `components/ui`: shadcn-style primitives such as `Button`, `Dialog`, `Table`, and `DropdownMenu`.
-- `components/layout`: app shell and reusable layout components such as `TopNav` and `LayoutRenderer`. App shell components may compose feature state such as the current user menu.
-- `features/*/components`: feature-owned UI, including page-level composition such as list pages and export menus. Feature modules do not have to map 1:1 to pages; capability modules such as `reporting` are allowed.
+- `components/layout`: app shell components such as `TopNav`, navigation items, and user menu composition. App shell components may compose feature state such as the current user menu.
+- `features/*/components`: feature-owned UI, including page-level composition such as list pages, export menus, and teleoperation screens. Feature modules do not have to map 1:1 to pages; capability modules such as `reporting` are allowed.
 - `app/**`: route entrypoints, route groups, layouts, and API routes. Keep route-local components rare and small.
 - `shared/*`: cross-cutting hooks, providers, and utilities. Do not place React UI primitives here.
 
@@ -158,6 +158,8 @@ features/episodes/
 ```
 
 Feature files should stay focused. Large feature-specific renderers can be split into local files such as `teleop-layout-components.tsx` while keeping registration or page wiring separate. Keep form ownership in the parent form unless a section has a stable prop contract.
+
+Robot teleoperation layout rendering is feature-owned because it depends on robot config, robot status streams, and episode/task context. Keep its registry, renderer, and layout config types under `features/robots`, not `shared` or generic app layout directories.
 
 ## Status Display Policy
 

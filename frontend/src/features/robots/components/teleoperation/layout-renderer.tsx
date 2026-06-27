@@ -1,17 +1,16 @@
 "use client";
 
-import { Component } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 
-import { getLayoutComponent } from "@/shared/lib/layout-registry";
-import type { LayoutContext } from "@/shared/lib/layout-registry";
+import { cn } from "@/shared/lib/utils";
+
+import { getLayoutComponent } from "@/features/robots/lib/teleop-layout-registry";
+import type { LayoutContext } from "@/features/robots/lib/teleop-layout-registry";
 import type {
   LayoutItem,
   LayoutRow,
   PageLayoutConfig,
-} from "@/shared/lib/layout-types";
-import { cn } from "@/shared/lib/utils";
-
-import type { ErrorInfo, ReactNode } from "react";
+} from "@/features/robots/lib/teleop-layout-types";
 
 interface LayoutRendererProps {
   layout: PageLayoutConfig;

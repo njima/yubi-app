@@ -14,15 +14,12 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { LayoutContext } from "@/shared/lib/layout-registry";
-import { DEFAULT_TELEOP_VIEWS } from "@/shared/lib/layout-types";
 import {
   SUBTASK_COLLECTION_STATUS,
   USER_ROLE,
 } from "@/shared/lib/status-constants";
 import { cn } from "@/shared/lib/utils";
 
-import { LayoutRenderer } from "@/components/layout/layout-renderer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -40,7 +37,11 @@ import {
   extractStreamConfig,
 } from "@/features/robots/lib/camera-utils";
 import { registerTeleopComponents } from "@/features/robots/lib/register-teleop-components";
+import type { LayoutContext } from "@/features/robots/lib/teleop-layout-registry";
+import { DEFAULT_TELEOP_VIEWS } from "@/features/robots/lib/teleop-layout-types";
 import { useMeQuery } from "@/features/users";
+
+import { LayoutRenderer } from "./layout-renderer";
 
 registerTeleopComponents();
 

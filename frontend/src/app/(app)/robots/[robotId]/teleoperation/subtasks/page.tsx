@@ -2,7 +2,7 @@
 
 import { use } from "react";
 
-import { TeleopView } from "../teleop-view";
+import { TeleopView } from "@/features/robots/components/teleoperation/teleop-view";
 
 interface PageProps {
   params: Promise<{ robotId: string }>;

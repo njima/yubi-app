@@ -118,8 +118,8 @@ lib/api -> generated, auth
 ### Component Placement
 
 - `components/ui`: `Button`、`Dialog`、`Table`、`DropdownMenu` などの shadcn-style primitives。
-- `components/layout`: `TopNav` や `LayoutRenderer` などの app shell / reusable layout components。app shell components は current user menu などの feature state を compose できます。
-- `features/*/components`: list pages や export menus を含む feature-owned UI。feature modules は page と 1:1 でなくてもよく、`reporting` のような capability modules も許容します。
+- `components/layout`: `TopNav`、navigation items、user menu composition などの app shell components。app shell components は current user menu などの feature state を compose できます。
+- `features/*/components`: list pages、export menus、teleoperation screens を含む feature-owned UI。feature modules は page と 1:1 でなくてもよく、`reporting` のような capability modules も許容します。
 - `app/**`: route entrypoints、route groups、layouts、API routes。route-local components は少数かつ小さく保ちます。
 - `shared/*`: cross-cutting hooks、providers、utilities。React UI primitives はここに置きません。
 
@@ -158,6 +158,8 @@ features/episodes/
 ```
 
 feature files は責務を絞ります。大きくなった feature-specific renderer は `teleop-layout-components.tsx` のような local file に分け、registration や page wiring とは分離します。form ownership は、section の props contract が安定している場合を除き parent form に残します。
+
+Robot teleoperation layout rendering は、robot config、robot status streams、episode/task context に依存するため feature-owned とします。registry、renderer、layout config types は `shared` や generic app layout directory ではなく `features/robots` 配下に置きます。
 
 ## Status Display Policy
 
