@@ -1,4 +1,6 @@
 // Hooks
+export { ProfilePage } from "./components/profile-page";
+export { UserListPage } from "./components/user-list-page";
 export { useUsersQuery, useUserQuery } from "./hooks/use-users-query";
 export { useUserSearchOptions } from "./hooks/use-user-search-options";
 export { useMeQuery } from "./hooks/use-me-query";

@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { ExportOperatorYieldDialog } from "@/features/reports";
+import { ExportOperatorYieldDialog } from "@/features/reporting";
 
 import {
   ExportEpisodesDialog,

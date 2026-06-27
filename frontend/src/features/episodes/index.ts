@@ -2,6 +2,7 @@
 export { episodeStatusOptions } from "./constants";
 
 // Components
+export { EpisodeListPage } from "./components/episode-list-page";
 export {
   ExportEpisodesDialog,
   type ExportEpisodesInitialFilters,
