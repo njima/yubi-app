@@ -118,10 +118,12 @@ lib/api -> generated, auth
 ### Component Placement
 
 - `components/ui`: `Button`、`Dialog`、`Table`、`DropdownMenu` などの shadcn-style primitives。
-- `components/layout`: `TopNav` や `LayoutRenderer` などの domain-neutral layout / app shell components。
+- `components/layout`: `TopNav` や `LayoutRenderer` などの app shell / reusable layout components。app shell components は current user menu などの feature state を compose できます。
 - `features/*/components`: list pages や export menus を含む feature-owned UI。feature modules は page と 1:1 でなくてもよく、`reporting` のような capability modules も許容します。
 - `app/**`: route entrypoints、route groups、layouts、API routes。route-local components は少数かつ小さく保ちます。
 - `shared/*`: cross-cutting hooks、providers、utilities。React UI primitives はここに置きません。
+
+import boundary rules は frontend container 内の `npm run lint:boundaries`、または `make fe-ci` で確認します。
 
 ### API Code Generation
 
