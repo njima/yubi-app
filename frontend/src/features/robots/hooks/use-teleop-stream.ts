@@ -4,8 +4,7 @@ import { useCallback, useState } from "react";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { useManagedEventSource } from "@/shared/hooks/use-managed-event-source";
+import { useManagedEventSource } from "@/lib/hooks/use-managed-event-source";
 
 import type { RobotStatusStreamDetail } from "../schemas/robot";
 

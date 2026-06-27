@@ -6,8 +6,7 @@ import Link from "next/link";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { formatDateTime } from "@/shared/lib/date-utils";
+import { formatDateTime } from "@/lib/date-utils";
 
 import { Button } from "@/components/ui/button";
 

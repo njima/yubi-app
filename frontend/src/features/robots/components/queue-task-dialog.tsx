@@ -6,7 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
-import { APPROVAL_STATUS } from "@/shared/lib/status-constants";
+import { APPROVAL_STATUS } from "@/lib/status/constants";
 
 import { Button } from "@/components/ui/button";
 import {

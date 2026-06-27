@@ -8,7 +8,7 @@
 import { Ban, CheckCircle, Circle, Loader2, SkipForward } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { SUBTASK_COLLECTION_STATUS } from "@/shared/lib/status-constants";
+import { SUBTASK_COLLECTION_STATUS } from "@/lib/status/constants";
 
 /**
  * Hook to get subtask collection status configuration

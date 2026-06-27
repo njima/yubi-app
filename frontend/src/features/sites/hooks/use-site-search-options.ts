@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 
-import { useSearchState } from "@/shared/hooks/use-search-state";
+import { useSearchState } from "@/lib/hooks/use-search-state";
 
 import { useSitesQuery } from "./use-sites-query";
 

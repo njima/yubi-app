@@ -3,8 +3,8 @@
 import { Battery, Clock, MapPin, Building2, Signal, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { formatUptime } from "@/shared/lib/date-utils";
-import { LEADER_STATUS, ROBOT_STATUS } from "@/shared/lib/status-constants";
+import { formatUptime } from "@/lib/date-utils";
+import { LEADER_STATUS, ROBOT_STATUS } from "@/lib/status/constants";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

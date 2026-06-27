@@ -7,9 +7,8 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { useRobotTypeLabel } from "@/shared/hooks/use-status-labels";
-import { ROBOT_TYPE } from "@/shared/lib/status-constants";
+import { useRobotTypeLabel } from "@/lib/hooks/use-status-labels";
+import { ROBOT_TYPE } from "@/lib/status/constants";
 
 import { Button } from "@/components/ui/button";
 import {

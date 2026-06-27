@@ -6,9 +6,8 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { useUserRoleLabel } from "@/shared/hooks/use-status-labels";
-import { USER_ROLE, type UserRoleValue } from "@/shared/lib/status-constants";
+import { useUserRoleLabel } from "@/lib/hooks/use-status-labels";
+import { USER_ROLE, type UserRoleValue } from "@/lib/status/constants";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

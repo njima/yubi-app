@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  LEADER_STATUS,
-  type LeaderStatusValue,
-} from "@/shared/lib/status-constants";
+import { LEADER_STATUS, type LeaderStatusValue } from "@/lib/status/constants";
 
 import { Badge } from "@/components/ui/badge";
 

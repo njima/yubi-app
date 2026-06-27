@@ -1,4 +1,4 @@
-import { USER_ROLE, type UserRoleValue } from "./status-constants";
+import { USER_ROLE, type UserRoleValue } from "./status/constants";
 
 export type PermissionAction =
   | "robot:create"

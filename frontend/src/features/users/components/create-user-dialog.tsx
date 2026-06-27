@@ -6,8 +6,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { useUserRoleLabel } from "@/shared/hooks/use-status-labels";
-import { USER_ROLE, type UserRoleValue } from "@/shared/lib/status-constants";
+import { useUserRoleLabel } from "@/lib/hooks/use-status-labels";
+import { USER_ROLE, type UserRoleValue } from "@/lib/status/constants";
 
 import { Button } from "@/components/ui/button";
 import {

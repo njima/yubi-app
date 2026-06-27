@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { PAGE_SIZE_OPTIONS } from "@/shared/lib/pagination";
+import { PAGE_SIZE_OPTIONS } from "@/lib/pagination";
 
 import { Button } from "@/components/ui/button";
 import {

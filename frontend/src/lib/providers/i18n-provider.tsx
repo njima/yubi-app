@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 
-import i18n from "@/shared/lib/i18n";
-import { getPreferredLanguage } from "@/shared/lib/language-storage";
+import i18n from "@/lib/i18n";
+import { getPreferredLanguage } from "@/lib/i18n/language-storage";
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {

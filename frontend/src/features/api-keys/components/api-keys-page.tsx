@@ -9,8 +9,8 @@ import {
 import { Suspense, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useFormatAbsoluteTime } from "@/shared/hooks/use-date-formatters";
-import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
+import { useFormatAbsoluteTime } from "@/lib/hooks/use-date-formatters";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";

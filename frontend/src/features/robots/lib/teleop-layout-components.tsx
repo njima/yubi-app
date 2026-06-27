@@ -11,9 +11,8 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 
 import type { schemas } from "@/lib/api/generated/api";
-
-import { SUBTASK_COLLECTION_STATUS } from "@/shared/lib/status-constants";
-import { cn } from "@/shared/lib/utils";
+import { SUBTASK_COLLECTION_STATUS } from "@/lib/status/constants";
+import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

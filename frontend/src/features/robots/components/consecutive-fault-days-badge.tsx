@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface ConsecutiveFaultDaysBadgeProps {
   days?: number | null;

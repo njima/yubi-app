@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 
 const categoryColors: Record<string, string> = {
   Application: "border-l-blue-400 dark:border-l-blue-500",

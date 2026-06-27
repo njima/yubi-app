@@ -1,11 +1,11 @@
 "use client";
 
-import { useEpisodeCollectionStatusLabel } from "@/shared/hooks/use-status-labels";
+import { useEpisodeCollectionStatusLabel } from "@/lib/hooks/use-status-labels";
 import {
   EPISODE_COLLECTION_STATUS,
   type EpisodeCollectionStatusValue,
-} from "@/shared/lib/status-constants";
-import { EPISODE_COLLECTION_STATUS_DISPLAY } from "@/shared/lib/status-display";
+} from "@/lib/status/constants";
+import { EPISODE_COLLECTION_STATUS_DISPLAY } from "@/lib/status/display";
 
 import { Badge } from "@/components/ui/badge";
 

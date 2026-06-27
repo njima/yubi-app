@@ -3,9 +3,9 @@
 import {
   TASK_DIFFICULTY,
   type TaskDifficultyValue,
-} from "@/shared/lib/status-constants";
-import { getTaskDifficultyLabel } from "@/shared/lib/status-utils";
-import { cn } from "@/shared/lib/utils";
+} from "@/lib/status/constants";
+import { getTaskDifficultyLabel } from "@/lib/status/utils";
+import { cn } from "@/lib/utils";
 
 const difficultyDotColors: Record<TaskDifficultyValue, string> = {
   [TASK_DIFFICULTY.S]: "bg-red-500",

@@ -5,9 +5,8 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { SUBTASK_COLLECTION_STATUS } from "@/shared/lib/status-constants";
-import { cn } from "@/shared/lib/utils";
+import { SUBTASK_COLLECTION_STATUS } from "@/lib/status/constants";
+import { cn } from "@/lib/utils";
 
 import {
   Table,

@@ -2,7 +2,7 @@
 
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
-import { assignColors } from "@/shared/lib/chart-colors";
+import { assignColors } from "@/lib/chart-colors";
 
 import type {
   ColoredCollectionTrend,

@@ -8,13 +8,13 @@ import { toast } from "sonner";
 import {
   useTaskStatusLabel,
   useTaskPriorityLabel,
-} from "@/shared/hooks/use-status-labels";
+} from "@/lib/hooks/use-status-labels";
 import {
   TASK_STATUS,
   TASK_PRIORITY,
   TASK_DIFFICULTY,
-} from "@/shared/lib/status-constants";
-import { getTaskDifficultyLabel } from "@/shared/lib/status-utils";
+} from "@/lib/status/constants";
+import { getTaskDifficultyLabel } from "@/lib/status/utils";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

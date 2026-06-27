@@ -5,8 +5,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { truncateUuid } from "@/shared/lib/format";
+import { truncateUuid } from "@/lib/format";
 
 import { Button } from "@/components/ui/button";
 

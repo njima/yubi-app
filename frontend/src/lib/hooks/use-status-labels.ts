@@ -19,12 +19,12 @@ import {
   type TaskStatusValue,
   USER_ROLE,
   type UserRoleValue,
-} from "@/shared/lib/status-constants";
+} from "@/lib/status/constants";
 import {
   EPISODE_COLLECTION_STATUS_DISPLAY,
   ROBOT_STATUS_DISPLAY,
   TASK_STATUS_DISPLAY,
-} from "@/shared/lib/status-display";
+} from "@/lib/status/display";
 
 /**
  * Hook to get episode collection status label

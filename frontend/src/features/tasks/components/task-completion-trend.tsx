@@ -13,7 +13,7 @@ import {
   type TooltipContentProps,
 } from "recharts";
 
-import { CHART_PALETTE } from "@/shared/lib/chart-colors";
+import { CHART_PALETTE } from "@/lib/chart-colors";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type DateRange } from "@/components/ui/date-range-picker";

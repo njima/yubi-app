@@ -4,8 +4,7 @@ import { useCallback, useMemo } from "react";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
+import { EPISODE_COLLECTION_STATUS } from "@/lib/status/constants";
 
 import { useSSEStream } from "./use-sse-stream";
 

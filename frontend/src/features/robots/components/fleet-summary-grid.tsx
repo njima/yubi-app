@@ -2,7 +2,7 @@
 
 import { useTranslation } from "react-i18next";
 
-import { THRESHOLD_COLORS } from "@/shared/lib/chart-colors";
+import { THRESHOLD_COLORS } from "@/lib/chart-colors";
 
 import { useFleetSummaryQuery } from "../hooks/use-fleet-summary-query";
 

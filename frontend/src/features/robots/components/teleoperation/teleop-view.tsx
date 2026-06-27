@@ -14,11 +14,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  SUBTASK_COLLECTION_STATUS,
-  USER_ROLE,
-} from "@/shared/lib/status-constants";
-import { cn } from "@/shared/lib/utils";
+import { SUBTASK_COLLECTION_STATUS, USER_ROLE } from "@/lib/status/constants";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
