@@ -16,8 +16,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { toDateTimeLocalValue } from "@/shared/lib/date-utils";
-import { APPROVAL_STATUS } from "@/shared/lib/status-constants";
+import { toDateTimeLocalValue } from "@/lib/date-utils";
+import { APPROVAL_STATUS } from "@/lib/status/constants";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

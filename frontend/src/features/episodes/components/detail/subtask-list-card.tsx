@@ -6,10 +6,9 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { useSubtaskCollectionStatusConfig } from "@/shared/hooks/use-subtask-collection-status-config";
-import { formatDateTime, formatDuration } from "@/shared/lib/date-utils";
-import { SUBTASK_COLLECTION_STATUS } from "@/shared/lib/status-constants";
+import { formatDateTime, formatDuration } from "@/lib/date-utils";
+import { useSubtaskCollectionStatusConfig } from "@/lib/hooks/use-subtask-collection-status-config";
+import { SUBTASK_COLLECTION_STATUS } from "@/lib/status/constants";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

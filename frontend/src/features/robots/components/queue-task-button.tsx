@@ -4,7 +4,7 @@ import { ListPlus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ROBOT_STATUS } from "@/shared/lib/status-constants";
+import { ROBOT_STATUS } from "@/lib/status/constants";
 
 import { Button } from "@/components/ui/button";
 import {

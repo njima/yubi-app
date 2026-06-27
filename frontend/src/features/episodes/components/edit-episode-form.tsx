@@ -6,9 +6,8 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { useEpisodeCollectionStatusLabel } from "@/shared/hooks/use-status-labels";
-import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
+import { useEpisodeCollectionStatusLabel } from "@/lib/hooks/use-status-labels";
+import { EPISODE_COLLECTION_STATUS } from "@/lib/status/constants";
 
 import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/ui/datetime-picker";

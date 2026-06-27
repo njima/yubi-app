@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 
-import { useManagedEventSource } from "@/shared/hooks/use-managed-event-source";
+import { useManagedEventSource } from "@/lib/hooks/use-managed-event-source";
 
 import type {
   RobotStatusStreamDetail,

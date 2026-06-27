@@ -1,8 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
-import { I18nProvider } from "@/shared/providers/i18n-provider";
-import { QueryProvider } from "@/shared/providers/query-provider";
+import { I18nProvider } from "@/lib/providers/i18n-provider";
+import { QueryProvider } from "@/lib/providers/query-provider";
 
 import type { Metadata } from "next";
 

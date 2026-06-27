@@ -5,7 +5,7 @@ import {
   type RobotStatusValue,
   TASK_STATUS,
   type TaskStatusValue,
-} from "./status-constants";
+} from "./constants";
 
 export interface StatusDisplayConfig {
   labelKey: string;

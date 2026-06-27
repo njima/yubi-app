@@ -3,8 +3,8 @@
 import { Mail, Shield, Calendar, User, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { useUserRoleLabel } from "@/shared/hooks/use-status-labels";
-import type { UserRoleValue } from "@/shared/lib/status-constants";
+import { useUserRoleLabel } from "@/lib/hooks/use-status-labels";
+import type { UserRoleValue } from "@/lib/status/constants";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

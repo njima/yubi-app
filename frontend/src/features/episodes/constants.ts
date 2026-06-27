@@ -1,4 +1,4 @@
-import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
+import { EPISODE_COLLECTION_STATUS } from "@/lib/status/constants";
 
 export const episodeStatusOptions = [
   EPISODE_COLLECTION_STATUS.READY,

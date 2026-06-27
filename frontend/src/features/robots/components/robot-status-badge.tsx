@@ -1,11 +1,8 @@
 "use client";
 
-import { useRobotStatusLabel } from "@/shared/hooks/use-status-labels";
-import {
-  ROBOT_STATUS,
-  type RobotStatusValue,
-} from "@/shared/lib/status-constants";
-import { ROBOT_STATUS_DISPLAY } from "@/shared/lib/status-display";
+import { useRobotStatusLabel } from "@/lib/hooks/use-status-labels";
+import { ROBOT_STATUS, type RobotStatusValue } from "@/lib/status/constants";
+import { ROBOT_STATUS_DISPLAY } from "@/lib/status/display";
 
 import { Badge } from "@/components/ui/badge";
 

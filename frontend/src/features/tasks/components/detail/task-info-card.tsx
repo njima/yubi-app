@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { APPROVAL_STATUS } from "@/shared/lib/status-constants";
+import { APPROVAL_STATUS } from "@/lib/status/constants";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

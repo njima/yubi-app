@@ -9,7 +9,7 @@ import { z } from "zod";
 import {
   useTaskStatusLabel,
   useTaskPriorityLabel,
-} from "@/shared/hooks/use-status-labels";
+} from "@/lib/hooks/use-status-labels";
 import {
   TASK_DIFFICULTY,
   type TaskDifficultyValue,
@@ -17,8 +17,8 @@ import {
   type TaskPriorityValue,
   TASK_STATUS,
   type TaskStatusValue,
-} from "@/shared/lib/status-constants";
-import { getTaskDifficultyLabel } from "@/shared/lib/status-utils";
+} from "@/lib/status/constants";
+import { getTaskDifficultyLabel } from "@/lib/status/utils";
 
 import { Button } from "@/components/ui/button";
 import {

@@ -47,7 +47,7 @@ frontend/
 │   │   ├── tasks/              # Task management
 │   │   └── users/              # User CRUD, roles
 │   │
-│   ├── lib/                    # core libraries
+│   ├── lib/                    # app-wide non-UI libraries
 │   │   ├── api/                # API client configuration
 │   │   │   ├── client.ts       # interceptors 付き Zodios client
 │   │   │   ├── client-fetch.ts # browser-side fetch/schema helpers
@@ -56,13 +56,11 @@ frontend/
 │   │   │   ├── backend-client/ # endpoint group ごとの server-side backend wrappers
 │   │   │   ├── config.ts       # API URL configuration
 │   │   │   └── generated/      # auto-generated Zodios client
-│   │   └── auth/               # session management
-│   │       └── session.ts      # getUserId(), getUserSession()
-│   │
-│   └── shared/                 # features 横断の shared code
-│       ├── hooks/              # shared hooks (status labels など)
-│       ├── lib/                # utilities (date, status constants)
-│       └── providers/          # React providers (QueryProvider)
+│   │   ├── auth/               # session management
+│   │   ├── hooks/              # app-wide hooks
+│   │   ├── i18n/               # i18n setup, language storage, locales
+│   │   ├── providers/          # React providers (QueryProvider)
+│   │   └── status/             # app-wide status constants and display metadata
 │
 ├── public/                     # static assets
 ├── next.config.ts              # Next.js configuration
@@ -103,17 +101,17 @@ Backend API (http://backend:8000)
 dependency direction は次の形に保ちます。
 
 ```text
-app -> features -> shared
+app -> features -> lib
 app -> components
 app/api -> lib/api
-features -> lib/api, shared
+features -> lib
 features -> components
 lib/api -> generated, auth
 ```
 
-`shared` は concrete feature modules を import しません。shared rendering に feature-specific behavior が必要な場合は、teleoperation layout components のように feature layer から registry に登録します。feature 間の import は、target feature の小さな public API 経由にします。
+`lib` は app-wide non-UI code を置く場所で、concrete な `app`、`features`、`components` modules を import しません。feature-specific helpers は `features/*/lib` に置きます。feature 間の import は、target feature の小さな public API 経由にします。
 
-`app/**/page.tsx` と `app/**/layout.tsx` は薄い route entrypoint として扱います。feature-owned page composition は `features/*/components`、navigation などの app shell components は `components/layout` に置きます。`app/**/_components` は、feature や shared component area に自然に置けない小さな route glue に限ります。
+`app/**/page.tsx` と `app/**/layout.tsx` は薄い route entrypoint として扱います。feature-owned page composition は `features/*/components`、navigation などの app shell components は `components/layout` に置きます。`app/**/_components` は、feature や app-wide library area に自然に置けない小さな route glue に限ります。
 
 ### Component Placement
 
@@ -121,7 +119,7 @@ lib/api -> generated, auth
 - `components/layout`: `TopNav`、navigation items、user menu composition などの app shell components。app shell components は current user menu などの feature state を compose できます。
 - `features/*/components`: list pages、export menus、teleoperation screens を含む feature-owned UI。feature modules は page と 1:1 でなくてもよく、`reporting` のような capability modules も許容します。
 - `app/**`: route entrypoints、route groups、layouts、API routes。route-local components は少数かつ小さく保ちます。
-- `shared/*`: cross-cutting hooks、providers、utilities。React UI primitives はここに置きません。
+- `lib/*`: API clients、auth、hooks、i18n、providers、status metadata、utilities などの app-wide non-UI code。React UI primitives はここに置きません。
 
 import boundary rules は frontend container 内の `npm run lint:boundaries`、または `make fe-ci` で確認します。
 
@@ -159,11 +157,11 @@ features/episodes/
 
 feature files は責務を絞ります。大きくなった feature-specific renderer は `teleop-layout-components.tsx` のような local file に分け、registration や page wiring とは分離します。form ownership は、section の props contract が安定している場合を除き parent form に残します。
 
-Robot teleoperation layout rendering は、robot config、robot status streams、episode/task context に依存するため feature-owned とします。registry、renderer、layout config types は `shared` や generic app layout directory ではなく `features/robots` 配下に置きます。
+Robot teleoperation layout rendering は、robot config、robot status streams、episode/task context に依存するため feature-owned とします。registry、renderer、layout config types は app-wide `lib` や generic app layout directory ではなく `features/robots` 配下に置きます。
 
 ## Status Display Policy
 
-status values は `shared/lib/status-constants.ts` に置きます。badge color、label key、terminal state、successful completion などの display metadata は `shared/lib/status-display.ts` に置きます。feature badge components は feature-specific のままでよいですが、status map を重複させず shared display metadata を使います。
+status values は `lib/status/constants.ts` に置きます。badge color、label key、terminal state、successful completion などの display metadata は `lib/status/display.ts` に置きます。feature badge components は feature-specific のままでよいですが、status map を重複させず app-wide status metadata を使います。
 
 ## 認証
 

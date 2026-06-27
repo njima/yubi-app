@@ -13,9 +13,9 @@ import { useTranslation } from "react-i18next";
 import {
   useFormatAbsoluteTime,
   useFormatDistanceTime,
-} from "@/shared/hooks/use-date-formatters";
-import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
-import { ROBOT_STATUS, USER_ROLE } from "@/shared/lib/status-constants";
+} from "@/lib/hooks/use-date-formatters";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
+import { ROBOT_STATUS, USER_ROLE } from "@/lib/status/constants";
 
 import { PaginationFooter } from "@/components/ui/pagination-footer";
 import { SearchableSelect } from "@/components/ui/searchable-select";

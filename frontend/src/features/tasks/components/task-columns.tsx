@@ -4,8 +4,8 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { ExternalLink, Pencil } from "lucide-react";
 import Link from "next/link";
 
-import { toDateTimeLocalValue } from "@/shared/lib/date-utils";
-import { truncateUuid } from "@/shared/lib/format";
+import { toDateTimeLocalValue } from "@/lib/date-utils";
+import { truncateUuid } from "@/lib/format";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

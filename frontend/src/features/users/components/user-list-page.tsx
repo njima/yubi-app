@@ -10,9 +10,9 @@ import {
 import { Suspense, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useFormatRelativeTime } from "@/shared/hooks/use-date-formatters";
-import { useUserRoleLabel } from "@/shared/hooks/use-status-labels";
-import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
+import { useFormatRelativeTime } from "@/lib/hooks/use-date-formatters";
+import { useUserRoleLabel } from "@/lib/hooks/use-status-labels";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 
 import { SearchableSelect } from "@/components/ui/searchable-select";
 

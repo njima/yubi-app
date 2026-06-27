@@ -4,7 +4,7 @@ import { Check, ChevronDown, Loader2, Search } from "lucide-react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 

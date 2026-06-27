@@ -15,8 +15,8 @@ const rules = [
       specifier === "@/app" || specifier.startsWith("@/app/"),
   },
   {
-    name: "shared must not depend on app, features, or components",
-    appliesTo: (file) => relative(file).startsWith("shared/"),
+    name: "lib must not depend on app, features, or components",
+    appliesTo: (file) => relative(file).startsWith("lib/"),
     forbidden: (specifier) =>
       specifier === "@/app" ||
       specifier.startsWith("@/app/") ||
@@ -37,7 +37,7 @@ const rules = [
       specifier.startsWith("@/lib/api/"),
   },
   {
-    name: "lib/api must not depend on app, features, components, or shared",
+    name: "lib/api must not depend on app, features, or components",
     appliesTo: (file) => relative(file).startsWith("lib/api/"),
     forbidden: (specifier) =>
       specifier === "@/app" ||
@@ -45,9 +45,7 @@ const rules = [
       specifier === "@/features" ||
       specifier.startsWith("@/features/") ||
       specifier === "@/components" ||
-      specifier.startsWith("@/components/") ||
-      specifier === "@/shared" ||
-      specifier.startsWith("@/shared/"),
+      specifier.startsWith("@/components/"),
   },
 ];
 

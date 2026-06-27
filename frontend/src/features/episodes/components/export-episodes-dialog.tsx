@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { useEpisodeCollectionStatusLabel } from "@/shared/hooks/use-status-labels";
+import { useEpisodeCollectionStatusLabel } from "@/lib/hooks/use-status-labels";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

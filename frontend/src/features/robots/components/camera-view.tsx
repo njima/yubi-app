@@ -3,9 +3,9 @@
 import { Video } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { buildMjpegStreamUrl } from "@/shared/lib/mjpeg";
-import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
-import { cn } from "@/shared/lib/utils";
+import { buildMjpegStreamUrl } from "@/lib/mjpeg";
+import { EPISODE_COLLECTION_STATUS } from "@/lib/status/constants";
+import { cn } from "@/lib/utils";
 
 import {
   ErrorOverlay,

@@ -30,12 +30,12 @@ export type RobotConfig = Robot["robot_config"];
 
 /**
  * Robot Status Constants
- * Re-exported from shared/lib/status-constants.ts to avoid duplication
+ * Re-exported from lib/status/constants.ts to avoid duplication
  */
 export {
   ROBOT_STATUS,
   type RobotStatusValue as RobotStatus,
-} from "@/shared/lib/status-constants";
+} from "@/lib/status/constants";
 
 /**
  * Battery level thresholds

@@ -1,11 +1,8 @@
 "use client";
 
-import { useTaskPriorityLabel } from "@/shared/hooks/use-status-labels";
-import {
-  TASK_PRIORITY,
-  type TaskPriorityValue,
-} from "@/shared/lib/status-constants";
-import { cn } from "@/shared/lib/utils";
+import { useTaskPriorityLabel } from "@/lib/hooks/use-status-labels";
+import { TASK_PRIORITY, type TaskPriorityValue } from "@/lib/status/constants";
+import { cn } from "@/lib/utils";
 
 const priorityDotColors: Record<TaskPriorityValue, string> = {
   [TASK_PRIORITY.LOW]: "bg-gray-400",

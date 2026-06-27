@@ -12,9 +12,9 @@ import {
 import { Suspense, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useEpisodeCollectionStatusLabel } from "@/shared/hooks/use-status-labels";
-import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
-import { parseEpisodeCollectionStatus } from "@/shared/lib/status-utils";
+import { useEpisodeCollectionStatusLabel } from "@/lib/hooks/use-status-labels";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
+import { parseEpisodeCollectionStatus } from "@/lib/status/utils";
 
 import {
   DateRangePicker,

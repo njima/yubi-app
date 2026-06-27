@@ -11,8 +11,7 @@ import { z } from "zod";
 import { fetchAndParse } from "@/lib/api/client-fetch";
 import { schemas } from "@/lib/api/generated/api";
 import { withQueryString } from "@/lib/api/query-string";
-
-import type { EpisodeCollectionStatusValue } from "@/shared/lib/status-constants";
+import type { EpisodeCollectionStatusValue } from "@/lib/status/constants";
 
 import type { UseQueryOptions } from "@tanstack/react-query";
 

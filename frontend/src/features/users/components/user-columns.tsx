@@ -4,8 +4,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { type UserRoleValue } from "@/shared/lib/status-constants";
+import { type UserRoleValue } from "@/lib/status/constants";
 
 import { DataTableColumnHeader } from "@/features/tasks/components/data-table-column-header";
 

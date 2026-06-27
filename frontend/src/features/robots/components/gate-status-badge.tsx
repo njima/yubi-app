@@ -2,8 +2,7 @@ import { cva } from "class-variance-authority";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import {

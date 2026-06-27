@@ -4,8 +4,8 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { AlertCircle, ExternalLink, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 
-import { truncateUuid } from "@/shared/lib/format";
-import { ROBOT_STATUS, USER_ROLE } from "@/shared/lib/status-constants";
+import { truncateUuid } from "@/lib/format";
+import { ROBOT_STATUS, USER_ROLE } from "@/lib/status/constants";
 
 import { Button } from "@/components/ui/button";
 import {

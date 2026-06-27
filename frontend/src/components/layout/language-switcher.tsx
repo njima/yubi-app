@@ -3,10 +3,7 @@
 import { Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  type Language,
-  setStoredLanguage,
-} from "@/shared/lib/language-storage";
+import { type Language, setStoredLanguage } from "@/lib/i18n/language-storage";
 
 type LanguageOption = {
   code: Language;

@@ -15,19 +15,19 @@ import { useTranslation } from "react-i18next";
 import {
   useTaskStatusLabel,
   useTaskPriorityLabel,
-} from "@/shared/hooks/use-status-labels";
-import { DEFAULT_PAGE_SIZE } from "@/shared/lib/pagination";
+} from "@/lib/hooks/use-status-labels";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import {
   TASK_STATUS,
   TASK_PRIORITY,
   TASK_DIFFICULTY,
-} from "@/shared/lib/status-constants";
+} from "@/lib/status/constants";
 import {
   parseTaskStatus,
   parseTaskPriority,
   parseTaskDifficulty,
   getTaskDifficultyLabel,
-} from "@/shared/lib/status-utils";
+} from "@/lib/status/utils";
 
 import { type DateRange } from "@/components/ui/date-range-picker";
 import {

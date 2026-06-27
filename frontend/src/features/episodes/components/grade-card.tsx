@@ -1,8 +1,7 @@
 "use client";
 
 import type { EpisodeGrade } from "@/lib/api/backend-client";
-
-import { useFormatRelativeTime } from "@/shared/hooks/use-date-formatters";
+import { useFormatRelativeTime } from "@/lib/hooks/use-date-formatters";
 
 import { GradeBar } from "./grade-bar";
 

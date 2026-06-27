@@ -47,7 +47,7 @@ frontend/
 │   │   ├── tasks/              # Task management
 │   │   └── users/              # User CRUD, roles
 │   │
-│   ├── lib/                    # Core libraries
+│   ├── lib/                    # App-wide non-UI libraries
 │   │   ├── api/                # API client configuration
 │   │   │   ├── client.ts       # Zodios client with interceptors
 │   │   │   ├── client-fetch.ts # Browser-side fetch/schema helpers
@@ -56,13 +56,11 @@ frontend/
 │   │   │   ├── backend-client/ # Server-side backend wrappers by endpoint group
 │   │   │   ├── config.ts       # API URL configuration
 │   │   │   └── generated/      # Auto-generated Zodios client
-│   │   └── auth/               # Session management
-│   │       └── session.ts      # getUserId(), getUserSession()
-│   │
-│   └── shared/                 # Shared code across features
-│       ├── hooks/              # Shared hooks (status labels, etc.)
-│       ├── lib/                # Utilities (date, status constants)
-│       └── providers/          # React providers (QueryProvider)
+│   │   ├── auth/               # Session management
+│   │   ├── hooks/              # App-wide hooks
+│   │   ├── i18n/               # i18n setup, language storage, locales
+│   │   ├── providers/          # React providers (QueryProvider)
+│   │   └── status/             # App-wide status constants and display metadata
 │
 ├── public/                     # Static assets
 ├── next.config.ts              # Next.js configuration
@@ -103,17 +101,17 @@ Backend API (http://backend:8000)
 Keep dependency direction explicit:
 
 ```text
-app -> features -> shared
+app -> features -> lib
 app -> components
 app/api -> lib/api
-features -> lib/api, shared
+features -> lib
 features -> components
 lib/api -> generated, auth
 ```
 
-`shared` must not import concrete feature modules. If shared rendering needs feature-specific behavior, register it from the feature layer through a registry, as teleoperation layout components do. Cross-feature imports should go through a small public API from the target feature.
+`lib` contains app-wide non-UI code and must not import concrete `app`, `features`, or `components` modules. Feature-specific helpers belong in `features/*/lib`. Cross-feature imports should go through a small public API from the target feature.
 
-Use `app/**/page.tsx` and `app/**/layout.tsx` as thin route entrypoints. Prefer `features/*/components` for feature-owned page composition and `components/layout` for app shell components such as navigation. Avoid adding `app/**/_components` unless the component is tiny route glue that cannot reasonably belong to a feature or shared component area.
+Use `app/**/page.tsx` and `app/**/layout.tsx` as thin route entrypoints. Prefer `features/*/components` for feature-owned page composition and `components/layout` for app shell components such as navigation. Avoid adding `app/**/_components` unless the component is tiny route glue that cannot reasonably belong to a feature or app-wide library area.
 
 ### Component Placement
 
@@ -121,7 +119,7 @@ Use `app/**/page.tsx` and `app/**/layout.tsx` as thin route entrypoints. Prefer 
 - `components/layout`: app shell components such as `TopNav`, navigation items, and user menu composition. App shell components may compose feature state such as the current user menu.
 - `features/*/components`: feature-owned UI, including page-level composition such as list pages, export menus, and teleoperation screens. Feature modules do not have to map 1:1 to pages; capability modules such as `reporting` are allowed.
 - `app/**`: route entrypoints, route groups, layouts, and API routes. Keep route-local components rare and small.
-- `shared/*`: cross-cutting hooks, providers, and utilities. Do not place React UI primitives here.
+- `lib/*`: app-wide non-UI code such as API clients, auth, hooks, i18n, providers, status metadata, and utilities. Do not place React UI primitives here.
 
 Run `npm run lint:boundaries` in the frontend container, or `make fe-ci`, to check import boundary rules.
 
@@ -159,11 +157,11 @@ features/episodes/
 
 Feature files should stay focused. Large feature-specific renderers can be split into local files such as `teleop-layout-components.tsx` while keeping registration or page wiring separate. Keep form ownership in the parent form unless a section has a stable prop contract.
 
-Robot teleoperation layout rendering is feature-owned because it depends on robot config, robot status streams, and episode/task context. Keep its registry, renderer, and layout config types under `features/robots`, not `shared` or generic app layout directories.
+Robot teleoperation layout rendering is feature-owned because it depends on robot config, robot status streams, and episode/task context. Keep its registry, renderer, and layout config types under `features/robots`, not app-wide `lib` or generic app layout directories.
 
 ## Status Display Policy
 
-Status values live in `shared/lib/status-constants.ts`. Display metadata such as badge color, label key, terminal state, and successful completion lives in `shared/lib/status-display.ts`. Feature badge components can remain feature-specific, but they should consume shared display metadata instead of duplicating status maps.
+Status values live in `lib/status/constants.ts`. Display metadata such as badge color, label key, terminal state, and successful completion lives in `lib/status/display.ts`. Feature badge components can remain feature-specific, but they should consume app-wide display metadata instead of duplicating status maps.
 
 ## Authentication
 

@@ -9,7 +9,7 @@ import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { buildMjpegStreamUrl, buildMjpegViewerUrl } from "@/shared/lib/mjpeg";
+import { buildMjpegStreamUrl, buildMjpegViewerUrl } from "@/lib/mjpeg";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";

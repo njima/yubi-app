@@ -4,7 +4,7 @@ import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

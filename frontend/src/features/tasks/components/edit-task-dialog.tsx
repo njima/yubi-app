@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { type TaskStatusValue } from "@/shared/lib/status-constants";
+import { type TaskStatusValue } from "@/lib/status/constants";
 import {
   type TaskDifficultyValue,
   type TaskPriorityValue,
-} from "@/shared/lib/status-constants";
+} from "@/lib/status/constants";
 
 import {
   Dialog,

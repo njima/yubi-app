@@ -9,12 +9,11 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { schemas } from "@/lib/api/generated/api";
-
-import { APPROVAL_STATUS } from "@/shared/lib/status-constants";
+import { APPROVAL_STATUS } from "@/lib/status/constants";
 import type {
   TaskPriorityValue,
   TaskStatusValue,
-} from "@/shared/lib/status-constants";
+} from "@/lib/status/constants";
 
 import { Button } from "@/components/ui/button";
 import {

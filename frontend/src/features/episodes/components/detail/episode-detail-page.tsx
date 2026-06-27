@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
-import { formatDateTime } from "@/shared/lib/date-utils";
-import { EPISODE_COLLECTION_STATUS } from "@/shared/lib/status-constants";
+import { formatDateTime } from "@/lib/date-utils";
+import { EPISODE_COLLECTION_STATUS } from "@/lib/status/constants";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
