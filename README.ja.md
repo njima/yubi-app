@@ -186,6 +186,7 @@ HOST_BACKEND_PORT=9000 HOST_DB_PORT=5433 make up
 | [ユーザーガイド](docs/ja/user-guide.md) | 基本概念、tutorial、Web UI の使い方 |
 | [Robot API ガイド](docs/ja/robot-api-guide.md) | robot authentication、episode execution flow、API examples |
 | [認証とワークスペース設定](docs/ja/authentication.md) | ローカル認証モデル、workspace membership setup、dashboard 403 の切り分け |
+| [Public SO101 Collector](docs/ja/public-so101-collector.md) | guest SO101 collection workflow と local-only data boundary |
 | [Backend Architecture](docs/ja/backend-architecture.md) | Clean Architecture layers、DB migration workflow、batch commands |
 | [Frontend Architecture](docs/ja/frontend-architecture.md) | project structure、API client pattern、feature modules |
 
