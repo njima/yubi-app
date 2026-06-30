@@ -10,7 +10,7 @@ public SO101 collector は、guest がアクセスできる workflow です。
 
 ## 現在の MVP Flow
 
-現在の画面は、mocked local agent を使った frontend-only shell です。
+現在の画面は、guest SO101 workflow step を有効化する前に local agent health endpoint を確認する frontend-only shell です。
 
 1. local agent に接続する。
 2. motor check を実行する。
@@ -19,7 +19,13 @@ public SO101 collector は、guest がアクセスできる workflow です。
 5. local recording を開始・停止する。
 6. local JSON manifest を download する。
 
-download される manifest は、今後 SO101 bridge または `yubi-agent` が生成する local dataset artifact の placeholder です。
+local agent の default は以下です。
+
+```text
+http://127.0.0.1:32101
+```
+
+LeLab または `yubi-agent` が別の local bridge URL を公開する場合は、`NEXT_PUBLIC_SO101_LOCAL_AGENT_URL` で上書きしてください。download される manifest は、今後 SO101 bridge または `yubi-agent` が生成する local dataset artifact の placeholder です。
 
 ## Data Boundary
 
@@ -29,7 +35,25 @@ guest state は browser と local agent に留まります。guest-only workflow
 
 ## Local Agent Contract Direction
 
-mocked workflow は、以下を公開する local HTTP/WebSocket bridge に置き換える予定です。
+最初に接続する contract は以下です。
+
+```text
+GET /health
+```
+
+期待する response shape は以下です。
+
+```json
+{
+  "ok": true,
+  "name": "lelab",
+  "version": "0.1.0",
+  "robotType": "so101",
+  "capabilities": ["health"]
+}
+```
+
+残りの workflow は、以下を公開する local HTTP/WebSocket bridge で支える予定です。
 
 - health/version
 - device discovery
