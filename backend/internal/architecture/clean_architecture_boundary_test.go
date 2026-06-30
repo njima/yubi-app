@@ -130,6 +130,51 @@ func TestServerBootstrapDoesNotConstructUsecasesDirectly(t *testing.T) {
 	}
 }
 
+func TestServerBootstrapDelegatesInfrastructureSetup(t *testing.T) {
+	backendRoot := filepath.Clean("../..")
+	path := filepath.Join(backendRoot, "cmd", "server", "bootstrap.go")
+
+	imports, err := parseImports(path)
+	if err != nil {
+		t.Fatalf("parse cmd/server/bootstrap.go imports: %v", err)
+	}
+
+	forbiddenInternalPrefixes := []string{
+		"internal/infra",
+		"internal/repository",
+		"internal/shared/requestctx",
+	}
+	forbiddenExternalImports := map[string]struct{}{
+		"database/sql":                                              {},
+		"github.com/getsentry/sentry-go":                            {},
+		"github.com/uptrace/bun":                                    {},
+		"github.com/uptrace/bun/dialect/pgdialect":                  {},
+		"github.com/uptrace/bun/driver/pgdriver":                    {},
+		"gopkg.in/DataDog/dd-trace-go.v1/contrib/redis/go-redis.v9": {},
+		"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer":            {},
+	}
+
+	var violations []string
+	for _, importPath := range imports {
+		if internalPath, ok := strings.CutPrefix(importPath, backendModule); ok {
+			for _, forbiddenPrefix := range forbiddenInternalPrefixes {
+				if internalPath == forbiddenPrefix || strings.HasPrefix(internalPath, forbiddenPrefix+"/") {
+					violations = append(violations, importPath)
+					break
+				}
+			}
+			continue
+		}
+		if _, ok := forbiddenExternalImports[importPath]; ok {
+			violations = append(violations, importPath)
+		}
+	}
+
+	if len(violations) > 0 {
+		t.Fatalf("cmd/server/bootstrap.go must delegate infrastructure setup; forbidden imports: %s", strings.Join(violations, ", "))
+	}
+}
+
 func TestServerCompositionRootDoesNotLiveUnderInternalApp(t *testing.T) {
 	backendRoot := filepath.Clean("../..")
 	path := filepath.Join(backendRoot, "internal", "app")
