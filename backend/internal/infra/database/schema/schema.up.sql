@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS "organization"(
   "id" BIGSERIAL NOT NULL,
   "id_natural" varchar(36) NOT NULL,
   "name" varchar(255) NOT NULL,
+  "kind" varchar(20) NOT NULL DEFAULT 'team',
   "description" text,
   PRIMARY KEY ("id"),
   UNIQUE ("id_natural"),
@@ -17,14 +18,30 @@ CREATE TABLE IF NOT EXISTS "user"(
   "updated_at" timestamptz NOT NULL,
   "id" BIGSERIAL NOT NULL,
   "id_natural" varchar(36) NOT NULL,
-  "organization_id" varchar(36) NOT NULL,
+  "google_sub" varchar(255) NOT NULL,
   "name" varchar(255) NOT NULL,
   "email" varchar(255) NOT NULL,
+  "avatar_url" text,
+  PRIMARY KEY ("id"),
+  UNIQUE ("id_natural"),
+  UNIQUE ("google_sub"),
+  UNIQUE ("email")
+);
+
+-- organization_membership
+CREATE TABLE IF NOT EXISTS "organization_membership"(
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
+  "id" BIGSERIAL NOT NULL,
+  "id_natural" varchar(36) NOT NULL,
+  "user_id" varchar(36) NOT NULL,
+  "organization_id" varchar(36) NOT NULL,
   "role" smallint NOT NULL DEFAULT 0,
   PRIMARY KEY ("id"),
   UNIQUE ("id_natural"),
-  UNIQUE ("email"),
-  FOREIGN KEY ("organization_id") REFERENCES "organization" ("id_natural")
+  UNIQUE ("user_id", "organization_id"),
+  FOREIGN KEY ("user_id") REFERENCES "user" ("id_natural") ON DELETE CASCADE,
+  FOREIGN KEY ("organization_id") REFERENCES "organization" ("id_natural") ON DELETE CASCADE
 );
 
 -- site
@@ -383,7 +400,8 @@ CREATE INDEX "episode_org_created_at_idx" ON "episode" (organization_id, created
 CREATE UNIQUE INDEX "episode_one_recording_per_robot" ON "episode" ("robot_id") WHERE (collection_status = 1);
 CREATE INDEX "episode_grade_user_id_idx" ON "episode_grade" ("user_id");
 CREATE INDEX "episode_grade_organization_id_idx" ON "episode_grade" ("organization_id");
-CREATE INDEX "user_organization_id_idx" ON "user" ("organization_id");
+CREATE INDEX "organization_membership_user_id_idx" ON "organization_membership" ("user_id");
+CREATE INDEX "organization_membership_organization_id_idx" ON "organization_membership" ("organization_id");
 CREATE INDEX "task_organization_id_idx" ON "task" ("organization_id");
 CREATE INDEX "task_version_organization_id_idx" ON "task_version" ("organization_id");
 CREATE INDEX "subtask_organization_id_idx" ON "subtask" ("organization_id");
@@ -403,4 +421,3 @@ CREATE INDEX "episode_sub_task_execution_episode_sub_task_id_created_at_idx" ON 
 CREATE INDEX "api_key_organization_id_idx" ON "api_key" ("organization_id");
 CREATE INDEX "api_key_robot_id_idx" ON "api_key" ("robot_id");
 CREATE INDEX "api_key_user_id_idx" ON "api_key" ("user_id");
-

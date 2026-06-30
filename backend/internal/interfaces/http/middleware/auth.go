@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	headerXUserID  = "X-User-ID"
-	headerXRobotID = "X-Robot-ID"
-	headerXAPIKey  = "X-API-Key"
+	headerXUserID         = "X-User-ID"
+	headerXOrganizationID = "X-Organization-ID"
+	headerXRobotID        = "X-Robot-ID"
+	headerXAPIKey         = "X-API-Key"
 )
 
 func isRobotAPIPath(path string) bool {
@@ -121,10 +122,17 @@ func robotAuthByHeaders(c *gin.Context, userUC usecase.UserUsecase, robotUC usec
 		return
 	}
 
-	if appUser.OrganizationID != rob.OrganizationID {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "User and robot do not belong to the same organization",
-		})
+	membership, err := userUC.ResolveActiveMembership(c.Request.Context(), appUser.IDNatural, &rob.OrganizationID)
+	if err != nil {
+		if isMembershipAccessDenied(err) {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "User is not a member of the robot organization",
+			})
+		} else {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to verify organization membership",
+			})
+		}
 		return
 	}
 
@@ -132,7 +140,7 @@ func robotAuthByHeaders(c *gin.Context, userUC usecase.UserUsecase, robotUC usec
 	ctx = requestctx.SetUserID(ctx, userID)
 	ctx = requestctx.SetRobotID(ctx, robotID)
 	ctx = requestctx.SetOrganizationID(ctx, rob.OrganizationID)
-	ctx = requestctx.SetUserRole(ctx, appUser.Role)
+	ctx = requestctx.SetUserRole(ctx, membership.Role)
 	c.Request = c.Request.WithContext(ctx)
 	c.Next()
 }
@@ -161,10 +169,36 @@ func userAuth(c *gin.Context, userUC usecase.UserUsecase) {
 		return
 	}
 
+	orgIDHeader := c.GetHeader(headerXOrganizationID)
+	var orgIDPtr *string
+	if orgIDHeader != "" {
+		orgIDPtr = &orgIDHeader
+	}
+
+	membership, err := userUC.ResolveActiveMembership(c.Request.Context(), appUser.IDNatural, orgIDPtr)
+	if err != nil {
+		if isMembershipAccessDenied(err) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error": "User has no access to organization",
+			})
+		} else {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to verify organization membership",
+			})
+		}
+		return
+	}
+
 	ctx := c.Request.Context()
 	ctx = requestctx.SetUserID(ctx, appUser.IDNatural)
-	ctx = requestctx.SetOrganizationID(ctx, appUser.OrganizationID)
-	ctx = requestctx.SetUserRole(ctx, appUser.Role)
+	ctx = requestctx.SetOrganizationID(ctx, membership.OrganizationID)
+	ctx = requestctx.SetUserRole(ctx, membership.Role)
 	c.Request = c.Request.WithContext(ctx)
 	c.Next()
+}
+
+func isMembershipAccessDenied(err error) bool {
+	return apperror.SameKind(err, apperror.KindNotFound) ||
+		apperror.SameKind(err, apperror.KindForbidden) ||
+		apperror.SameKind(err, apperror.KindUnauthorized)
 }

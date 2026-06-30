@@ -15,7 +15,8 @@ type Organization struct {
 	ID          int64   `bun:"id,pk,autoincrement"`                        // Auto-increment ID
 	IDNatural   string  `bun:"id_natural,unique,type:varchar(36),notnull"` // UUID
 	Name        string  `bun:"name,unique,type:varchar(255),notnull"`      // Organization name
-	Description *string `bun:"description,type:text"`                      // Description
+	Kind        string  `bun:"kind,type:varchar(20),notnull,default:'team'"`
+	Description *string `bun:"description,type:text"` // Description
 }
 
 var _ bun.BeforeAppendModelHook = (*Organization)(nil)

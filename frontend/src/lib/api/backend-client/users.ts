@@ -4,6 +4,8 @@ import { fetchBackend } from "./core";
 import { schemas } from "../generated/api";
 
 import type {
+  CurrentUserResponse,
+  MeResponse,
   MeUpdateRequest,
   OrganizationResponse,
   UserCreateRequest,
@@ -89,8 +91,18 @@ export async function fetchUser(userId: string): Promise<UserResponse> {
   return fetchBackend<UserResponse>(`/api/users/${userId}`);
 }
 
-export async function fetchMe(): Promise<UserResponse> {
-  return fetchBackend<UserResponse>("/api/me");
+function currentUserResponse(me: MeResponse): CurrentUserResponse {
+  return {
+    ...me,
+    role: me.active_role,
+    organization_id: me.active_organization_id,
+    organization_name: me.active_organization_name,
+  };
+}
+
+export async function fetchMe(): Promise<CurrentUserResponse> {
+  const me = await fetchBackend<MeResponse>("/api/me");
+  return currentUserResponse(me);
 }
 
 export async function updateMe(data: MeUpdateRequest): Promise<UserResponse> {

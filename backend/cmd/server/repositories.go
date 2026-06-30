@@ -17,6 +17,7 @@ type databaseRepositories struct {
 	User                    repository.User
 	UserLocation            repository.UserLocation
 	UserSite                repository.UserSite
+	OrganizationMembership  repository.OrganizationMembership
 	Organization            repository.Organization
 	Site                    repository.Site
 	Location                repository.Location
@@ -53,6 +54,7 @@ func newDatabaseRepositories() databaseRepositories {
 		User:                    persistence.NewUser(),
 		UserLocation:            persistence.NewUserLocation(),
 		UserSite:                persistence.NewUserSite(),
+		OrganizationMembership:  persistence.NewOrganizationMembership(),
 		Organization:            persistence.NewOrganization(),
 		Site:                    persistence.NewSite(),
 		Location:                persistence.NewLocation(),

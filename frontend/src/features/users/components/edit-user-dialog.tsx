@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
+import type { CurrentUserResponse } from "@/lib/api/backend-client/types";
 import { schemas } from "@/lib/api/generated/api";
 import { useUserRoleLabel } from "@/lib/hooks/use-status-labels";
 import { USER_ROLE, type UserRoleValue } from "@/lib/status/constants";
@@ -40,7 +41,7 @@ const roleOptions: UserRoleValue[] = [
 
 interface EditUserDialogProps {
   user: UserResponse;
-  currentUser?: UserResponse;
+  currentUser?: CurrentUserResponse;
   children?: React.ReactNode;
 }
 

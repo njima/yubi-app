@@ -64,6 +64,7 @@ func organizationModelToEntity(org model.Organization) entity.Organization {
 	return entity.Organization{
 		IDNatural:   org.IDNatural,
 		Name:        org.Name,
+		Kind:        string(org.Kind),
 		Description: org.Description,
 	}
 }
@@ -73,6 +74,7 @@ func organizationEntityToModel(org entity.Organization) model.Organization {
 		ID:          org.ID,
 		IDNatural:   org.IDNatural,
 		Name:        org.Name,
+		Kind:        model.OrganizationKind(org.Kind),
 		Description: org.Description,
 		CreatedAt:   org.CreatedAt,
 		UpdatedAt:   updatedAtPtr(org.UpdatedAt),

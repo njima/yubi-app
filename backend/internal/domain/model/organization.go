@@ -7,10 +7,18 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
+type OrganizationKind string
+
+const (
+	OrganizationKindPersonal OrganizationKind = "personal"
+	OrganizationKindTeam     OrganizationKind = "team"
+)
+
 type Organization struct {
 	ID          int64
 	IDNatural   string
 	Name        string
+	Kind        OrganizationKind
 	Description *string
 	CreatedAt   time.Time
 	UpdatedAt   *time.Time
@@ -18,7 +26,7 @@ type Organization struct {
 
 type Organizations []*Organization
 
-func InitOrganization(name string, description *string) (Organization, error) {
+func InitOrganization(name string, description *string, kind OrganizationKind) (Organization, error) {
 	ID, err := InitID()
 	if err != nil {
 		return Organization{}, err
@@ -32,6 +40,7 @@ func InitOrganization(name string, description *string) (Organization, error) {
 	org := Organization{
 		IDNatural:   ID,
 		Name:        name,
+		Kind:        kind,
 		Description: description,
 		CreatedAt:   time.Now(),
 	}
@@ -46,6 +55,7 @@ func InitOrganization(name string, description *string) (Organization, error) {
 func NewOrganization(
 	id int64,
 	idNatural, name string,
+	kind OrganizationKind,
 	description *string,
 	createdAt time.Time,
 	updatedAt *time.Time,
@@ -54,6 +64,7 @@ func NewOrganization(
 		ID:          id,
 		IDNatural:   idNatural,
 		Name:        name,
+		Kind:        kind,
 		Description: description,
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,
@@ -67,6 +78,11 @@ func (o Organization) validate() error {
 			o.Name,
 			validation.Required.Error("name is required"),
 			validation.RuneLength(1, 100).Error("name must be between 1 and 100 characters"),
+		),
+		"kind": validation.Validate(
+			string(o.Kind),
+			validation.Required.Error("kind is required"),
+			validation.In(string(OrganizationKindPersonal), string(OrganizationKindTeam)).Error("invalid organization kind"),
 		),
 	}).Filter(); err != nil {
 		return apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeValidationError, "organization validation failed: %v", err))

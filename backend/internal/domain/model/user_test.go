@@ -8,82 +8,82 @@ import (
 
 func TestInitUser(t *testing.T) {
 	tests := []struct {
-		name           string
-		organizationID string
-		userName       string
-		email          string
-		role           UserRole
-		wantErr        bool
+		name      string
+		googleSub string
+		userName  string
+		email     string
+		avatarURL string
+		wantErr   bool
 	}{
 		{
-			name:           "success with valid inputs",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			userName:       "Test User",
-			email:          "test@example.com",
-			role:           UserRoleAdmin,
-			wantErr:        false,
+			name:      "success with valid inputs",
+			googleSub: "google-oauth2|123",
+			userName:  "Test User",
+			email:     "test@example.com",
+			avatarURL: "https://example.com/a.png",
+			wantErr:   false,
 		},
 		{
-			name:           "success with operator role",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			userName:       "Operator User",
-			email:          "operator@example.com",
-			role:           UserRoleOperator,
-			wantErr:        false,
+			name:      "success without avatar",
+			googleSub: "google-oauth2|456",
+			userName:  "No Avatar User",
+			email:     "no-avatar@example.com",
+			avatarURL: "",
+			wantErr:   false,
 		},
 		{
-			name:           "error when organization_id is empty",
-			organizationID: "",
-			userName:       "Test User",
-			email:          "test@example.com",
-			role:           UserRoleAdmin,
-			wantErr:        true,
+			name:      "error when google_sub is empty",
+			googleSub: "",
+			userName:  "Test User",
+			email:     "test@example.com",
+			avatarURL: "",
+			wantErr:   true,
 		},
 		{
-			name:           "error when name is empty",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			userName:       "",
-			email:          "test@example.com",
-			role:           UserRoleAdmin,
-			wantErr:        true,
+			name:      "error when name is empty",
+			googleSub: "google-oauth2|123",
+			userName:  "",
+			email:     "test@example.com",
+			avatarURL: "",
+			wantErr:   true,
 		},
 		{
-			name:           "error when name exceeds 60 characters",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			userName:       strings.Repeat("a", 61),
-			email:          "test@example.com",
-			role:           UserRoleAdmin,
-			wantErr:        true,
+			name:      "error when name exceeds 60 characters",
+			googleSub: "google-oauth2|123",
+			userName:  strings.Repeat("a", 61),
+			email:     "test@example.com",
+			avatarURL: "",
+			wantErr:   true,
 		},
 		{
-			name:           "success when name is exactly 60 characters",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			userName:       strings.Repeat("a", 60),
-			email:          "test@example.com",
-			role:           UserRoleAdmin,
-			wantErr:        false,
+			name:      "success when name is exactly 60 characters",
+			googleSub: "google-oauth2|123",
+			userName:  strings.Repeat("a", 60),
+			email:     "test@example.com",
+			avatarURL: "",
+			wantErr:   false,
 		},
 		{
-			name:           "error when email is empty",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			userName:       "Test User",
-			email:          "",
-			role:           UserRoleAdmin,
-			wantErr:        true,
+			name:      "error when email is empty",
+			googleSub: "google-oauth2|123",
+			userName:  "Test User",
+			email:     "",
+			avatarURL: "",
+			wantErr:   true,
 		},
 		{
-			name:           "error when email format is invalid",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			userName:       "Test User",
-			email:          "invalid-email",
-			role:           UserRoleAdmin,
-			wantErr:        true,
+			name:      "error when email format is invalid",
+			googleSub: "google-oauth2|123",
+			userName:  "Test User",
+			email:     "invalid-email",
+			avatarURL: "",
+			wantErr:   true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := InitUser(tt.organizationID, tt.userName, tt.email, tt.role)
+			got, err := InitUser(tt.googleSub, tt.userName, tt.email, tt.avatarURL)
 
 			if tt.wantErr {
 				if err == nil {
@@ -102,8 +102,8 @@ func TestInitUser(t *testing.T) {
 			if got.IDNatural == "" {
 				t.Errorf("InitUser() IDNatural is empty")
 			}
-			if got.OrganizationID != tt.organizationID {
-				t.Errorf("InitUser() OrganizationID = %v, want %v", got.OrganizationID, tt.organizationID)
+			if got.GoogleSub != tt.googleSub {
+				t.Errorf("InitUser() GoogleSub = %v, want %v", got.GoogleSub, tt.googleSub)
 			}
 			if got.Name != tt.userName {
 				t.Errorf("InitUser() Name = %v, want %v", got.Name, tt.userName)
@@ -111,8 +111,12 @@ func TestInitUser(t *testing.T) {
 			if got.Email != tt.email {
 				t.Errorf("InitUser() Email = %v, want %v", got.Email, tt.email)
 			}
-			if got.Role != tt.role {
-				t.Errorf("InitUser() Role = %v, want %v", got.Role, tt.role)
+			if tt.avatarURL == "" {
+				if got.AvatarURL != nil {
+					t.Errorf("InitUser() AvatarURL = %v, want nil", got.AvatarURL)
+				}
+			} else if got.AvatarURL == nil || *got.AvatarURL != tt.avatarURL {
+				t.Errorf("InitUser() AvatarURL = %v, want %v", got.AvatarURL, tt.avatarURL)
 			}
 			if got.CreatedAt.IsZero() {
 				t.Errorf("InitUser() CreatedAt is zero")
@@ -121,48 +125,75 @@ func TestInitUser(t *testing.T) {
 	}
 }
 
+func TestInitUserIdentity(t *testing.T) {
+	user, err := InitUser("google-oauth2|123", "Ada Lovelace", "ada@example.com", "https://example.com/a.png")
+	if err != nil {
+		t.Fatalf("InitUser() error = %v", err)
+	}
+	if user.GoogleSub != "google-oauth2|123" {
+		t.Fatalf("GoogleSub = %q", user.GoogleSub)
+	}
+	if user.Name != "Ada Lovelace" {
+		t.Fatalf("Name = %q", user.Name)
+	}
+	if user.Email != "ada@example.com" {
+		t.Fatalf("Email = %q", user.Email)
+	}
+	if user.AvatarURL == nil || *user.AvatarURL != "https://example.com/a.png" {
+		t.Fatalf("AvatarURL = %v", user.AvatarURL)
+	}
+}
+
+func TestInitUserIdentityRequiresGoogleSub(t *testing.T) {
+	_, err := InitUser("", "Ada Lovelace", "ada@example.com", "")
+	if err == nil {
+		t.Fatal("InitUser() expected error for empty google_sub")
+	}
+}
+
 func TestNewUser(t *testing.T) {
 	now := time.Now()
 	updatedAt := now.Add(time.Hour)
+	avatarURL := "https://example.com/a.png"
 
 	tests := []struct {
-		name           string
-		id             int64
-		idNatural      string
-		organizationID string
-		userName       string
-		email          string
-		role           UserRole
-		createdAt      time.Time
-		updatedAt      *time.Time
+		name      string
+		id        int64
+		idNatural string
+		googleSub string
+		userName  string
+		email     string
+		avatarURL *string
+		createdAt time.Time
+		updatedAt *time.Time
 	}{
 		{
-			name:           "success with all fields",
-			id:             1,
-			idNatural:      "550e8400-e29b-41d4-a716-446655440000",
-			organizationID: "550e8400-e29b-41d4-a716-446655440001",
-			userName:       "Test User",
-			email:          "test@example.com",
-			role:           UserRoleAdmin,
-			createdAt:      now,
-			updatedAt:      &updatedAt,
+			name:      "success with all fields",
+			id:        1,
+			idNatural: "550e8400-e29b-41d4-a716-446655440000",
+			googleSub: "google-oauth2|123",
+			userName:  "Test User",
+			email:     "test@example.com",
+			avatarURL: &avatarURL,
+			createdAt: now,
+			updatedAt: &updatedAt,
 		},
 		{
-			name:           "success with nil updatedAt",
-			id:             2,
-			idNatural:      "550e8400-e29b-41d4-a716-446655440002",
-			organizationID: "550e8400-e29b-41d4-a716-446655440003",
-			userName:       "Another User",
-			email:          "another@example.com",
-			role:           UserRoleOperator,
-			createdAt:      now,
-			updatedAt:      nil,
+			name:      "success with nil optional fields",
+			id:        2,
+			idNatural: "550e8400-e29b-41d4-a716-446655440002",
+			googleSub: "google-oauth2|456",
+			userName:  "Another User",
+			email:     "another@example.com",
+			avatarURL: nil,
+			createdAt: now,
+			updatedAt: nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewUser(tt.id, tt.idNatural, tt.organizationID, tt.userName, tt.email, tt.role, tt.createdAt, tt.updatedAt)
+			got := NewUser(tt.id, tt.idNatural, tt.googleSub, tt.userName, tt.email, tt.avatarURL, tt.createdAt, tt.updatedAt)
 
 			if got.ID != tt.id {
 				t.Errorf("NewUser() ID = %v, want %v", got.ID, tt.id)
@@ -170,8 +201,8 @@ func TestNewUser(t *testing.T) {
 			if got.IDNatural != tt.idNatural {
 				t.Errorf("NewUser() IDNatural = %v, want %v", got.IDNatural, tt.idNatural)
 			}
-			if got.OrganizationID != tt.organizationID {
-				t.Errorf("NewUser() OrganizationID = %v, want %v", got.OrganizationID, tt.organizationID)
+			if got.GoogleSub != tt.googleSub {
+				t.Errorf("NewUser() GoogleSub = %v, want %v", got.GoogleSub, tt.googleSub)
 			}
 			if got.Name != tt.userName {
 				t.Errorf("NewUser() Name = %v, want %v", got.Name, tt.userName)
@@ -179,8 +210,8 @@ func TestNewUser(t *testing.T) {
 			if got.Email != tt.email {
 				t.Errorf("NewUser() Email = %v, want %v", got.Email, tt.email)
 			}
-			if got.Role != tt.role {
-				t.Errorf("NewUser() Role = %v, want %v", got.Role, tt.role)
+			if got.AvatarURL != tt.avatarURL {
+				t.Errorf("NewUser() AvatarURL = %v, want %v", got.AvatarURL, tt.avatarURL)
 			}
 			if got.CreatedAt != tt.createdAt {
 				t.Errorf("NewUser() CreatedAt = %v, want %v", got.CreatedAt, tt.createdAt)
@@ -191,11 +222,10 @@ func TestNewUser(t *testing.T) {
 
 func newValidUser() User {
 	return User{
-		IDNatural:      "550e8400-e29b-41d4-a716-446655440000",
-		OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
-		Name:           "Test User",
-		Email:          "test@example.com",
-		Role:           UserRoleAdmin,
+		IDNatural: "550e8400-e29b-41d4-a716-446655440000",
+		GoogleSub: "google-oauth2|123",
+		Name:      "Test User",
+		Email:     "test@example.com",
 	}
 }
 
@@ -213,66 +243,60 @@ func TestUser_validate(t *testing.T) {
 		{
 			name: "error when id_natural is empty",
 			user: User{
-				IDNatural:      "",
-				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
-				Name:           "Test User",
-				Email:          "test@example.com",
-				Role:           UserRoleAdmin,
+				IDNatural: "",
+				GoogleSub: "google-oauth2|123",
+				Name:      "Test User",
+				Email:     "test@example.com",
 			},
 			wantErr: true,
 		},
 		{
-			name: "error when organization_id is empty",
+			name: "error when google_sub is empty",
 			user: User{
-				IDNatural:      "550e8400-e29b-41d4-a716-446655440000",
-				OrganizationID: "",
-				Name:           "Test User",
-				Email:          "test@example.com",
-				Role:           UserRoleAdmin,
+				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
+				GoogleSub: "",
+				Name:      "Test User",
+				Email:     "test@example.com",
 			},
 			wantErr: true,
 		},
 		{
 			name: "error when name is empty",
 			user: User{
-				IDNatural:      "550e8400-e29b-41d4-a716-446655440000",
-				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
-				Name:           "",
-				Email:          "test@example.com",
-				Role:           UserRoleAdmin,
+				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
+				GoogleSub: "google-oauth2|123",
+				Name:      "",
+				Email:     "test@example.com",
 			},
 			wantErr: true,
 		},
 		{
 			name: "error when name exceeds 60 characters",
 			user: User{
-				IDNatural:      "550e8400-e29b-41d4-a716-446655440000",
-				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
-				Name:           strings.Repeat("a", 61),
-				Email:          "test@example.com",
-				Role:           UserRoleAdmin,
+				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
+				GoogleSub: "google-oauth2|123",
+				Name:      strings.Repeat("a", 61),
+				Email:     "test@example.com",
 			},
 			wantErr: true,
 		},
 		{
 			name: "error when email is empty",
 			user: User{
-				IDNatural:      "550e8400-e29b-41d4-a716-446655440000",
-				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
-				Name:           "Test User",
-				Email:          "",
-				Role:           UserRoleAdmin,
+				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
+				GoogleSub: "google-oauth2|123",
+				Name:      "Test User",
+				Email:     "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "error when email format is invalid",
 			user: User{
-				IDNatural:      "550e8400-e29b-41d4-a716-446655440000",
-				OrganizationID: "550e8400-e29b-41d4-a716-446655440001",
-				Name:           "Test User",
-				Email:          "invalid-email",
-				Role:           UserRoleAdmin,
+				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
+				GoogleSub: "google-oauth2|123",
+				Name:      "Test User",
+				Email:     "invalid-email",
 			},
 			wantErr: true,
 		},
@@ -392,45 +416,6 @@ func TestUser_SetEmail(t *testing.T) {
 				}
 				if u.Email != tt.email {
 					t.Errorf("User.Email = %v, want %v", u.Email, tt.email)
-				}
-			}
-		})
-	}
-}
-
-func TestUser_SetRole(t *testing.T) {
-	tests := []struct {
-		name    string
-		role    UserRole
-		wantErr bool
-	}{
-		{
-			name:    "success with Admin role",
-			role:    UserRoleAdmin,
-			wantErr: false,
-		},
-		{
-			name:    "success with Operator role",
-			role:    UserRoleOperator,
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := newValidUser()
-			err := u.SetRole(tt.role)
-
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("User.SetRole() error = nil, wantErr %v", tt.wantErr)
-				}
-			} else {
-				if err != nil {
-					t.Errorf("User.SetRole() error = %v, wantErr %v", err, tt.wantErr)
-				}
-				if u.Role != tt.role {
-					t.Errorf("User.Role = %v, want %v", u.Role, tt.role)
 				}
 			}
 		})

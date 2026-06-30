@@ -13,43 +13,49 @@ func TestInitOrganization(t *testing.T) {
 		name        string
 		orgName     string
 		description *string
+		kind        OrganizationKind
 		wantErr     bool
 	}{
 		{
 			name:        "success with valid inputs",
 			orgName:     "Test Organization",
 			description: &description,
+			kind:        OrganizationKindTeam,
 			wantErr:     false,
 		},
 		{
 			name:        "success with nil description",
 			orgName:     "Test Organization",
 			description: nil,
+			kind:        OrganizationKindTeam,
 			wantErr:     false,
 		},
 		{
 			name:        "error when name is empty",
 			orgName:     "",
 			description: &description,
+			kind:        OrganizationKindTeam,
 			wantErr:     true,
 		},
 		{
 			name:        "error when name exceeds 100 characters",
 			orgName:     strings.Repeat("a", 101),
 			description: &description,
+			kind:        OrganizationKindTeam,
 			wantErr:     true,
 		},
 		{
 			name:        "success when name is exactly 100 characters",
 			orgName:     strings.Repeat("a", 100),
 			description: &description,
+			kind:        OrganizationKindTeam,
 			wantErr:     false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := InitOrganization(tt.orgName, tt.description)
+			got, err := InitOrganization(tt.orgName, tt.description, tt.kind)
 
 			if tt.wantErr {
 				if err == nil {
@@ -71,6 +77,9 @@ func TestInitOrganization(t *testing.T) {
 			if got.Name != tt.orgName {
 				t.Errorf("InitOrganization() Name = %v, want %v", got.Name, tt.orgName)
 			}
+			if got.Kind != tt.kind {
+				t.Errorf("InitOrganization() Kind = %v, want %v", got.Kind, tt.kind)
+			}
 			if got.Description == nil {
 				t.Errorf("InitOrganization() Description is nil")
 			}
@@ -78,6 +87,23 @@ func TestInitOrganization(t *testing.T) {
 				t.Errorf("InitOrganization() CreatedAt is zero")
 			}
 		})
+	}
+}
+
+func TestInitOrganizationWithKind(t *testing.T) {
+	org, err := InitOrganization("Ada's Workspace", nil, OrganizationKindPersonal)
+	if err != nil {
+		t.Fatalf("InitOrganization() error = %v", err)
+	}
+	if org.Kind != OrganizationKindPersonal {
+		t.Fatalf("Kind = %v", org.Kind)
+	}
+}
+
+func TestInitOrganizationRejectsInvalidKind(t *testing.T) {
+	_, err := InitOrganization("Bad Workspace", nil, OrganizationKind("invalid"))
+	if err == nil {
+		t.Fatal("InitOrganization() expected error for invalid kind")
 	}
 }
 
@@ -91,6 +117,7 @@ func TestNewOrganization(t *testing.T) {
 		id          int64
 		idNatural   string
 		orgName     string
+		kind        OrganizationKind
 		description *string
 		createdAt   time.Time
 		updatedAt   *time.Time
@@ -100,6 +127,7 @@ func TestNewOrganization(t *testing.T) {
 			id:          1,
 			idNatural:   "550e8400-e29b-41d4-a716-446655440000",
 			orgName:     "Test Organization",
+			kind:        OrganizationKindTeam,
 			description: &description,
 			createdAt:   now,
 			updatedAt:   &updatedAt,
@@ -109,6 +137,7 @@ func TestNewOrganization(t *testing.T) {
 			id:          2,
 			idNatural:   "550e8400-e29b-41d4-a716-446655440001",
 			orgName:     "Another Organization",
+			kind:        OrganizationKindPersonal,
 			description: nil,
 			createdAt:   now,
 			updatedAt:   nil,
@@ -121,6 +150,7 @@ func TestNewOrganization(t *testing.T) {
 				tt.id,
 				tt.idNatural,
 				tt.orgName,
+				tt.kind,
 				tt.description,
 				tt.createdAt,
 				tt.updatedAt,
@@ -134,6 +164,9 @@ func TestNewOrganization(t *testing.T) {
 			}
 			if got.Name != tt.orgName {
 				t.Errorf("NewOrganization() Name = %v, want %v", got.Name, tt.orgName)
+			}
+			if got.Kind != tt.kind {
+				t.Errorf("NewOrganization() Kind = %v, want %v", got.Kind, tt.kind)
 			}
 			if got.CreatedAt != tt.createdAt {
 				t.Errorf("NewOrganization() CreatedAt = %v, want %v", got.CreatedAt, tt.createdAt)
@@ -153,6 +186,7 @@ func TestOrganization_validate(t *testing.T) {
 			org: Organization{
 				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
 				Name:      "Test Organization",
+				Kind:      OrganizationKindTeam,
 			},
 			wantErr: false,
 		},
@@ -161,6 +195,7 @@ func TestOrganization_validate(t *testing.T) {
 			org: Organization{
 				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
 				Name:      strings.Repeat("a", 100),
+				Kind:      OrganizationKindTeam,
 			},
 			wantErr: false,
 		},
@@ -169,6 +204,7 @@ func TestOrganization_validate(t *testing.T) {
 			org: Organization{
 				IDNatural: "",
 				Name:      "Test Organization",
+				Kind:      OrganizationKindTeam,
 			},
 			wantErr: true,
 		},
@@ -177,6 +213,7 @@ func TestOrganization_validate(t *testing.T) {
 			org: Organization{
 				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
 				Name:      "",
+				Kind:      OrganizationKindTeam,
 			},
 			wantErr: true,
 		},
@@ -185,6 +222,16 @@ func TestOrganization_validate(t *testing.T) {
 			org: Organization{
 				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
 				Name:      strings.Repeat("a", 101),
+				Kind:      OrganizationKindTeam,
+			},
+			wantErr: true,
+		},
+		{
+			name: "error when kind is invalid",
+			org: Organization{
+				IDNatural: "550e8400-e29b-41d4-a716-446655440000",
+				Name:      "Test Organization",
+				Kind:      OrganizationKind("invalid"),
 			},
 			wantErr: true,
 		},
@@ -193,6 +240,7 @@ func TestOrganization_validate(t *testing.T) {
 			org: Organization{
 				IDNatural: "",
 				Name:      "",
+				Kind:      "",
 			},
 			wantErr: true,
 		},
@@ -219,6 +267,7 @@ func newValidOrganization() Organization {
 	return Organization{
 		IDNatural: "550e8400-e29b-41d4-a716-446655440000",
 		Name:      "Test Organization",
+		Kind:      OrganizationKindTeam,
 	}
 }
 

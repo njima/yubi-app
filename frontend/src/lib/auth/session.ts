@@ -8,6 +8,7 @@ export interface UserSession {
 }
 
 const COOKIE_NAME = "active_user_id";
+export const ACTIVE_ORG_COOKIE_NAME = "active_organization_id";
 
 /**
  * Get the active user ID from cookie, falling back to the DEFAULT_USER_ID env var.
@@ -24,6 +25,11 @@ export async function getUserId(): Promise<string> {
     throw new Error("DEFAULT_USER_ID environment variable is required");
   }
   return envUserId;
+}
+
+export async function getActiveOrganizationId(): Promise<string | undefined> {
+  const cookieStore = await cookies();
+  return cookieStore.get(ACTIVE_ORG_COOKIE_NAME)?.value;
 }
 
 export async function getUserSession(): Promise<UserSession | null> {

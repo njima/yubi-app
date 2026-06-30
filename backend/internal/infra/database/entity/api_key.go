@@ -24,9 +24,10 @@ type APIKey struct {
 	LastUsedAt     *time.Time `bun:"last_used_at,nullzero"`
 	RevokedAt      *time.Time `bun:"revoked_at,nullzero"`
 
-	Organization *Organization `bun:"rel:belongs-to,join:organization_id=id_natural"`
-	User         *User         `bun:"rel:belongs-to,join:user_id=id_natural"`
-	Robot        *Robot        `bun:"rel:belongs-to,join:robot_id=id_natural"`
+	Organization *Organization           `bun:"rel:belongs-to,join:organization_id=id_natural"`
+	User         *User                   `bun:"rel:belongs-to,join:user_id=id_natural"`
+	Robot        *Robot                  `bun:"rel:belongs-to,join:robot_id=id_natural"`
+	Membership   *OrganizationMembership `bun:"rel:has-one,join:user_id=user_id,join:organization_id=organization_id"`
 }
 
 var APIKeyTableCreator = func(db *bun.DB) *bun.CreateTableQuery {

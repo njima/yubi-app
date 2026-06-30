@@ -10,6 +10,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/uptrace/bun"
 )
 
@@ -19,15 +20,50 @@ func NewUser() *user {
 	return &user{}
 }
 
+func toModelUser(dbu entity.User) model.User {
+	locs := make([]model.LocationSummary, 0, len(dbu.LocationAssignments))
+	for _, la := range dbu.LocationAssignments {
+		if la.Location != nil {
+			locs = append(locs, model.LocationSummary{
+				LocationID: la.LocationID,
+				Name:       la.Location.Name,
+			})
+		}
+	}
+
+	sites := make([]model.SiteSummary, 0, len(dbu.SiteAssignments))
+	for _, sa := range dbu.SiteAssignments {
+		if sa.Site != nil {
+			sites = append(sites, model.SiteSummary{
+				SiteID: sa.SiteID,
+				Name:   sa.Site.Name,
+			})
+		}
+	}
+
+	return model.User{
+		ID:        dbu.ID,
+		IDNatural: dbu.IDNatural,
+		GoogleSub: dbu.GoogleSub,
+		Name:      dbu.Name,
+		Email:     dbu.Email,
+		AvatarURL: dbu.AvatarURL,
+		CreatedAt: dbu.CreatedAt,
+		UpdatedAt: updatedAtPtr(dbu.UpdatedAt),
+		Locations: locs,
+		Sites:     sites,
+	}
+}
+
 func (u *user) Create(ctx context.Context, conn repository.Conn, user model.User) (model.User, error) {
 	var created entity.User
 
 	dbu := entity.User{
-		IDNatural:      user.IDNatural,
-		OrganizationID: user.OrganizationID,
-		Name:           user.Name,
-		Email:          user.Email,
-		Role:           uint(user.Role),
+		IDNatural: user.IDNatural,
+		GoogleSub: user.GoogleSub,
+		Name:      user.Name,
+		Email:     user.Email,
+		AvatarURL: user.AvatarURL,
 	}
 
 	if err := bunConn(conn).NewInsert().
@@ -37,27 +73,26 @@ func (u *user) Create(ctx context.Context, conn repository.Conn, user model.User
 		return model.User{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to create user: %v", err))
 	}
 
-	return model.User{
-		ID:             created.ID,
-		IDNatural:      created.IDNatural,
-		OrganizationID: created.OrganizationID,
-		Name:           created.Name,
-		Email:          created.Email,
-		Role:           model.UserRole(created.Role),
-		CreatedAt:      created.CreatedAt,
-		UpdatedAt:      &created.UpdatedAt,
-	}, nil
+	return toModelUser(created), nil
 }
 
 func (u *user) Update(ctx context.Context, conn repository.Conn, user model.User) (model.User, error) {
 	upd := bunConn(conn).NewUpdate().Model((*entity.User)(nil))
 	hasSet := false
+	if user.GoogleSub != "" {
+		upd = upd.Set("google_sub = ?", user.GoogleSub)
+		hasSet = true
+	}
 	if user.Name != "" {
 		upd = upd.Set("name = ?", user.Name)
 		hasSet = true
 	}
 	if user.Email != "" {
 		upd = upd.Set("email = ?", user.Email)
+		hasSet = true
+	}
+	if user.AvatarURL != nil {
+		upd = upd.Set("avatar_url = ?", *user.AvatarURL)
 		hasSet = true
 	}
 	if !hasSet {
@@ -74,43 +109,7 @@ func (u *user) Update(ctx context.Context, conn repository.Conn, user model.User
 		return model.User{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to update user: %v", err))
 	}
 
-	return model.User{
-		ID:             updated.ID,
-		IDNatural:      updated.IDNatural,
-		OrganizationID: updated.OrganizationID,
-		Name:           updated.Name,
-		Email:          updated.Email,
-		Role:           model.UserRole(updated.Role),
-		CreatedAt:      updated.CreatedAt,
-		UpdatedAt:      &updated.UpdatedAt,
-	}, nil
-}
-
-func (u *user) UpdateRole(ctx context.Context, conn repository.Conn, idNatural string, role model.UserRole) (model.User, error) {
-	var updated entity.User
-	if err := bunConn(conn).NewUpdate().
-		Model((*entity.User)(nil)).
-		Set("role = ?", uint(role)).
-		Set("updated_at = ?", time.Now().UTC()).
-		Where("id_natural = ?", idNatural).
-		Returning("*").
-		Scan(ctx, &updated); err != nil {
-		if err == sql.ErrNoRows {
-			return model.User{}, apperror.NewError(apperror.NewMessage(apperror.CodeUserNotFound, "user not found: id_natural=%s", idNatural))
-		}
-		return model.User{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to update user role: %v", err))
-	}
-
-	return model.User{
-		ID:             updated.ID,
-		IDNatural:      updated.IDNatural,
-		OrganizationID: updated.OrganizationID,
-		Name:           updated.Name,
-		Email:          updated.Email,
-		Role:           model.UserRole(updated.Role),
-		CreatedAt:      updated.CreatedAt,
-		UpdatedAt:      &updated.UpdatedAt,
-	}, nil
+	return toModelUser(updated), nil
 }
 
 func (u *user) GetByNaturalID(ctx context.Context, conn repository.Conn, IDNatural string) (model.User, error) {
@@ -118,7 +117,6 @@ func (u *user) GetByNaturalID(ctx context.Context, conn repository.Conn, IDNatur
 
 	if err := bunConn(conn).NewSelect().
 		Model(&dbUser).
-		Relation("Organization").
 		Relation("LocationAssignments.Location").
 		Relation("SiteAssignments.Site").
 		Where("u.id_natural = ?", IDNatural).
@@ -129,57 +127,36 @@ func (u *user) GetByNaturalID(ctx context.Context, conn repository.Conn, IDNatur
 		return model.User{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to get user: %v", err))
 	}
 
-	orgName := ""
-	if dbUser.Organization != nil {
-		orgName = dbUser.Organization.Name
-	}
+	return toModelUser(dbUser), nil
+}
 
-	locs := make([]model.LocationSummary, 0, len(dbUser.LocationAssignments))
-	for _, la := range dbUser.LocationAssignments {
-		if la.Location != nil {
-			locs = append(locs, model.LocationSummary{
-				LocationID: la.LocationID,
-				Name:       la.Location.Name,
-			})
+func (u *user) GetByGoogleSub(ctx context.Context, conn repository.Conn, googleSub string) (model.User, error) {
+	var dbUser entity.User
+
+	if err := bunConn(conn).NewSelect().
+		Model(&dbUser).
+		Where("u.google_sub = ?", googleSub).
+		Scan(ctx); err != nil {
+		if err == sql.ErrNoRows {
+			return model.User{}, apperror.NewError(apperror.NewMessage(apperror.CodeUserNotFound, "user not found: google_sub=%s", googleSub))
 		}
+		return model.User{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to get user by google_sub: %v", err))
 	}
 
-	sites := make([]model.SiteSummary, 0, len(dbUser.SiteAssignments))
-	for _, sa := range dbUser.SiteAssignments {
-		if sa.Site != nil {
-			sites = append(sites, model.SiteSummary{
-				SiteID: sa.SiteID,
-				Name:   sa.Site.Name,
-			})
-		}
-	}
-
-	return model.User{
-		ID:               dbUser.ID,
-		IDNatural:        dbUser.IDNatural,
-		OrganizationID:   dbUser.OrganizationID,
-		OrganizationName: orgName,
-		Name:             dbUser.Name,
-		Email:            dbUser.Email,
-		Role:             model.UserRole(dbUser.Role),
-		CreatedAt:        dbUser.CreatedAt,
-		UpdatedAt:        &dbUser.UpdatedAt,
-		Locations:        locs,
-		Sites:            sites,
-	}, nil
+	return toModelUser(dbUser), nil
 }
 
 func (u *user) List(ctx context.Context, conn repository.Conn, filter repository.UserListFilter, limit, offset int) (model.Users, int, error) {
 	var dbUsers []entity.User
 	sel := bunConn(conn).NewSelect().
 		Model(&dbUsers).
-		Relation("Organization").
 		Relation("LocationAssignments.Location").
 		Relation("SiteAssignments.Site").
 		Limit(limit).
 		Offset(offset)
 
 	// Dynamic ORDER BY with whitelist to prevent SQL injection
+	sel = applyUserOrganizationMembershipScope(ctx, sel)
 	sel = applyUserSortOrder(sel, filter.SortBy, filter.SortOrder)
 	sel = applyUserListFilters(sel, filter)
 
@@ -188,6 +165,7 @@ func (u *user) List(ctx context.Context, conn repository.Conn, filter repository
 	}
 
 	countQ := bunConn(conn).NewSelect().Model((*entity.User)(nil)).ColumnExpr("COUNT(*)")
+	countQ = applyUserOrganizationMembershipScope(ctx, countQ)
 	countQ = applyUserListFilters(countQ, filter)
 	var total int
 	if err := countQ.Scan(ctx, &total); err != nil {
@@ -196,45 +174,8 @@ func (u *user) List(ctx context.Context, conn repository.Conn, filter repository
 
 	users := make(model.Users, 0, len(dbUsers))
 	for _, du := range dbUsers {
-		orgName := ""
-		if du.Organization != nil {
-			orgName = du.Organization.Name
-		}
-		locs := make([]model.LocationSummary, 0, len(du.LocationAssignments))
-		for _, la := range du.LocationAssignments {
-			if la.Location != nil {
-				locs = append(locs, model.LocationSummary{
-					LocationID: la.LocationID,
-					Name:       la.Location.Name,
-				})
-			}
-		}
-		sites := make([]model.SiteSummary, 0, len(du.SiteAssignments))
-		for _, sa := range du.SiteAssignments {
-			if sa.Site != nil {
-				sites = append(sites, model.SiteSummary{
-					SiteID: sa.SiteID,
-					Name:   sa.Site.Name,
-				})
-			}
-		}
-		usr := &model.User{
-			ID:               du.ID,
-			IDNatural:        du.IDNatural,
-			OrganizationID:   du.OrganizationID,
-			OrganizationName: orgName,
-			Name:             du.Name,
-			Email:            du.Email,
-			Role:             model.UserRole(du.Role),
-			CreatedAt:        du.CreatedAt,
-			Locations:        locs,
-			Sites:            sites,
-		}
-		if !du.UpdatedAt.IsZero() {
-			t := du.UpdatedAt
-			usr.UpdatedAt = &t
-		}
-		users = append(users, usr)
+		usr := toModelUser(du)
+		users = append(users, &usr)
 	}
 
 	return users, total, nil
@@ -243,13 +184,20 @@ func (u *user) List(ctx context.Context, conn repository.Conn, filter repository
 var allowedUserSortColumns = map[string]string{
 	"name":       "u.name",
 	"email":      "u.email",
-	"role":       "u.role",
-	"location":   "(SELECT l.name FROM user_location_assignment ula JOIN location l ON l.id_natural = ula.location_id WHERE ula.user_id = u.id_natural ORDER BY l.name ASC LIMIT 1)",
 	"created_at": "u.created_at",
 }
 
-var nullableUserSortColumns = map[string]bool{
-	"location": true,
+var nullableUserSortColumns = map[string]bool{}
+
+func applyUserOrganizationMembershipScope(ctx context.Context, sel *bun.SelectQuery) *bun.SelectQuery {
+	orgID, err := requestctx.OrganizationID(ctx)
+	if err != nil || orgID == "" {
+		return sel
+	}
+
+	return sel.
+		Join("JOIN organization_membership AS om ON om.user_id = u.id_natural").
+		Where("om.organization_id = ?", orgID)
 }
 
 func applyUserSortOrder(sel *bun.SelectQuery, sortBy *repository.UserSortBy, sortOrder *repository.SortOrder) *bun.SelectQuery {

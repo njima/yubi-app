@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getUserId } from "@/lib/auth/session";
+import { getActiveOrganizationId, getUserId } from "@/lib/auth/session";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL || "http://backend:8000";
 
@@ -20,11 +20,15 @@ export async function proxySSEStream(
   backendPath: string
 ): Promise<Response> {
   const userId = await getUserId();
+  const activeOrganizationId = await getActiveOrganizationId();
   const backendUrl = `${BACKEND_API_URL}${backendPath}`;
 
   const authHeaders: Record<string, string> = {
     "X-User-ID": userId,
   };
+  if (activeOrganizationId) {
+    authHeaders["X-Organization-ID"] = activeOrganizationId;
+  }
 
   const upstream = new AbortController();
   const onClientAbort = () => upstream.abort();

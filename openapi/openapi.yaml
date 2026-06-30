@@ -44,7 +44,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserResponse"
+                $ref: "#/components/schemas/MeResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "500":
@@ -3643,6 +3643,37 @@ components:
         - created_at
         - locations
         - sites
+    MeResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: User ID
+        email:
+          type: string
+          description: Email address
+        display_name:
+          type: string
+          description: Display name
+        avatar_url:
+          type: string
+          nullable: true
+          description: Avatar URL
+        active_organization_id:
+          type: string
+          description: Active organization ID
+        active_organization_name:
+          type: string
+          description: Active organization display name
+        active_role:
+          $ref: "#/components/schemas/UserRole"
+      required:
+        - user_id
+        - email
+        - display_name
+        - active_organization_id
+        - active_organization_name
+        - active_role
     UserListResponse:
       type: object
       properties:

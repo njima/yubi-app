@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getUserId } from "@/lib/auth/session";
+import { getActiveOrganizationId, getUserId } from "@/lib/auth/session";
 import { clearActiveUser } from "@/lib/auth/switch-user";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL || "http://backend:8000";
@@ -27,12 +27,19 @@ export async function fetchBackendRaw(
   options: RequestInit = {}
 ): Promise<Response> {
   const userId = await getUserId();
+  const activeOrganizationId = await getActiveOrganizationId();
   const url = `${BACKEND_API_URL}${path}`;
+  const authHeaders: Record<string, string> = {
+    "X-User-ID": userId,
+  };
+  if (activeOrganizationId) {
+    authHeaders["X-Organization-ID"] = activeOrganizationId;
+  }
 
   const response = await fetch(url, {
     ...options,
     headers: {
-      "X-User-ID": userId,
+      ...authHeaders,
       ...options.headers,
     },
   });
@@ -62,13 +69,20 @@ export async function fetchBackend<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const userId = await getUserId();
+  const activeOrganizationId = await getActiveOrganizationId();
   const url = `${BACKEND_API_URL}${path}`;
+  const authHeaders: Record<string, string> = {
+    "X-User-ID": userId,
+  };
+  if (activeOrganizationId) {
+    authHeaders["X-Organization-ID"] = activeOrganizationId;
+  }
 
   const response = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      "X-User-ID": userId,
+      ...authHeaders,
       ...options.headers,
     },
   });

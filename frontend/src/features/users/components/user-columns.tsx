@@ -3,6 +3,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { z } from "zod";
 
+import type { CurrentUserResponse } from "@/lib/api/backend-client/types";
 import { schemas } from "@/lib/api/generated/api";
 import { type UserRoleValue } from "@/lib/status/constants";
 
@@ -11,7 +12,7 @@ import { DataTableColumnHeader } from "@/features/tasks/components/data-table-co
 import { EditUserDialog } from "./edit-user-dialog";
 
 type User = z.infer<typeof schemas.UserResponse>;
-type MeUser = User | undefined;
+type MeUser = CurrentUserResponse | undefined;
 
 interface UserColumnsOptions {
   canUpdateRole: boolean;

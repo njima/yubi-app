@@ -188,13 +188,22 @@ func seedTestData(t *testing.T, ctx context.Context, db *bun.DB, from, to time.T
 	}
 
 	user := &entity.User{
-		IDNatural:      userID,
-		OrganizationID: orgID,
-		Name:           "test-user-" + suffix,
-		Email:          "test-" + suffix + "@example.com",
+		IDNatural: userID,
+		GoogleSub: userID,
+		Name:      "test-user-" + suffix,
+		Email:     "test-" + suffix + "@example.com",
 	}
 	if _, err := db.NewInsert().Model(user).Exec(ctx); err != nil {
 		t.Fatalf("failed to insert user: %v", err)
+	}
+	membership := &entity.OrganizationMembership{
+		IDNatural:      uuid.NewString(),
+		UserID:         userID,
+		OrganizationID: orgID,
+		Role:           uint(model.UserRoleOperator),
+	}
+	if _, err := db.NewInsert().Model(membership).Exec(ctx); err != nil {
+		t.Fatalf("failed to insert organization membership: %v", err)
 	}
 
 	task := &entity.Task{IDNatural: taskID, OrganizationID: orgID, Name: "test-task-" + suffix}
