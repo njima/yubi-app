@@ -8,6 +8,7 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -35,10 +36,14 @@ func newPersistenceTestDB(t *testing.T, hook *queryCaptureHook) *bun.DB {
 }
 
 func captureQuery(t *testing.T, query func(db *bun.DB) *bun.SelectQuery, scanDest ...any) string {
+	return captureQueryWithContext(t, context.Background(), query, scanDest...)
+}
+
+func captureQueryWithContext(t *testing.T, ctx context.Context, query func(db *bun.DB) *bun.SelectQuery, scanDest ...any) string {
 	t.Helper()
 	hook := &queryCaptureHook{}
 	db := newPersistenceTestDB(t, hook)
-	_ = query(db).Scan(context.Background(), scanDest...)
+	_ = query(db).Scan(ctx, scanDest...)
 	return hook.lastQuery
 }
 
@@ -222,6 +227,30 @@ func TestApplyUserListFilters_UsedByListAndCountQueries(t *testing.T) {
 			"ula.user_id = u.id_natural AND ula.location_id = 'loc-1'",
 			"usa.user_id = u.id_natural AND usa.site_id = 'site-1'",
 			"u.name ILIKE '%alice\\_100\\%%'",
+		} {
+			if !strings.Contains(sql, want) {
+				t.Fatalf("expected %q in SQL, got:\n%s", want, sql)
+			}
+		}
+	}
+}
+
+func TestApplyUserOrganizationMembershipScope_UsedByListAndCountQueries(t *testing.T) {
+	ctx := requestctx.SetOrganizationID(context.Background(), "org-1")
+
+	listSQL := captureQueryWithContext(t, ctx, func(db *bun.DB) *bun.SelectQuery {
+		var users []entity.User
+		return applyUserOrganizationMembershipScope(ctx, db.NewSelect().Model(&users))
+	})
+	var total int
+	countSQL := captureQueryWithContext(t, ctx, func(db *bun.DB) *bun.SelectQuery {
+		return applyUserOrganizationMembershipScope(ctx, db.NewSelect().Model((*entity.User)(nil)).ColumnExpr("COUNT(*)"))
+	}, &total)
+
+	for _, sql := range []string{listSQL, countSQL} {
+		for _, want := range []string{
+			"JOIN organization_membership AS om ON om.user_id = u.id_natural",
+			"om.organization_id = 'org-1'",
 		} {
 			if !strings.Contains(sql, want) {
 				t.Fatalf("expected %q in SQL, got:\n%s", want, sql)
