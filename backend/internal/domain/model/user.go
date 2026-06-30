@@ -29,39 +29,41 @@ type SiteSummary struct {
 }
 
 type User struct {
-	ID               int64
-	IDNatural        string
-	OrganizationID   string
-	OrganizationName string
-	Name             string
-	Email            string
-	Role             UserRole
-	CreatedAt        time.Time
-	UpdatedAt        *time.Time
-	Locations        []LocationSummary
-	Sites            []SiteSummary
+	ID        int64
+	IDNatural string
+	GoogleSub string
+	Name      string
+	Email     string
+	AvatarURL *string
+	CreatedAt time.Time
+	UpdatedAt *time.Time
 }
 
 type Users []*User
 
 func InitUser(
-	organizationID,
+	googleSub,
 	name,
-	email string,
-	role UserRole,
+	email,
+	avatarURL string,
 ) (User, error) {
 	ID, err := InitID()
 	if err != nil {
 		return User{}, err
 	}
 
+	var avatar *string
+	if avatarURL != "" {
+		avatar = &avatarURL
+	}
+
 	user := User{
-		IDNatural:      ID,
-		OrganizationID: organizationID,
-		Name:           name,
-		Email:          email,
-		Role:           role,
-		CreatedAt:      time.Now(),
+		IDNatural: ID,
+		GoogleSub: googleSub,
+		Name:      name,
+		Email:     email,
+		AvatarURL: avatar,
+		CreatedAt: time.Now(),
 	}
 
 	if err := user.validate(); err != nil {
@@ -74,29 +76,29 @@ func InitUser(
 func NewUser(
 	ID int64,
 	IDNatural,
-	organizationID,
+	googleSub,
 	name,
 	email string,
-	role UserRole,
+	avatarURL *string,
 	createdAt time.Time,
 	updatedAt *time.Time,
 ) User {
 	return User{
-		ID:             ID,
-		IDNatural:      IDNatural,
-		OrganizationID: organizationID,
-		Name:           name,
-		Email:          email,
-		Role:           role,
-		CreatedAt:      createdAt,
-		UpdatedAt:      updatedAt,
+		ID:        ID,
+		IDNatural: IDNatural,
+		GoogleSub: googleSub,
+		Name:      name,
+		Email:     email,
+		AvatarURL: avatarURL,
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}
 }
 
 func (u User) validate() error {
 	if err := (validation.Errors{
-		"id_natural":      validation.Validate(u.IDNatural, validation.Required.Error("id_natural is required")),
-		"organization_id": validation.Validate(u.OrganizationID, validation.Required.Error("organization_id is required")),
+		"id_natural": validation.Validate(u.IDNatural, validation.Required.Error("id_natural is required")),
+		"google_sub": validation.Validate(u.GoogleSub, validation.Required.Error("google_sub is required")),
 		"name": validation.Validate(
 			u.Name,
 			validation.Required.Error("name is required"),
@@ -121,10 +123,5 @@ func (u *User) SetName(name string) error {
 
 func (u *User) SetEmail(email string) error {
 	u.Email = email
-	return u.validate()
-}
-
-func (u *User) SetRole(role UserRole) error {
-	u.Role = role
 	return u.validate()
 }
