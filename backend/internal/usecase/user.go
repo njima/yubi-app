@@ -24,6 +24,7 @@ type UserUsecase interface {
 	List(ctx context.Context, filter UserListFilter, page, limit int) (model.Users, int, error)
 	Delete(ctx context.Context, idNatural string) error
 	FindOrProvisionGoogleUser(ctx context.Context, input GoogleUserInput) (AuthenticatedUserSession, error)
+	GetAuthenticatedSession(ctx context.Context, userID string, organizationID *string) (AuthenticatedUserSession, error)
 	ResolveActiveMembership(ctx context.Context, userID string, organizationID *string) (model.OrganizationMembership, error)
 }
 
@@ -208,6 +209,29 @@ func (u *user) FindOrProvisionGoogleUser(ctx context.Context, input GoogleUserIn
 
 func (u *user) ResolveActiveMembership(ctx context.Context, userID string, organizationID *string) (model.OrganizationMembership, error) {
 	return u.resolveActiveMembership(ctx, u.data, userID, organizationID)
+}
+
+func (u *user) GetAuthenticatedSession(ctx context.Context, userID string, organizationID *string) (AuthenticatedUserSession, error) {
+	user, err := u.userRepo.GetByNaturalID(ctx, u.data.Conn(), userID)
+	if err != nil {
+		return AuthenticatedUserSession{}, err
+	}
+
+	membership, err := u.resolveActiveMembership(ctx, u.data, user.IDNatural, organizationID)
+	if err != nil {
+		return AuthenticatedUserSession{}, err
+	}
+
+	org, err := u.orgRepo.GetByNaturalID(ctx, u.data.Conn(), membership.OrganizationID)
+	if err != nil {
+		return AuthenticatedUserSession{}, err
+	}
+
+	return AuthenticatedUserSession{
+		User:               user,
+		ActiveOrganization: org,
+		ActiveMembership:   membership,
+	}, nil
 }
 
 func (u *user) resolveActiveMembership(ctx context.Context, data repository.DataAccess, userID string, organizationID *string) (model.OrganizationMembership, error) {

@@ -127,17 +127,19 @@ export function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <Calendar className="h-5 w-5 text-gray-500" />
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t("profilePage.createdAt")}
-                </p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">
-                  {formatDate(user.created_at)}
-                </p>
+            {"created_at" in user && typeof user.created_at === "string" && (
+              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <Calendar className="h-5 w-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t("profilePage.createdAt")}
+                  </p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">
+                    {formatDate(user.created_at)}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>

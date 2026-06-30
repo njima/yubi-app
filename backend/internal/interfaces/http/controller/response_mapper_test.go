@@ -6,6 +6,7 @@ import (
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
 func TestLocationResponse(t *testing.T) {
@@ -74,20 +75,11 @@ func TestUserResponse(t *testing.T) {
 	createdAt := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
 	updatedAt := createdAt.Add(time.Hour)
 	user := model.User{
-		IDNatural:        "user-1",
-		OrganizationID:   "org-1",
-		OrganizationName: "Airoa",
-		Name:             "Operator",
-		Email:            "operator@example.com",
-		Role:             model.UserRoleOperator,
-		CreatedAt:        createdAt,
-		UpdatedAt:        &updatedAt,
-		Locations: []model.LocationSummary{
-			{LocationID: "loc-1", Name: "Dock"},
-		},
-		Sites: []model.SiteSummary{
-			{SiteID: "site-1", Name: "Tokyo"},
-		},
+		IDNatural: "user-1",
+		Name:      "Operator",
+		Email:     "operator@example.com",
+		CreatedAt: createdAt,
+		UpdatedAt: &updatedAt,
 	}
 
 	got := userResponse(user)
@@ -95,20 +87,82 @@ func TestUserResponse(t *testing.T) {
 	if got.UserId != user.IDNatural || got.Email != user.Email || got.DisplayName != user.Name {
 		t.Fatalf("userResponse() = %+v, want values from %+v", got, user)
 	}
-	if got.OrganizationId != user.OrganizationID || got.OrganizationName != user.OrganizationName {
-		t.Errorf("organization fields = (%q, %q), want (%q, %q)", got.OrganizationId, got.OrganizationName, user.OrganizationID, user.OrganizationName)
+	if got.OrganizationId != "" || got.OrganizationName != "" {
+		t.Errorf("organization fields = (%q, %q), want empty identity-only values", got.OrganizationId, got.OrganizationName)
 	}
-	if got.Role == nil || *got.Role != openapi.Operator {
-		t.Errorf("Role = %v, want operator", got.Role)
+	if got.Role != nil {
+		t.Errorf("Role = %v, want nil identity-only role", got.Role)
 	}
 	if !got.CreatedAt.Equal(createdAt) || got.UpdatedAt == nil || !got.UpdatedAt.Equal(updatedAt) {
 		t.Errorf("timestamps = (%v, %v), want (%v, %v)", got.CreatedAt, got.UpdatedAt, createdAt, updatedAt)
 	}
-	if len(got.Locations) != 1 || got.Locations[0].LocationId != "loc-1" {
-		t.Errorf("Locations = %+v, want loc-1", got.Locations)
+	if len(got.Locations) != 0 {
+		t.Errorf("Locations = %+v, want empty identity-only list", got.Locations)
 	}
-	if len(got.Sites) != 1 || got.Sites[0].SiteId != "site-1" {
-		t.Errorf("Sites = %+v, want site-1", got.Sites)
+	if len(got.Sites) != 0 {
+		t.Errorf("Sites = %+v, want empty identity-only list", got.Sites)
+	}
+}
+
+func TestUserResponseWithWorkspace(t *testing.T) {
+	user := model.User{
+		IDNatural: "user-1",
+		Name:      "Operator",
+		Email:     "operator@example.com",
+	}
+	org := model.Organization{
+		IDNatural: "org-1",
+		Name:      "Airoa",
+	}
+	membership := model.OrganizationMembership{
+		UserID:         "user-1",
+		OrganizationID: "org-1",
+		Role:           model.UserRoleOperator,
+	}
+
+	got := userResponseWithWorkspace(user, org, membership)
+
+	if got.OrganizationId != org.IDNatural || got.OrganizationName != org.Name {
+		t.Errorf("organization fields = (%q, %q), want (%q, %q)", got.OrganizationId, got.OrganizationName, org.IDNatural, org.Name)
+	}
+	if got.Role == nil || *got.Role != openapi.Operator {
+		t.Errorf("Role = %v, want operator", got.Role)
+	}
+}
+
+func TestMeResponse(t *testing.T) {
+	avatarURL := "https://example.com/avatar.png"
+	session := usecase.AuthenticatedUserSession{
+		User: model.User{
+			IDNatural: "user-1",
+			Name:      "Operator",
+			Email:     "operator@example.com",
+			AvatarURL: &avatarURL,
+		},
+		ActiveOrganization: model.Organization{
+			IDNatural: "org-1",
+			Name:      "Airoa",
+		},
+		ActiveMembership: model.OrganizationMembership{
+			UserID:         "user-1",
+			OrganizationID: "org-1",
+			Role:           model.UserRoleOperator,
+		},
+	}
+
+	got := meResponse(session)
+
+	if got.UserId != "user-1" || got.Email != "operator@example.com" || got.DisplayName != "Operator" {
+		t.Fatalf("meResponse() = %+v, want current user identity", got)
+	}
+	if got.AvatarUrl == nil || *got.AvatarUrl != avatarURL {
+		t.Errorf("AvatarUrl = %v, want %q", got.AvatarUrl, avatarURL)
+	}
+	if got.ActiveOrganizationId != "org-1" || got.ActiveOrganizationName != "Airoa" {
+		t.Errorf("active organization = (%q, %q), want org-1 Airoa", got.ActiveOrganizationId, got.ActiveOrganizationName)
+	}
+	if got.ActiveRole != openapi.Operator {
+		t.Errorf("ActiveRole = %v, want operator", got.ActiveRole)
 	}
 }
 

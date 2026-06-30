@@ -34,7 +34,7 @@ type usecases struct {
 func newUsecases(repos repositories, dataAccess repository.DataAccess, eventBuses eventBuses, logger zerolog.Logger) usecases {
 	return usecases{
 		userUsecase:         usecase.NewUser(repos.User, repos.Organization, repos.OrganizationMembership, repos.UserLocation, repos.UserSite, dataAccess, logger),
-		userImportUsecase:   usecase.NewUserImport(repos.User, dataAccess, logger),
+		userImportUsecase:   usecase.NewUserImport(repos.User, repos.OrganizationMembership, dataAccess, logger),
 		organizationUsecase: usecase.NewOrganization(repos.Organization, dataAccess),
 		siteUsecase:         usecase.NewSite(repos.Site, dataAccess),
 		locationUsecase:     usecase.NewLocation(repos.Location, dataAccess),

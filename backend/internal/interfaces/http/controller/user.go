@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
@@ -46,7 +47,12 @@ func (c *controller) CreateUser(ctx context.Context, request openapi.CreateUserR
 		return nil, err
 	}
 
-	return openapi.CreateUser201JSONResponse(userResponse(user)), nil
+	resp, err := c.userResponseInActiveWorkspace(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi.CreateUser201JSONResponse(resp), nil
 }
 
 func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersRequestObject) (openapi.ListUsersResponseObject, error) {
@@ -78,6 +84,11 @@ func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersReq
 		userFilter.OrganizationId = &orgID
 	}
 
+	userResponses, err := c.userResponsesInActiveWorkspace(ctx, users)
+	if err != nil {
+		return nil, err
+	}
+
 	return openapi.ListUsers200JSONResponse{
 		Filter: userFilter,
 		Pagination: openapi.Pagination{
@@ -85,7 +96,7 @@ func (c *controller) ListUsers(ctx context.Context, request openapi.ListUsersReq
 			Limit: pg.Limit,
 			Page:  pg.Page,
 		},
-		Users: userResponses(users),
+		Users: userResponses,
 	}, nil
 }
 
@@ -95,7 +106,12 @@ func (c *controller) GetUserById(ctx context.Context, request openapi.GetUserByI
 		return nil, err
 	}
 
-	return openapi.GetUserById200JSONResponse(userResponse(user)), nil
+	resp, err := c.userResponseInActiveWorkspace(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi.GetUserById200JSONResponse(resp), nil
 }
 
 func (c *controller) GetMe(ctx context.Context, request openapi.GetMeRequestObject) (openapi.GetMeResponseObject, error) {
@@ -104,12 +120,17 @@ func (c *controller) GetMe(ctx context.Context, request openapi.GetMeRequestObje
 		return nil, err
 	}
 
-	user, err := c.userUsecase.GetByNaturalID(ctx, userID)
+	orgID, err := requestctx.OrganizationID(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return openapi.GetMe200JSONResponse(userResponse(user)), nil
+	session, err := c.userUsecase.GetAuthenticatedSession(ctx, userID, &orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi.GetMe200JSONResponse(meResponse(session)), nil
 }
 
 func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeRequestObject) (openapi.UpdateMeResponseObject, error) {
@@ -123,19 +144,20 @@ func (c *controller) UpdateMe(ctx context.Context, request openapi.UpdateMeReque
 		return nil, err
 	}
 
-	if _, err := c.userUsecase.Update(ctx, usecase.UserUpdateInput{
+	user, err := c.userUsecase.Update(ctx, usecase.UserUpdateInput{
 		UserID: userID,
 		Name:   &body.DisplayName,
-	}); err != nil {
-		return nil, err
-	}
-
-	user, err := c.userUsecase.GetByNaturalID(ctx, userID)
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return openapi.UpdateMe200JSONResponse(userResponse(user)), nil
+	resp, err := c.userResponseInActiveWorkspace(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi.UpdateMe200JSONResponse(resp), nil
 }
 
 func (c *controller) UpdateUserById(ctx context.Context, request openapi.UpdateUserByIdRequestObject) (openapi.UpdateUserByIdResponseObject, error) {
@@ -164,7 +186,12 @@ func (c *controller) UpdateUserById(ctx context.Context, request openapi.UpdateU
 		return nil, err
 	}
 
-	return openapi.UpdateUserById200JSONResponse(userResponse(user)), nil
+	resp, err := c.userResponseInActiveWorkspace(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi.UpdateUserById200JSONResponse(resp), nil
 }
 
 func (c *controller) UpdateUserRole(ctx context.Context, request openapi.UpdateUserRoleRequestObject) (openapi.UpdateUserRoleResponseObject, error) {
@@ -185,7 +212,12 @@ func (c *controller) UpdateUserRole(ctx context.Context, request openapi.UpdateU
 		return nil, err
 	}
 
-	return openapi.UpdateUserRole200JSONResponse(userResponse(user)), nil
+	resp, err := c.userResponseInActiveWorkspace(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi.UpdateUserRole200JSONResponse(resp), nil
 }
 
 func (c *controller) DeleteUserById(ctx context.Context, request openapi.DeleteUserByIdRequestObject) (openapi.DeleteUserByIdResponseObject, error) {
@@ -207,7 +239,12 @@ func (c *controller) UpdateUserLocations(ctx context.Context, request openapi.Up
 		return nil, err
 	}
 
-	return openapi.UpdateUserLocations200JSONResponse(userResponse(user)), nil
+	resp, err := c.userResponseInActiveWorkspace(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi.UpdateUserLocations200JSONResponse(resp), nil
 }
 
 func (c *controller) UpdateUserSites(ctx context.Context, request openapi.UpdateUserSitesRequestObject) (openapi.UpdateUserSitesResponseObject, error) {
@@ -221,7 +258,49 @@ func (c *controller) UpdateUserSites(ctx context.Context, request openapi.Update
 		return nil, err
 	}
 
-	return openapi.UpdateUserSites200JSONResponse(userResponse(user)), nil
+	resp, err := c.userResponseInActiveWorkspace(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return openapi.UpdateUserSites200JSONResponse(resp), nil
+}
+
+func (c *controller) userResponseInActiveWorkspace(ctx context.Context, user model.User) (openapi.UserResponse, error) {
+	orgID, err := requestctx.OrganizationID(ctx)
+	if err != nil {
+		return openapi.UserResponse{}, err
+	}
+	org, err := c.organizationUsecase.GetByNaturalID(ctx, orgID)
+	if err != nil {
+		return openapi.UserResponse{}, err
+	}
+	membership, err := c.userUsecase.ResolveActiveMembership(ctx, user.IDNatural, &orgID)
+	if err != nil {
+		return openapi.UserResponse{}, err
+	}
+	return userResponseWithWorkspace(user, org, membership), nil
+}
+
+func (c *controller) userResponsesInActiveWorkspace(ctx context.Context, users model.Users) ([]openapi.UserResponse, error) {
+	orgID, err := requestctx.OrganizationID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	org, err := c.organizationUsecase.GetByNaturalID(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]openapi.UserResponse, 0, len(users))
+	for _, user := range users {
+		membership, err := c.userUsecase.ResolveActiveMembership(ctx, user.IDNatural, &orgID)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, userResponseWithWorkspace(*user, org, membership))
+	}
+	return responses, nil
 }
 
 // Permissions

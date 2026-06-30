@@ -8,6 +8,23 @@ const UserRole = z.union([
   z.literal(3),
   z.literal(4),
 ]);
+const MeResponse = z
+  .object({
+    user_id: z.string(),
+    email: z.string(),
+    display_name: z.string(),
+    avatar_url: z.string().nullish(),
+    active_organization_id: z.string(),
+    active_organization_name: z.string(),
+    active_role: UserRole,
+  })
+  .passthrough();
+const ErrorResponse = z
+  .object({ code: z.number().int(), message: z.string() })
+  .passthrough();
+const MeUpdateRequest = z
+  .object({ display_name: z.string().min(1).max(60) })
+  .passthrough();
 const LocationSummary = z
   .object({ location_id: z.string(), name: z.string() })
   .passthrough();
@@ -27,12 +44,6 @@ const UserResponse = z
     locations: z.array(LocationSummary),
     sites: z.array(SiteSummary),
   })
-  .passthrough();
-const ErrorResponse = z
-  .object({ code: z.number().int(), message: z.string() })
-  .passthrough();
-const MeUpdateRequest = z
-  .object({ display_name: z.string().min(1).max(60) })
   .passthrough();
 const Pagination = z
   .object({
@@ -778,11 +789,12 @@ const RobotStatusStreamResponse = z
 
 export const schemas = {
   UserRole,
+  MeResponse,
+  ErrorResponse,
+  MeUpdateRequest,
   LocationSummary,
   SiteSummary,
   UserResponse,
-  ErrorResponse,
-  MeUpdateRequest,
   Pagination,
   UserFilter,
   UserListResponse,
@@ -1782,7 +1794,7 @@ Maximum 30,000 rows. If exceeded, a 400 error is returned — apply filters to r
     alias: "getMe",
     description: `Retrieve the currently authenticated user&#x27;s information`,
     requestFormat: "json",
-    response: UserResponse,
+    response: MeResponse,
     errors: [
       {
         status: 401,

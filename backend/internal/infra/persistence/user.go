@@ -21,6 +21,26 @@ func NewUser() *user {
 }
 
 func toModelUser(dbu entity.User) model.User {
+	locs := make([]model.LocationSummary, 0, len(dbu.LocationAssignments))
+	for _, la := range dbu.LocationAssignments {
+		if la.Location != nil {
+			locs = append(locs, model.LocationSummary{
+				LocationID: la.LocationID,
+				Name:       la.Location.Name,
+			})
+		}
+	}
+
+	sites := make([]model.SiteSummary, 0, len(dbu.SiteAssignments))
+	for _, sa := range dbu.SiteAssignments {
+		if sa.Site != nil {
+			sites = append(sites, model.SiteSummary{
+				SiteID: sa.SiteID,
+				Name:   sa.Site.Name,
+			})
+		}
+	}
+
 	return model.User{
 		ID:        dbu.ID,
 		IDNatural: dbu.IDNatural,
@@ -30,6 +50,8 @@ func toModelUser(dbu entity.User) model.User {
 		AvatarURL: dbu.AvatarURL,
 		CreatedAt: dbu.CreatedAt,
 		UpdatedAt: updatedAtPtr(dbu.UpdatedAt),
+		Locations: locs,
+		Sites:     sites,
 	}
 }
 
@@ -95,6 +117,8 @@ func (u *user) GetByNaturalID(ctx context.Context, conn repository.Conn, IDNatur
 
 	if err := bunConn(conn).NewSelect().
 		Model(&dbUser).
+		Relation("LocationAssignments.Location").
+		Relation("SiteAssignments.Site").
 		Where("u.id_natural = ?", IDNatural).
 		Scan(ctx); err != nil {
 		if err == sql.ErrNoRows {
@@ -126,6 +150,8 @@ func (u *user) List(ctx context.Context, conn repository.Conn, filter repository
 	var dbUsers []entity.User
 	sel := bunConn(conn).NewSelect().
 		Model(&dbUsers).
+		Relation("LocationAssignments.Location").
+		Relation("SiteAssignments.Site").
 		Limit(limit).
 		Offset(offset)
 

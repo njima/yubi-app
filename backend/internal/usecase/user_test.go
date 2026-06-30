@@ -442,6 +442,53 @@ func TestUserUsecase_UpdateRole_UpdatesMembershipForActiveOrganization(t *testin
 	}
 }
 
+func TestUserUsecase_GetAuthenticatedSession_UsesActiveOrganizationMembership(t *testing.T) {
+	userRepo := &stubUserRepo{
+		existing: model.User{
+			IDNatural: "user-1",
+			Name:      "Operator",
+			Email:     "operator@example.com",
+		},
+	}
+	orgRepo := &googleProvisionOrganizationRepo{
+		byID: map[string]model.Organization{
+			"org-active": {
+				IDNatural: "org-active",
+				Name:      "Active Org",
+				Kind:      model.OrganizationKindTeam,
+			},
+		},
+	}
+	membershipRepo := &stubOrganizationMembershipRepo{
+		memberships: []model.OrganizationMembership{
+			{UserID: "user-1", OrganizationID: "org-other", Role: model.UserRoleViewer},
+			{UserID: "user-1", OrganizationID: "org-active", Role: model.UserRoleOperator},
+		},
+	}
+	uc := &user{
+		userRepo:       userRepo,
+		orgRepo:        orgRepo,
+		membershipRepo: membershipRepo,
+		data:           repository.NewDataAccess(nil, stubTxRunner{}),
+	}
+
+	orgID := "org-active"
+	got, err := uc.GetAuthenticatedSession(context.Background(), "user-1", &orgID)
+
+	if err != nil {
+		t.Fatalf("GetAuthenticatedSession() error = %v", err)
+	}
+	if got.User.IDNatural != "user-1" {
+		t.Errorf("User.IDNatural = %q, want user-1", got.User.IDNatural)
+	}
+	if got.ActiveOrganization.IDNatural != "org-active" || got.ActiveOrganization.Name != "Active Org" {
+		t.Errorf("ActiveOrganization = %+v, want org-active Active Org", got.ActiveOrganization)
+	}
+	if got.ActiveMembership.Role != model.UserRoleOperator {
+		t.Errorf("ActiveMembership.Role = %v, want operator", got.ActiveMembership.Role)
+	}
+}
+
 func TestUserUsecase_Update_UsesPointerFieldsForPartialUpdate(t *testing.T) {
 	repo := &stubUserRepo{
 		existing: model.NewUser(

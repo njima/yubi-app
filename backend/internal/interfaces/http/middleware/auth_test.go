@@ -59,6 +59,10 @@ func (s *stubAuthUserUsecase) FindOrProvisionGoogleUser(ctx context.Context, inp
 	return usecase.AuthenticatedUserSession{}, nil
 }
 
+func (s *stubAuthUserUsecase) GetAuthenticatedSession(ctx context.Context, userID string, organizationID *string) (usecase.AuthenticatedUserSession, error) {
+	return usecase.AuthenticatedUserSession{}, nil
+}
+
 func (s *stubAuthUserUsecase) ResolveActiveMembership(ctx context.Context, userID string, organizationID *string) (model.OrganizationMembership, error) {
 	s.resolvedUserID = userID
 	if organizationID != nil {

@@ -30,6 +30,12 @@ export type LocationListResponse = z.infer<typeof schemas.LocationListResponse>;
 export type LocationCreate = z.infer<typeof schemas.LocationCreate>;
 export type LocationUpdate = z.infer<typeof schemas.LocationUpdate>;
 export type UserResponse = z.infer<typeof schemas.UserResponse>;
+export type MeResponse = z.infer<typeof schemas.MeResponse>;
+export type CurrentUserResponse = MeResponse & {
+  role: MeResponse["active_role"];
+  organization_id: MeResponse["active_organization_id"];
+  organization_name: MeResponse["active_organization_name"];
+};
 export type UserListResponse = z.infer<typeof schemas.UserListResponse>;
 export type UserRoleUpdateRequest = z.infer<
   typeof schemas.UserRoleUpdateRequest

@@ -80,20 +80,23 @@ type UserImportRowError struct {
 }
 
 type userImport struct {
-	userRepo repository.User
-	data     repository.DataAccess
-	logger   zerolog.Logger
+	userRepo       repository.User
+	membershipRepo repository.OrganizationMembership
+	data           repository.DataAccess
+	logger         zerolog.Logger
 }
 
 func NewUserImport(
 	userRepo repository.User,
+	membershipRepo repository.OrganizationMembership,
 	data repository.DataAccess,
 	logger zerolog.Logger,
 ) UserImportUsecase {
 	return &userImport{
-		userRepo: userRepo,
-		data:     data,
-		logger:   logger,
+		userRepo:       userRepo,
+		membershipRepo: membershipRepo,
+		data:           data,
+		logger:         logger,
 	}
 }
 
@@ -127,7 +130,7 @@ func (u *userImport) Import(ctx context.Context, csvContent string) (UserImportR
 	skippedCount := len(validation.DuplicateRows)
 
 	for _, row := range validation.ValidRows {
-		nu, err := model.InitUser(orgID, row.DisplayName, row.Email, row.Role)
+		nu, err := model.InitUser(row.Email, row.DisplayName, row.Email, "")
 		if err != nil {
 			u.logger.Error().Err(err).Str("email", row.Email).Int("row", row.RowNumber).Msg("failed to initialize user model")
 			importErrors = append(importErrors, UserImportRowError{
@@ -138,7 +141,19 @@ func (u *userImport) Import(ctx context.Context, csvContent string) (UserImportR
 			continue
 		}
 
-		if _, err := u.userRepo.Create(ctx, u.data.Conn(), nu); err != nil {
+		if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+			conn := txData.Conn()
+			createdUser, err := u.userRepo.Create(ctx, conn, nu)
+			if err != nil {
+				return err
+			}
+			membership, err := model.InitOrganizationMembership(createdUser.IDNatural, orgID, row.Role)
+			if err != nil {
+				return err
+			}
+			_, err = u.membershipRepo.Create(ctx, conn, membership)
+			return err
+		}); err != nil {
 			u.logger.Error().Err(err).Str("email", row.Email).Int("row", row.RowNumber).Msg("failed to create user in database")
 			importErrors = append(importErrors, UserImportRowError{
 				RowNumber: row.RowNumber,

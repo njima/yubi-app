@@ -15,11 +15,9 @@ type apiKey struct{}
 
 func NewAPIKey() *apiKey { return &apiKey{} }
 
-func apiKeyEntityToModel(e entity.APIKey) model.APIKey {
-	var userRole model.UserRole
+func apiKeyEntityToModelWithRole(e entity.APIKey, userRole model.UserRole) model.APIKey {
 	var userName string
 	if e.User != nil {
-		userRole = model.UserRole(e.User.Role)
 		userName = e.User.Name
 	}
 	var robotName *string
@@ -48,6 +46,15 @@ func apiKeyEntityToModel(e entity.APIKey) model.APIKey {
 	}
 }
 
+func apiKeyEntityToModel(e entity.APIKey) (model.APIKey, error) {
+	if e.Membership == nil {
+		return model.APIKey{}, apperror.NewError(
+			apperror.NewMessage(apperror.CodeDatabaseError, "api key owner membership relation not loaded"),
+		)
+	}
+	return apiKeyEntityToModelWithRole(e, model.UserRole(e.Membership.Role)), nil
+}
+
 func (a *apiKey) FindActiveByHash(ctx context.Context, conn repository.Conn, keyHashHex string, now time.Time) (model.APIKey, error) {
 	// Cross-organization lookup: auth middleware runs before any organization is known,
 	// so OrgIDFromContext returns false and the OrgScoped BeforeSelect hook is a no-op.
@@ -56,6 +63,7 @@ func (a *apiKey) FindActiveByHash(ctx context.Context, conn repository.Conn, key
 	err := bunConn(conn).NewSelect().
 		Model(&e).
 		Relation("User").
+		Relation("Membership").
 		Where("ak.key_hash = ?", keyHashHex).
 		Where("ak.revoked_at IS NULL").
 		Where("(ak.expires_at IS NULL OR ak.expires_at > ?)", now).
@@ -71,7 +79,12 @@ func (a *apiKey) FindActiveByHash(ctx context.Context, conn repository.Conn, key
 			apperror.NewMessage(apperror.CodeDatabaseError, "api key owner not found: user relation not loaded"),
 		)
 	}
-	return apiKeyEntityToModel(e), nil
+	if e.Membership == nil {
+		return model.APIKey{}, apperror.NewError(
+			apperror.NewMessage(apperror.CodeUnauthorized, "api key owner is not a member of the key organization"),
+		)
+	}
+	return apiKeyEntityToModel(e)
 }
 
 func (a *apiKey) TouchLastUsedAt(ctx context.Context, conn repository.Conn, id int64, at time.Time) error {
@@ -109,9 +122,7 @@ func (a *apiKey) Create(ctx context.Context, conn repository.Conn, k model.APIKe
 		return model.APIKey{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to create api key: %v", err))
 	}
 
-	out := apiKeyEntityToModel(inserted)
-	out.UserRole = k.UserRole
-	return out, nil
+	return apiKeyEntityToModelWithRole(inserted, k.UserRole), nil
 }
 
 func (a *apiKey) GetByNaturalID(ctx context.Context, conn repository.Conn, idNatural string) (model.APIKey, error) {
@@ -119,6 +130,7 @@ func (a *apiKey) GetByNaturalID(ctx context.Context, conn repository.Conn, idNat
 	err := bunConn(conn).NewSelect().
 		Model(&e).
 		Relation("User").
+		Relation("Membership").
 		Relation("Robot").
 		Where("ak.id_natural = ?", idNatural).
 		Scan(ctx)
@@ -128,7 +140,7 @@ func (a *apiKey) GetByNaturalID(ctx context.Context, conn repository.Conn, idNat
 		}
 		return model.APIKey{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to get api key: %v", err))
 	}
-	return apiKeyEntityToModel(e), nil
+	return apiKeyEntityToModel(e)
 }
 
 func (a *apiKey) List(ctx context.Context, conn repository.Conn, filter repository.APIKeyListFilter, limit, offset int) (model.APIKeys, int, error) {
@@ -136,6 +148,7 @@ func (a *apiKey) List(ctx context.Context, conn repository.Conn, filter reposito
 	q := bunConn(conn).NewSelect().
 		Model(&rows).
 		Relation("User").
+		Relation("Membership").
 		Relation("Robot")
 
 	if filter.RobotID != nil {
@@ -164,7 +177,10 @@ func (a *apiKey) List(ctx context.Context, conn repository.Conn, filter reposito
 
 	out := make(model.APIKeys, 0, len(rows))
 	for i := range rows {
-		m := apiKeyEntityToModel(rows[i])
+		m, err := apiKeyEntityToModel(rows[i])
+		if err != nil {
+			return nil, 0, err
+		}
 		out = append(out, &m)
 	}
 	return out, total, nil
@@ -208,5 +224,5 @@ func (a *apiKey) Revoke(ctx context.Context, conn repository.Conn, idNatural str
 		}
 		return model.APIKey{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to revoke api key: %v", err))
 	}
-	return apiKeyEntityToModel(updated), nil
+	return a.GetByNaturalID(ctx, conn, updated.IDNatural)
 }

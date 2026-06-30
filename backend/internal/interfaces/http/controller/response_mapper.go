@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/gen/openapi"
+	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 )
 
 func locationResponse(loc model.Location) openapi.Location {
@@ -244,25 +245,22 @@ func robotOperatorResponse(operator model.RobotOperator) openapi.RobotOperator {
 
 func userResponse(user model.User) openapi.UserResponse {
 	return openapi.UserResponse{
-		UserId:           user.IDNatural,
-		Email:            user.Email,
-		DisplayName:      user.Name,
-		Role:             openAPIUserRolePtr(user.Role),
-		OrganizationId:   user.OrganizationID,
-		OrganizationName: user.OrganizationName,
-		CreatedAt:        user.CreatedAt,
-		UpdatedAt:        user.UpdatedAt,
-		Locations:        locationSummaries(user.Locations),
-		Sites:            siteSummaries(user.Sites),
+		UserId:      user.IDNatural,
+		Email:       user.Email,
+		DisplayName: user.Name,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.UpdatedAt,
+		Locations:   locationSummaries(user.Locations),
+		Sites:       siteSummaries(user.Sites),
 	}
 }
 
-func userResponses(users model.Users) []openapi.UserResponse {
-	result := make([]openapi.UserResponse, 0, len(users))
-	for _, user := range users {
-		result = append(result, userResponse(*user))
-	}
-	return result
+func userResponseWithWorkspace(user model.User, org model.Organization, membership model.OrganizationMembership) openapi.UserResponse {
+	resp := userResponse(user)
+	resp.Role = openAPIUserRolePtr(membership.Role)
+	resp.OrganizationId = org.IDNatural
+	resp.OrganizationName = org.Name
+	return resp
 }
 
 func locationSummaries(locs []model.LocationSummary) []openapi.LocationSummary {
@@ -285,4 +283,16 @@ func siteSummaries(sites []model.SiteSummary) []openapi.SiteSummary {
 		})
 	}
 	return result
+}
+
+func meResponse(session usecase.AuthenticatedUserSession) openapi.MeResponse {
+	return openapi.MeResponse{
+		UserId:                 session.User.IDNatural,
+		Email:                  session.User.Email,
+		DisplayName:            session.User.Name,
+		AvatarUrl:              session.User.AvatarURL,
+		ActiveOrganizationId:   session.ActiveOrganization.IDNatural,
+		ActiveOrganizationName: session.ActiveOrganization.Name,
+		ActiveRole:             openAPIUserRole(session.ActiveMembership.Role),
+	}
 }

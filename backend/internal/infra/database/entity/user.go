@@ -20,7 +20,9 @@ type User struct {
 	AvatarURL *string `bun:"avatar_url,type:text"`
 
 	// relations
-	Memberships []OrganizationMembership `bun:"rel:has-many,join:id_natural=user_id"`
+	Memberships         []OrganizationMembership `bun:"rel:has-many,join:id_natural=user_id"`
+	LocationAssignments []UserLocationAssignment `bun:"rel:has-many,join:id_natural=user_id"`
+	SiteAssignments     []UserSiteAssignment     `bun:"rel:has-many,join:id_natural=user_id"`
 }
 
 var UserTableCreator = func(db *bun.DB) *bun.CreateTableQuery {

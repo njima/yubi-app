@@ -37,6 +37,8 @@ type User struct {
 	AvatarURL *string
 	CreatedAt time.Time
 	UpdatedAt *time.Time
+	Locations []LocationSummary
+	Sites     []SiteSummary
 }
 
 type Users []*User
