@@ -47,7 +47,7 @@ func NewOrganization(orgRepo repository.Organization, data repository.DataAccess
 }
 
 func (o *organization) Create(ctx context.Context, input OrganizationCreateInput) (model.Organization, error) {
-	org, err := model.InitOrganization(input.DisplayName, input.Description)
+	org, err := model.InitOrganization(input.DisplayName, input.Description, model.OrganizationKindTeam)
 	if err != nil {
 		return model.Organization{}, err
 	}

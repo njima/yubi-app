@@ -11,4 +11,5 @@ type OrganizationMembership interface {
 	GetByUserAndOrganization(ctx context.Context, conn Conn, userID, organizationID string) (model.OrganizationMembership, error)
 	ListByUser(ctx context.Context, conn Conn, userID string) ([]model.OrganizationMembership, error)
 	CountByUser(ctx context.Context, conn Conn, userID string) (int, error)
+	UpdateRole(ctx context.Context, conn Conn, userID, organizationID string, role model.UserRole) (model.OrganizationMembership, error)
 }

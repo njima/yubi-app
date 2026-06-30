@@ -65,6 +65,7 @@ func TestOrganizationEntityToModel(t *testing.T) {
 		ID:          1,
 		IDNatural:   "org-1",
 		Name:        "Airoa",
+		Kind:        string(model.OrganizationKindPersonal),
 		Description: &description,
 		Timestamp: entity.Timestamp{
 			CreatedAt: mapperTestTime,
@@ -76,11 +77,33 @@ func TestOrganizationEntityToModel(t *testing.T) {
 	if got.IDNatural != dbOrganization.IDNatural || got.Name != dbOrganization.Name {
 		t.Fatalf("got organization %+v, want values from entity %+v", got, dbOrganization)
 	}
+	if got.Kind != model.OrganizationKindPersonal {
+		t.Errorf("Kind = %q, want %q", got.Kind, model.OrganizationKindPersonal)
+	}
 	if got.Description == nil || *got.Description != description {
 		t.Errorf("Description = %v, want %q", got.Description, description)
 	}
 	if got.UpdatedAt != nil {
 		t.Errorf("UpdatedAt = %v, want nil for zero timestamp", got.UpdatedAt)
+	}
+}
+
+func TestOrganizationModelToEntity_PreservesKind(t *testing.T) {
+	description := "personal workspace"
+	org := model.NewOrganization(
+		1,
+		"org-1",
+		"Ada's Workspace",
+		model.OrganizationKindPersonal,
+		&description,
+		mapperTestTime,
+		nil,
+	)
+
+	got := organizationModelToEntity(org)
+
+	if got.Kind != string(model.OrganizationKindPersonal) {
+		t.Errorf("Kind = %q, want %q", got.Kind, model.OrganizationKindPersonal)
 	}
 }
 

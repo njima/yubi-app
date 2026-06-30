@@ -2,10 +2,14 @@ package usecase
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/repository"
 	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/requestctx"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/pagination"
 	"github.com/rs/zerolog"
 )
@@ -19,15 +23,32 @@ type UserUsecase interface {
 	GetByNaturalID(ctx context.Context, idNatural string) (model.User, error)
 	List(ctx context.Context, filter UserListFilter, page, limit int) (model.Users, int, error)
 	Delete(ctx context.Context, idNatural string) error
+	FindOrProvisionGoogleUser(ctx context.Context, input GoogleUserInput) (AuthenticatedUserSession, error)
+	ResolveActiveMembership(ctx context.Context, userID string, organizationID *string) (model.OrganizationMembership, error)
 }
 
 type CreateInput struct {
 	OrganizationID string
+	GoogleSub      string
 	Email          string
 	Name           string
+	AvatarURL      string
 	Role           model.UserRole
 	LocationIDs    []string
 	SiteIDs        []string
+}
+
+type GoogleUserInput struct {
+	GoogleSub string
+	Email     string
+	Name      string
+	AvatarURL string
+}
+
+type AuthenticatedUserSession struct {
+	User               model.User
+	ActiveOrganization model.Organization
+	ActiveMembership   model.OrganizationMembership
 }
 
 type UserUpdateInput struct {
@@ -44,6 +65,8 @@ type UserRoleUpdateInput struct {
 
 type user struct {
 	userRepo         repository.User
+	orgRepo          repository.Organization
+	membershipRepo   repository.OrganizationMembership
 	userLocationRepo repository.UserLocation
 	userSiteRepo     repository.UserSite
 	data             repository.DataAccess
@@ -52,6 +75,8 @@ type user struct {
 
 func NewUser(
 	userRepo repository.User,
+	orgRepo repository.Organization,
+	membershipRepo repository.OrganizationMembership,
 	userLocationRepo repository.UserLocation,
 	userSiteRepo repository.UserSite,
 	data repository.DataAccess,
@@ -59,6 +84,8 @@ func NewUser(
 ) *user {
 	return &user{
 		userRepo:         userRepo,
+		orgRepo:          orgRepo,
+		membershipRepo:   membershipRepo,
 		userLocationRepo: userLocationRepo,
 		userSiteRepo:     userSiteRepo,
 		data:             data,
@@ -75,7 +102,11 @@ func (u *user) Create(ctx context.Context, input CreateInput) (model.User, error
 		return model.User{}, apperror.NewError(apperror.NewMessage(apperror.CodeConflict, "user with this email already exists"))
 	}
 
-	nu, err := model.InitUser(input.OrganizationID, input.Name, input.Email, input.Role)
+	googleSub := input.GoogleSub
+	if googleSub == "" {
+		googleSub = input.Email
+	}
+	nu, err := model.InitUser(googleSub, input.Name, input.Email, input.AvatarURL)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -88,15 +119,134 @@ func (u *user) Create(ctx context.Context, input CreateInput) (model.User, error
 		if err != nil {
 			return err
 		}
-		if err := u.userLocationRepo.SetUserLocations(ctx, conn, cu.IDNatural, cu.OrganizationID, input.LocationIDs); err != nil {
+		membership, err := model.InitOrganizationMembership(cu.IDNatural, input.OrganizationID, input.Role)
+		if err != nil {
 			return err
 		}
-		return u.userSiteRepo.SetUserSites(ctx, conn, cu.IDNatural, cu.OrganizationID, input.SiteIDs)
+		if _, err := u.membershipRepo.Create(ctx, conn, membership); err != nil {
+			return err
+		}
+		if err := u.userLocationRepo.SetUserLocations(ctx, conn, cu.IDNatural, input.OrganizationID, input.LocationIDs); err != nil {
+			return err
+		}
+		return u.userSiteRepo.SetUserSites(ctx, conn, cu.IDNatural, input.OrganizationID, input.SiteIDs)
 	}); err != nil {
 		return model.User{}, err
 	}
 
 	return cu, nil
+}
+
+func (u *user) FindOrProvisionGoogleUser(ctx context.Context, input GoogleUserInput) (AuthenticatedUserSession, error) {
+	var session AuthenticatedUserSession
+	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		conn := txData.Conn()
+
+		existing, err := u.userRepo.GetByGoogleSub(ctx, conn, input.GoogleSub)
+		if err != nil {
+			if !apperror.SameKind(err, apperror.KindNotFound) {
+				return err
+			}
+			initialized, err := model.InitUser(input.GoogleSub, input.Name, input.Email, input.AvatarURL)
+			if err != nil {
+				return err
+			}
+			existing, err = u.userRepo.Create(ctx, conn, initialized)
+			if err != nil {
+				return err
+			}
+		}
+
+		memberships, err := u.membershipRepo.ListByUser(ctx, conn, existing.IDNatural)
+		if err != nil {
+			return err
+		}
+
+		if len(memberships) == 0 {
+			desc := "Personal workspace"
+			org, err := model.InitOrganization(personalWorkspaceName(input.Name, existing.IDNatural, input.GoogleSub), &desc, model.OrganizationKindPersonal)
+			if err != nil {
+				return err
+			}
+			createdOrg, err := u.orgRepo.Create(ctx, conn, org)
+			if err != nil {
+				return err
+			}
+			membership, err := model.InitOrganizationMembership(existing.IDNatural, createdOrg.IDNatural, model.UserRoleAdmin)
+			if err != nil {
+				return err
+			}
+			createdMembership, err := u.membershipRepo.Create(ctx, conn, membership)
+			if err != nil {
+				return err
+			}
+			session = AuthenticatedUserSession{
+				User:               existing,
+				ActiveOrganization: createdOrg,
+				ActiveMembership:   createdMembership,
+			}
+			return nil
+		}
+
+		activeMembership := memberships[0]
+		activeOrganization, err := u.orgRepo.GetByNaturalID(ctx, conn, activeMembership.OrganizationID)
+		if err != nil {
+			return err
+		}
+		session = AuthenticatedUserSession{
+			User:               existing,
+			ActiveOrganization: activeOrganization,
+			ActiveMembership:   activeMembership,
+		}
+		return nil
+	}); err != nil {
+		return AuthenticatedUserSession{}, err
+	}
+
+	return session, nil
+}
+
+func (u *user) ResolveActiveMembership(ctx context.Context, userID string, organizationID *string) (model.OrganizationMembership, error) {
+	return u.resolveActiveMembership(ctx, u.data, userID, organizationID)
+}
+
+func (u *user) resolveActiveMembership(ctx context.Context, data repository.DataAccess, userID string, organizationID *string) (model.OrganizationMembership, error) {
+	conn := data.Conn()
+	if organizationID != nil && *organizationID != "" {
+		return u.membershipRepo.GetByUserAndOrganization(ctx, conn, userID, *organizationID)
+	}
+
+	memberships, err := u.membershipRepo.ListByUser(ctx, conn, userID)
+	if err != nil {
+		return model.OrganizationMembership{}, err
+	}
+	if len(memberships) == 0 {
+		return model.OrganizationMembership{}, apperror.NewError(apperror.NewMessage(apperror.CodeForbidden, "user has no organization membership"))
+	}
+
+	return memberships[0], nil
+}
+
+func activeOrganizationID(ctx context.Context) *string {
+	orgID, err := requestctx.OrganizationID(ctx)
+	if err != nil || orgID == "" {
+		return nil
+	}
+	return &orgID
+}
+
+func personalWorkspaceName(displayName, userID, googleSub string) string {
+	token := stableShortToken(userID, googleSub)
+	return fmt.Sprintf("%s's Workspace %s", displayName, token)
+}
+
+func stableShortToken(primary, fallback string) string {
+	source := primary
+	if source == "" {
+		source = fallback
+	}
+	sum := sha256.Sum256([]byte(source))
+	return hex.EncodeToString(sum[:])[:8]
 }
 
 func (u *user) Update(ctx context.Context, input UserUpdateInput) (model.User, error) {
@@ -140,7 +290,11 @@ func (u *user) SetLocations(ctx context.Context, userID string, locationIDs []st
 
 	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		conn := txData.Conn()
-		return u.userLocationRepo.SetUserLocations(ctx, conn, existing.IDNatural, existing.OrganizationID, locationIDs)
+		activeMembership, err := u.resolveActiveMembership(ctx, txData, existing.IDNatural, activeOrganizationID(ctx))
+		if err != nil {
+			return err
+		}
+		return u.userLocationRepo.SetUserLocations(ctx, conn, existing.IDNatural, activeMembership.OrganizationID, locationIDs)
 	}); err != nil {
 		return model.User{}, err
 	}
@@ -156,7 +310,11 @@ func (u *user) SetSites(ctx context.Context, userID string, siteIDs []string) (m
 
 	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
 		conn := txData.Conn()
-		return u.userSiteRepo.SetUserSites(ctx, conn, existing.IDNatural, existing.OrganizationID, siteIDs)
+		activeMembership, err := u.resolveActiveMembership(ctx, txData, existing.IDNatural, activeOrganizationID(ctx))
+		if err != nil {
+			return err
+		}
+		return u.userSiteRepo.SetUserSites(ctx, conn, existing.IDNatural, activeMembership.OrganizationID, siteIDs)
 	}); err != nil {
 		return model.User{}, err
 	}
@@ -170,16 +328,22 @@ func (u *user) UpdateRole(ctx context.Context, input UserRoleUpdateInput) (model
 		return model.User{}, err
 	}
 
-	if err := user.SetRole(input.Role); err != nil {
+	if err := u.data.RunInTx(ctx, func(ctx context.Context, txData repository.DataAccess) error {
+		conn := txData.Conn()
+		activeMembership, err := u.resolveActiveMembership(ctx, txData, user.IDNatural, activeOrganizationID(ctx))
+		if err != nil {
+			return err
+		}
+		if _, err := model.InitOrganizationMembership(user.IDNatural, activeMembership.OrganizationID, input.Role); err != nil {
+			return err
+		}
+		_, err = u.membershipRepo.UpdateRole(ctx, conn, user.IDNatural, activeMembership.OrganizationID, input.Role)
+		return err
+	}); err != nil {
 		return model.User{}, err
 	}
 
-	updatedUser, err := u.userRepo.UpdateRole(ctx, u.data.Conn(), user.IDNatural, user.Role)
-	if err != nil {
-		return model.User{}, err
-	}
-
-	return updatedUser, nil
+	return user, nil
 }
 
 func (u *user) GetByNaturalID(ctx context.Context, idNatural string) (model.User, error) {

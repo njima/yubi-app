@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/airoa-org/yubi-app/backend/internal/domain/model"
 	"github.com/airoa-org/yubi-app/backend/internal/infra/database/entity"
@@ -94,4 +95,24 @@ func (o *organizationMembership) CountByUser(ctx context.Context, conn repositor
 	}
 
 	return count, nil
+}
+
+func (o *organizationMembership) UpdateRole(ctx context.Context, conn repository.Conn, userID, organizationID string, role model.UserRole) (model.OrganizationMembership, error) {
+	var updated entity.OrganizationMembership
+
+	if err := bunConn(conn).NewUpdate().
+		Model((*entity.OrganizationMembership)(nil)).
+		Set("role = ?", uint(role)).
+		Set("updated_at = ?", time.Now().UTC()).
+		Where("user_id = ?", userID).
+		Where("organization_id = ?", organizationID).
+		Returning("*").
+		Scan(ctx, &updated); err != nil {
+		if err == sql.ErrNoRows {
+			return model.OrganizationMembership{}, apperror.NewError(apperror.NewMessage(apperror.CodeUserNotFound, "organization membership not found: user_id=%s organization_id=%s", userID, organizationID))
+		}
+		return model.OrganizationMembership{}, apperror.WrapWithMessage(err, apperror.NewMessage(apperror.CodeDatabaseError, "failed to update organization membership role: %v", err))
+	}
+
+	return toModelOrganizationMembership(updated), nil
 }

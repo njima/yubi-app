@@ -186,7 +186,7 @@ func TestSiteUsecase_Update_RejectsExplicitEmptyName(t *testing.T) {
 func TestOrganizationUsecase_Update_AllowsDescriptionOnlyUpdate(t *testing.T) {
 	oldDescription := "old"
 	repo := &stubOrganizationRepo{
-		existing: model.NewOrganization(1, "org-1", "Airoa", &oldDescription, testTime, nil),
+		existing: model.NewOrganization(1, "org-1", "Airoa", model.OrganizationKindTeam, &oldDescription, testTime, nil),
 	}
 	uc := NewOrganization(repo, repository.NewDataAccess(nil, nil))
 	description := "new"
@@ -212,7 +212,7 @@ func TestOrganizationUsecase_Update_AllowsDescriptionOnlyUpdate(t *testing.T) {
 
 func TestOrganizationUsecase_Update_NoFieldsReturnsExistingOrganization(t *testing.T) {
 	description := "old"
-	existing := model.NewOrganization(1, "org-1", "Airoa", &description, testTime, nil)
+	existing := model.NewOrganization(1, "org-1", "Airoa", model.OrganizationKindTeam, &description, testTime, nil)
 	repo := &stubOrganizationRepo{existing: existing}
 	uc := NewOrganization(repo, repository.NewDataAccess(nil, nil))
 
@@ -232,7 +232,7 @@ func TestOrganizationUsecase_Update_NoFieldsReturnsExistingOrganization(t *testi
 func TestOrganizationUsecase_Update_RejectsExplicitEmptyDisplayName(t *testing.T) {
 	description := "old"
 	repo := &stubOrganizationRepo{
-		existing: model.NewOrganization(1, "org-1", "Airoa", &description, testTime, nil),
+		existing: model.NewOrganization(1, "org-1", "Airoa", model.OrganizationKindTeam, &description, testTime, nil),
 	}
 	uc := NewOrganization(repo, repository.NewDataAccess(nil, nil))
 	emptyName := ""
