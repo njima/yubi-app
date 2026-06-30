@@ -65,13 +65,13 @@ make reset      # Stop and delete all data (volumes)
 
 > **Note**: This OSS version uses a simplified, header-based authentication intended for local development and evaluation. It does not provide production-grade security. For production use, consider adding an authentication layer (e.g., OAuth2, API gateway).
 
-- **Frontend**: The server-side backend client sends `X-User-ID` automatically. The initial user is set via the `DEFAULT_USER_ID` environment variable. The backend authorizes the user through `organization_membership`.
+- **Frontend**: Google sign-in is handled by Auth.js / NextAuth. The server-side backend client sends `X-User-ID` from the authenticated session, with `DEFAULT_USER_ID` available as a local development fallback.
 - **Robot API**: Robots send `X-User-ID` and `X-Robot-ID` headers directly. No API key or token is required.
 - **RBAC**: Role-based access control is enforced based on the user's active organization membership role.
 
 A default Admin user and organization membership are created via `make seed`. The user ID is configured in `frontend/.env`.
 
-Google OAuth is not required for local access yet. See [Authentication and Workspace Setup](docs/authentication.md) for the current auth model and dashboard 403 troubleshooting.
+See [Authentication and Workspace Setup](docs/authentication.md) for Google OAuth setup, the local development fallback, and dashboard 403 troubleshooting.
 
 ## Development
 

@@ -11,9 +11,10 @@ import (
 func (a *application) newRouter(ctx context.Context) *gin.Engine {
 	return httprouter.New(ctx, httprouter.Dependencies{
 		Config: httprouter.Config{
-			AppName:        a.conf.AppName,
-			DatadogEnabled: a.conf.Datadog.Enabled,
-			SentryEnabled:  a.conf.Sentry.DSN != "",
+			AppName:            a.conf.AppName,
+			DatadogEnabled:     a.conf.Datadog.Enabled,
+			SentryEnabled:      a.conf.Sentry.DSN != "",
+			InternalAuthSecret: a.conf.Auth.InternalAPISecret,
 		},
 		Logger: a.logger,
 		Controller: controller.Dependencies{

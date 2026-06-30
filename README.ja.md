@@ -65,13 +65,13 @@ make reset      # 全サービスを停止し、DB などの volume を削除
 
 > **Note**: OSS 版では、ローカル開発・評価向けの簡易的な header-based authentication を使用します。本番レベルの security は提供しません。本番利用では OAuth2 や API gateway などの認証 layer 追加を検討してください。
 
-- **Frontend**: server-side backend client が `X-User-ID` header を自動送信します。初期 user は `DEFAULT_USER_ID` 環境変数で指定します。backend は `organization_membership` を通じて user を認可します。
+- **Frontend**: Google sign-in は Auth.js / NextAuth で扱います。server-side backend client は authenticated session から `X-User-ID` を送信します。ローカル開発用 fallback として `DEFAULT_USER_ID` も利用できます。
 - **Robot API**: robots は `X-User-ID` と `X-Robot-ID` headers を直接送信します。API key や token は不要です。
 - **RBAC**: active organization membership の role に基づいて Role-based access control を適用します。
 
 `make seed` で default Admin user と organization membership が作成されます。user ID は `frontend/.env` で設定します。
 
-ローカルアクセスに Google OAuth はまだ不要です。現在の認証モデルと dashboard 403 の切り分けは [認証とワークスペース設定](docs/ja/authentication.md) を参照してください。
+Google OAuth 設定、ローカル開発用 fallback、dashboard 403 の切り分けは [認証とワークスペース設定](docs/ja/authentication.md) を参照してください。
 
 ## 開発
 
