@@ -10,7 +10,7 @@ It is intentionally outside the authenticated app layout. Opening this route doe
 
 ## Current MVP Flow
 
-The current screen is a frontend-only shell with a mocked local agent:
+The current screen is a frontend-only shell that checks a local agent health endpoint before enabling guest SO101 workflow steps:
 
 1. Connect local agent.
 2. Run motor check.
@@ -19,7 +19,13 @@ The current screen is a frontend-only shell with a mocked local agent:
 5. Start and stop a local recording.
 6. Download a local JSON manifest.
 
-The downloaded manifest is a placeholder for the future local dataset artifact produced by the SO101 bridge or `yubi-agent`.
+The local agent defaults to:
+
+```text
+http://127.0.0.1:32101
+```
+
+Override it with `NEXT_PUBLIC_SO101_LOCAL_AGENT_URL` if LeLab or `yubi-agent` exposes a different local bridge URL. The downloaded manifest is a placeholder for the future local dataset artifact produced by the SO101 bridge or `yubi-agent`.
 
 ## Data Boundary
 
@@ -29,7 +35,25 @@ When a guest signs in with Google in a later slice, the app can upload the compl
 
 ## Local Agent Contract Direction
 
-The mocked workflow will be replaced by a local HTTP/WebSocket bridge exposing:
+The first wired contract is:
+
+```text
+GET /health
+```
+
+Expected response shape:
+
+```json
+{
+  "ok": true,
+  "name": "lelab",
+  "version": "0.1.0",
+  "robotType": "so101",
+  "capabilities": ["health"]
+}
+```
+
+The remaining workflow will be backed by a local HTTP/WebSocket bridge exposing:
 
 - health/version
 - device discovery

@@ -26,7 +26,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type AgentState = "offline" | "connected";
+import {
+  checkLocalAgentHealth,
+  getLocalAgentBaseUrl,
+  type LocalAgentHealth,
+} from "../lib/local-agent-client";
+
+type AgentState =
+  | "offline"
+  | "connecting"
+  | "connected"
+  | "unavailable"
+  | "unsupported";
 type StepState = "idle" | "running" | "done";
 type RecordingState = "idle" | "recording" | "ready";
 
@@ -36,6 +47,7 @@ interface WorkflowState {
   calibration: StepState;
   recording: RecordingState;
   taskName: string;
+  agentHealth?: LocalAgentHealth;
 }
 
 const defaultTask = "Pick and place household object";
@@ -73,8 +85,19 @@ export function PublicSo101Collector() {
     ].filter(Boolean).length;
   }, [state]);
 
-  function connectAgent() {
-    setState((current) => ({ ...current, agent: "connected" }));
+  async function connectAgent() {
+    setState((current) => ({
+      ...current,
+      agent: "connecting",
+      agentHealth: undefined,
+    }));
+
+    const health = await checkLocalAgentHealth();
+    setState((current) => ({
+      ...current,
+      agent: agentStateFromHealth(health),
+      agentHealth: health,
+    }));
   }
 
   function runMotorCheck() {
@@ -153,9 +176,7 @@ export function PublicSo101Collector() {
             <Badge
               variant={state.agent === "connected" ? "success" : "outline"}
             >
-              {state.agent === "connected"
-                ? "Agent connected"
-                : "Agent offline"}
+              {agentBadgeLabel(state.agent)}
             </Badge>
             <Button variant="outline" asChild>
               <Link href="/login">
@@ -241,22 +262,34 @@ export function PublicSo101Collector() {
                     <div className="space-y-3">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         The browser connects to a local SO101 bridge. This shell
-                        uses a mocked connection until the LeRobot bridge
-                        contract is wired in.
+                        checks the local agent health endpoint before enabling
+                        SO101 workflow steps.
                       </p>
                       <div className="grid gap-2 text-sm sm:grid-cols-3">
-                        <Metric label="Bridge" value="mock-local" />
-                        <Metric label="Robot" value="SO101" />
+                        <Metric
+                          label="Bridge"
+                          value={state.agentHealth?.name ?? "local-agent"}
+                        />
+                        <Metric
+                          label="Robot"
+                          value={state.agentHealth?.robotType ?? "SO101"}
+                        />
                         <Metric label="Storage" value="Local" />
                       </div>
+                      <AgentNotice state={state} />
                     </div>
                     <div className="flex flex-col gap-2">
                       <Button
                         onClick={connectAgent}
-                        disabled={state.agent === "connected"}
+                        disabled={
+                          state.agent === "connected" ||
+                          state.agent === "connecting"
+                        }
                       >
                         <Cable className="h-4 w-4" />
-                        Connect agent
+                        {state.agent === "connecting"
+                          ? "Connecting..."
+                          : "Connect agent"}
                       </Button>
                       <Button variant="outline" onClick={resetWorkflow}>
                         <RotateCcw className="h-4 w-4" />
@@ -411,6 +444,39 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
+function AgentNotice({ state }: { state: WorkflowState }) {
+  if (state.agent === "offline") {
+    return (
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Waiting for a local agent at {getLocalAgentBaseUrl()}.
+      </p>
+    );
+  }
+
+  if (state.agent === "connecting") {
+    return (
+      <p className="text-sm text-blue-700 dark:text-blue-300">
+        Checking local agent health...
+      </p>
+    );
+  }
+
+  if (state.agent === "connected") {
+    return (
+      <p className="text-sm text-emerald-700 dark:text-emerald-300">
+        {state.agentHealth?.message ?? "SO101 local agent is ready."}
+      </p>
+    );
+  }
+
+  return (
+    <p className="text-sm text-red-700 dark:text-red-300">
+      {state.agentHealth?.message ??
+        "Local agent is not ready for SO101 collection."}
+    </p>
+  );
+}
+
 function ActionCard({
   icon,
   title,
@@ -460,4 +526,29 @@ function StatusBadge({ state }: { state: StepState | RecordingState }) {
     return <Badge variant="info">Running</Badge>;
   }
   return <Badge variant="outline">Idle</Badge>;
+}
+
+function agentStateFromHealth(health: LocalAgentHealth): AgentState {
+  if (health.status === "available") {
+    return "connected";
+  }
+  if (health.status === "unsupported") {
+    return "unsupported";
+  }
+  return "unavailable";
+}
+
+function agentBadgeLabel(state: AgentState) {
+  switch (state) {
+    case "connected":
+      return "Agent connected";
+    case "connecting":
+      return "Agent connecting";
+    case "unsupported":
+      return "Agent unsupported";
+    case "unavailable":
+      return "Agent unavailable";
+    case "offline":
+      return "Agent offline";
+  }
 }
