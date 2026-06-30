@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { clearRobotOperator } from "@/lib/api/backend-client";
 import { handleApiError } from "@/lib/api/response-helpers";
-import { getUserId } from "@/lib/auth/session";
+import { getActiveOrganizationId, getUserId } from "@/lib/auth/session";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL || "http://backend:8000";
 
@@ -16,11 +16,16 @@ export async function GET(request: Request, { params }: { params: Params }) {
   try {
     const { robotId } = await params;
     const userId = await getUserId();
+    const activeOrganizationId = await getActiveOrganizationId();
+    const authHeaders: Record<string, string> = { "X-User-ID": userId };
+    if (activeOrganizationId) {
+      authHeaders["X-Organization-ID"] = activeOrganizationId;
+    }
 
     const response = await fetch(
       `${BACKEND_API_URL}/api/robots/${robotId}/operator`,
       {
-        headers: { "X-User-ID": userId },
+        headers: authHeaders,
         cache: "no-store",
       }
     );
@@ -50,15 +55,20 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     const { robotId } = await params;
     const body = await request.json();
     const userId = await getUserId();
+    const activeOrganizationId = await getActiveOrganizationId();
+    const authHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-User-ID": userId,
+    };
+    if (activeOrganizationId) {
+      authHeaders["X-Organization-ID"] = activeOrganizationId;
+    }
 
     const response = await fetch(
       `${BACKEND_API_URL}/api/robots/${robotId}/operator`,
       {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-ID": userId,
-        },
+        headers: authHeaders,
         body: JSON.stringify(body),
       }
     );
