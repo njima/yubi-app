@@ -15,6 +15,7 @@ import (
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/controller"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/handler"
 	"github.com/airoa-org/yubi-app/backend/internal/interfaces/http/middleware"
+	"github.com/airoa-org/yubi-app/backend/internal/shared/apperror"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase"
 	"github.com/airoa-org/yubi-app/backend/internal/usecase/eventbus"
 )
@@ -22,11 +23,12 @@ import (
 const DefaultAPIBodyLimit = 6 * 1024 * 1024 // 6MB
 
 type Config struct {
-	AppName        string
-	DatadogEnabled bool
-	SentryEnabled  bool
-	AllowedOrigins []string
-	APIBodyLimit   int64
+	AppName            string
+	DatadogEnabled     bool
+	SentryEnabled      bool
+	AllowedOrigins     []string
+	APIBodyLimit       int64
+	InternalAuthSecret string
 }
 
 type Dependencies struct {
@@ -114,11 +116,49 @@ func registerAPIRoutes(ctx context.Context, engine *gin.Engine, cfg Config, deps
 	})
 
 	api := engine.Group("/api")
+	registerAuthRoutes(api, ctrl, cfg.InternalAuthSecret)
 	api.Use(middleware.Auth(deps.Auth.UserUsecase, deps.Auth.RobotUsecase, deps.Auth.APIKeyUsecase))
 	api.Use(middleware.MaxBodySize(cfg.APIBodyLimit))
 
 	openapi.RegisterHandlers(api, strictHandler)
 	registerSSERoutes(ctx, api, deps.Logger, deps.SSE)
+}
+
+type googleAuthController interface {
+	CreateGoogleAuthSession(context.Context, controller.GoogleAuthSessionRequest) (controller.GoogleAuthSessionResponse, error)
+}
+
+func registerAuthRoutes(api gin.IRouter, ctrl googleAuthController, internalAuthSecret string) {
+	api.POST("/auth/google/session", func(c *gin.Context) {
+		if internalAuthSecret != "" && c.GetHeader("X-Internal-Auth-Secret") != internalAuthSecret {
+			c.JSON(http.StatusUnauthorized, openapi.ErrorResponse{
+				Code:    http.StatusUnauthorized,
+				Message: "Unauthorized",
+			})
+			return
+		}
+
+		var req controller.GoogleAuthSessionRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, openapi.ErrorResponse{
+				Code:    http.StatusBadRequest,
+				Message: "Bad request",
+			})
+			return
+		}
+
+		resp, err := ctrl.CreateGoogleAuthSession(c.Request.Context(), req)
+		if err != nil {
+			codes := apperror.GetCodes(err)
+			errorResponse := apperror.NewErrorResponse(codes)
+			c.JSON(errorResponse.Code, openapi.ErrorResponse{
+				Code:    errorResponse.Code,
+				Message: errorResponse.Message,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, resp)
+	})
 }
 
 func registerSSERoutes(ctx context.Context, api gin.IRouter, logger zerolog.Logger, deps SSEDependencies) {

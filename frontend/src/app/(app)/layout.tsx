@@ -1,4 +1,4 @@
-import { getUserSession } from "@/lib/auth/session";
+import { requireAuth } from "@/lib/auth/session";
 import { SessionProvider } from "@/lib/auth/session-context";
 
 import { TopNav } from "@/components/layout/top-nav";
@@ -9,7 +9,7 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const userSession = await getUserSession();
+  const userSession = await requireAuth();
 
   return (
     <SessionProvider userSession={userSession}>

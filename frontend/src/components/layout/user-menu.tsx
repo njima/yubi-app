@@ -1,8 +1,10 @@
 "use client";
 
-import { User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+
+import { signOutAction } from "@/lib/auth/actions";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -19,6 +21,8 @@ import { SwitchUserDialog, useMeQuery } from "@/features/users";
 export function UserMenu() {
   const { t } = useTranslation();
   const { data: user, isLoading, error } = useMeQuery();
+  const enableUserSwitcher =
+    process.env.NEXT_PUBLIC_ENABLE_USER_SWITCHER === "true";
 
   if (error) {
     return null;
@@ -65,7 +69,15 @@ export function UserMenu() {
             {t("userMenu.profile")}
           </Link>
         </DropdownMenuItem>
-        <SwitchUserDialog />
+        <DropdownMenuItem asChild>
+          <form action={signOutAction}>
+            <button type="submit" className="flex w-full items-center">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </button>
+          </form>
+        </DropdownMenuItem>
+        {enableUserSwitcher ? <SwitchUserDialog /> : null}
       </DropdownMenuContent>
     </DropdownMenu>
   );

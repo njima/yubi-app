@@ -1,15 +1,17 @@
 # 認証とワークスペース設定
 
-Yubi App の Web UI は、現時点では開発用の簡易認証を使っています。Google OAuth は今後の想定に入っていますが、ローカルアクセスに必要な設定としてはまだ組み込まれていません。
+Yubi App の Web UI は、Google sign-in に Auth.js / NextAuth を使います。ローカル評価用として、`DEFAULT_USER_ID` による開発用 fallback も残しています。
 
-## 現在のローカル認証モデル
+## 認証モデル
 
-frontend の server-side API client は、backend に以下の headers を送ります。
+Google sign-in 後、frontend は `POST /api/auth/google/session` を通じて対応する backend user を作成または取得します。その後、frontend の server-side API client は backend に以下の headers を送ります。
 
-- `X-User-ID`: `active_user_id` cookie、または `DEFAULT_USER_ID` から解決されます。
-- `X-Organization-ID`: `active_organization_id` cookie がある場合に送られます。
+- `X-User-ID`: Auth.js session、または開発用の `active_user_id` / `DEFAULT_USER_ID` fallback から解決されます。
+- `X-Organization-ID`: Auth.js session の active organization、または開発用の `active_organization_id` cookie から解決されます。
 
 backend は、その user が存在し、active organization に対する `organization_membership` を持っているか確認します。active organization が未指定の場合は、その user の最初の membership を使います。
+
+provisioning endpoint は、Yubi user が存在する前に呼ばれるため、通常の user 認証の外側に登録されています。本番環境では frontend / backend の両方で `AUTH_INTERNAL_API_SECRET` を設定して保護してください。
 
 ## 必須のローカル設定
 
@@ -36,6 +38,34 @@ DEFAULT_USER_ID=69fad3df-d73f-45e1-9fb4-df52bd4857b0
 
 seed data は、この user、sample organization、および両者をつなぐ admin `organization_membership` を作成します。
 
+## Google OAuth 設定
+
+Google OAuth client を作成し、callback URL に以下を設定します。
+
+```text
+http://localhost:3000/web/api/auth/callback/google
+```
+
+デプロイ環境では、origin を公開frontend originに置き換え、path は `/web/api/auth/callback/google` のままにします。
+
+frontend の環境変数:
+
+```dotenv
+AUTH_SECRET=<random session secret>
+AUTH_URL=http://localhost:3000/web
+AUTH_GOOGLE_ID=<google oauth client id>
+AUTH_GOOGLE_SECRET=<google oauth client secret>
+AUTH_INTERNAL_API_SECRET=<shared frontend/backend internal secret>
+```
+
+backend 側にも同じ値を設定します。
+
+```dotenv
+AUTH_INTERNAL_API_SECRET=<same shared secret>
+```
+
+ローカル開発では `AUTH_INTERNAL_API_SECRET` は両方とも空でも動作します。ただし、backend が信頼された server network の外から到達できる環境では空にしないでください。
+
 ## Dashboard が 403 になる場合
 
 dashboard の 403 は、多くの場合「user header は認識できたが、その user が organization に対して認可されていない」状態です。
@@ -58,16 +88,6 @@ make seed
 
 その後、`http://localhost:3000/web` を開いてください。
 
-## Google OAuth の状態
+## 開発用 fallback
 
-現時点では、Google OAuth はアプリに設定されていません。今回のブランチでは、`google_sub` と personal workspace provisioning により Google 認証ユーザー向けの backend model は準備していますが、frontend はまだ上記の開発用 session を使っています。
-
-Google OAuth を実装する場合、本番設定として少なくとも以下が必要になります。
-
-- Google OAuth client ID
-- Google OAuth client secret
-- OAuth redirect/callback URL
-- session signing/encryption secret
-- 許可するdomain、またはuser admission policy
-
-frontend の認証 layer が追加されるまでは、ローカルアクセスに Google login は不要です。
+Google session がない場合でも、ローカル開発では `DEFAULT_USER_ID` にfallbackできます。Google sign-in を必須にしたいデプロイ環境では、frontend 環境変数から `DEFAULT_USER_ID` を外してください。
