@@ -65,11 +65,13 @@ make reset      # Stop and delete all data (volumes)
 
 > **Note**: This OSS version uses a simplified, header-based authentication intended for local development and evaluation. It does not provide production-grade security. For production use, consider adding an authentication layer (e.g., OAuth2, API gateway).
 
-- **Frontend**: The server-side backend client sends `X-User-ID` header automatically. The initial user is set via the `DEFAULT_USER_ID` environment variable. Users can switch accounts from the user menu in the top-right corner.
+- **Frontend**: The server-side backend client sends `X-User-ID` automatically. The initial user is set via the `DEFAULT_USER_ID` environment variable. The backend authorizes the user through `organization_membership`.
 - **Robot API**: Robots send `X-User-ID` and `X-Robot-ID` headers directly. No API key or token is required.
-- **RBAC**: Role-based access control is enforced based on the user's role in the database.
+- **RBAC**: Role-based access control is enforced based on the user's active organization membership role.
 
-A default Admin user is created via `make seed`. The user ID is configured in `frontend/.env`.
+A default Admin user and organization membership are created via `make seed`. The user ID is configured in `frontend/.env`.
+
+Google OAuth is not required for local access yet. See [Authentication and Workspace Setup](docs/authentication.md) for the current auth model and dashboard 403 troubleshooting.
 
 ## Development
 
@@ -185,6 +187,7 @@ New to the project? Start with the [User Guide](docs/user-guide.md) to understan
 |----------|-------------|
 | [User Guide](docs/user-guide.md) | Start here — core concepts, tutorial walkthrough, Web UI usage |
 | [Robot API Guide](docs/robot-api-guide.md) | Robot authentication, episode execution flow, API examples |
+| [Authentication and Workspace Setup](docs/authentication.md) | Local auth model, workspace membership setup, dashboard 403 troubleshooting |
 | [Backend Architecture](docs/backend-architecture.md) | Clean Architecture layers, DB migration workflow, batch commands |
 | [Frontend Architecture](docs/frontend-architecture.md) | Project structure, API client pattern, feature modules |
 

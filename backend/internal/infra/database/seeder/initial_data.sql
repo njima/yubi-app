@@ -12,18 +12,28 @@ VALUES (
 ) ON CONFLICT (id_natural) DO NOTHING;
 
 -- 2. User (Default Admin)
-INSERT INTO "user" (created_at, updated_at, id_natural, organization_id, name, email, role)
+INSERT INTO "user" (created_at, updated_at, id_natural, google_sub, name, email)
 VALUES (
     NOW(),
     NOW(),
     '69fad3df-d73f-45e1-9fb4-df52bd4857b0',
-    '7bfbe942-5fd6-4525-ac13-0356147c202b',
+    'dev-google-sub-default-admin',
     'Default Admin',
-    'admin@example.com',
+    'admin@example.com'
+) ON CONFLICT (id_natural) DO NOTHING;
+
+-- 3. Organization membership (Default Admin)
+INSERT INTO "organization_membership" (created_at, updated_at, id_natural, user_id, organization_id, role)
+VALUES (
+    NOW(),
+    NOW(),
+    '0d1b16c5-38df-4277-8fd0-90f9d0a05da1',
+    '69fad3df-d73f-45e1-9fb4-df52bd4857b0',
+    '7bfbe942-5fd6-4525-ac13-0356147c202b',
     0
 ) ON CONFLICT (id_natural) DO NOTHING;
 
--- 3. Site
+-- 4. Site
 INSERT INTO "site" (created_at, updated_at, id_natural, organization_id, name)
 VALUES (
     NOW(),
@@ -33,7 +43,7 @@ VALUES (
     'Sample Site'
 ) ON CONFLICT (id_natural) DO NOTHING;
 
--- 4. Location
+-- 5. Location
 INSERT INTO "location" (created_at, updated_at, id_natural, organization_id, site_id, name)
 VALUES (
     NOW(),
@@ -44,7 +54,7 @@ VALUES (
     'Sample Location'
 ) ON CONFLICT (id_natural) DO NOTHING;
 
--- 5. Robot
+-- 6. Robot
 INSERT INTO "robot" (created_at, updated_at, id_natural, organization_id, location_id, name, robot_type, status, robot_config)
 VALUES (
     NOW(),
@@ -58,7 +68,7 @@ VALUES (
     '{"host": "localhost", "port": 9090, "cameras": [{"namespace": "camera_0", "name": "Front Camera"}]}'::jsonb
 ) ON CONFLICT (id_natural) DO NOTHING;
 
--- 6. Task
+-- 7. Task
 INSERT INTO "task" (created_at, updated_at, id_natural, organization_id, name, description, priority, difficulty, status, deadline, manual_url)
 VALUES (
     NOW(),
@@ -74,7 +84,7 @@ VALUES (
     'https://example.com/manual'
 ) ON CONFLICT (id_natural) DO NOTHING;
 
--- 7. Task Version
+-- 8. Task Version
 INSERT INTO "task_version" (created_at, updated_at, id_natural, organization_id, task_id, version, schema_hash, is_active, approval_status)
 VALUES (
     NOW(),
@@ -88,7 +98,7 @@ VALUES (
     1
 ) ON CONFLICT (id_natural) DO NOTHING;
 
--- 8. SubTask
+-- 9. SubTask
 INSERT INTO "subtask" (created_at, updated_at, id_natural, organization_id, task_version_id, order_index, name, description)
 VALUES (
     NOW(),
@@ -125,7 +135,7 @@ VALUES (
     'This is the third sample subtask.'
 ) ON CONFLICT (id_natural) DO NOTHING;
 
--- 9. Episode (all collection_status patterns: 0=Ready, 1=Recording, 2=Cancel, 3=Completed)
+-- 10. Episode (all collection_status patterns: 0=Ready, 1=Recording, 2=Cancel, 3=Completed)
 -- Episode with collection_status: Ready (0)
 INSERT INTO "episode" (created_at, updated_at, id_natural, organization_id, task_version_id, location_id, robot_id, user_id, collection_status)
 VALUES (
@@ -188,7 +198,7 @@ VALUES (
     NOW() - INTERVAL '1 hour'
 ) ON CONFLICT (id_natural) DO NOTHING;
 
--- 10. Episode SubTask (collection_status: 0=Ready, 1=InProgress, 2=Completed, 3=Skipped, 4=Cancelled)
+-- 11. Episode SubTask (collection_status: 0=Ready, 1=InProgress, 2=Completed, 3=Skipped, 4=Cancelled)
 -- sub_task1: Ready (Ready episode)
 INSERT INTO "episode_sub_task" (created_at, updated_at, id_natural, organization_id, episode_id, sub_task_id, collection_status)
 VALUES (

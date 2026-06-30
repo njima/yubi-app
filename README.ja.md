@@ -65,11 +65,13 @@ make reset      # 全サービスを停止し、DB などの volume を削除
 
 > **Note**: OSS 版では、ローカル開発・評価向けの簡易的な header-based authentication を使用します。本番レベルの security は提供しません。本番利用では OAuth2 や API gateway などの認証 layer 追加を検討してください。
 
-- **Frontend**: server-side backend client が `X-User-ID` header を自動送信します。初期 user は `DEFAULT_USER_ID` 環境変数で指定します。右上の user menu から account を切り替えられます。
+- **Frontend**: server-side backend client が `X-User-ID` header を自動送信します。初期 user は `DEFAULT_USER_ID` 環境変数で指定します。backend は `organization_membership` を通じて user を認可します。
 - **Robot API**: robots は `X-User-ID` と `X-Robot-ID` headers を直接送信します。API key や token は不要です。
-- **RBAC**: database 上の user role に基づいて Role-based access control を適用します。
+- **RBAC**: active organization membership の role に基づいて Role-based access control を適用します。
 
-`make seed` で default Admin user が作成されます。user ID は `frontend/.env` で設定します。
+`make seed` で default Admin user と organization membership が作成されます。user ID は `frontend/.env` で設定します。
+
+ローカルアクセスに Google OAuth はまだ不要です。現在の認証モデルと dashboard 403 の切り分けは [認証とワークスペース設定](docs/ja/authentication.md) を参照してください。
 
 ## 開発
 
@@ -183,6 +185,7 @@ HOST_BACKEND_PORT=9000 HOST_DB_PORT=5433 make up
 |----------|------|
 | [ユーザーガイド](docs/ja/user-guide.md) | 基本概念、tutorial、Web UI の使い方 |
 | [Robot API ガイド](docs/ja/robot-api-guide.md) | robot authentication、episode execution flow、API examples |
+| [認証とワークスペース設定](docs/ja/authentication.md) | ローカル認証モデル、workspace membership setup、dashboard 403 の切り分け |
 | [Backend Architecture](docs/ja/backend-architecture.md) | Clean Architecture layers、DB migration workflow、batch commands |
 | [Frontend Architecture](docs/ja/frontend-architecture.md) | project structure、API client pattern、feature modules |
 
