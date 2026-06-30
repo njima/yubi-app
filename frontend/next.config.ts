@@ -5,6 +5,16 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   basePath: "/web",
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/web",
+        permanent: false,
+        basePath: false,
+      },
+    ];
+  },
   logging: {
     fetches: {
       fullUrl: true,
