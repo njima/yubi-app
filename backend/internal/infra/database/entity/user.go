@@ -10,37 +10,26 @@ import (
 type User struct {
 	bun.BaseModel `bun:"table:user,alias:u"`
 	Timestamp
-	OrgScoped
 
 	// columns
-	ID             int64  `bun:"id,pk,autoincrement"`                        // Auto-increment ID
-	IDNatural      string `bun:"id_natural,unique,type:varchar(36),notnull"` // UUID
-	OrganizationID string `bun:"organization_id,type:varchar(36),notnull"`   // Organization ID (stores organization's id_natural)
-	Name           string `bun:"name,type:varchar(255),notnull"`             // User name
-	Email          string `bun:"email,unique,type:varchar(255),notnull"`     // Email address
-	Role           uint   `bun:"role,type:smallint,notnull,default:0"`       // Role (0: Admin, 1: Data Engineer, 2: Operator, 3: Viewer)
+	ID        int64   `bun:"id,pk,autoincrement"`                        // Auto-increment ID
+	IDNatural string  `bun:"id_natural,unique,type:varchar(36),notnull"` // UUID
+	GoogleSub string  `bun:"google_sub,unique,type:varchar(255),notnull"`
+	Name      string  `bun:"name,type:varchar(255),notnull"`         // User name
+	Email     string  `bun:"email,unique,type:varchar(255),notnull"` // Email address
+	AvatarURL *string `bun:"avatar_url,type:text"`
 
 	// relations
-	Organization        *Organization            `bun:"rel:belongs-to,join:organization_id=id_natural"`
-	LocationAssignments []UserLocationAssignment `bun:"rel:has-many,join:id_natural=user_id"`
-	SiteAssignments     []UserSiteAssignment     `bun:"rel:has-many,join:id_natural=user_id"`
+	Memberships []OrganizationMembership `bun:"rel:has-many,join:id_natural=user_id"`
 }
 
 var UserTableCreator = func(db *bun.DB) *bun.CreateTableQuery {
 	return db.NewCreateTable().
 		Model((*User)(nil)).
-		IfNotExists().
-		ForeignKey(`("organization_id") REFERENCES "organization" ("id_natural")`)
+		IfNotExists()
 }
 
-var UserIdxCreators = []IndexQueryCreator{
-	func(db *bun.DB) *bun.CreateIndexQuery {
-		return db.NewCreateIndex().
-			Model((*User)(nil)).
-			Index("user_organization_id_idx").
-			Column("organization_id")
-	},
-}
+var UserIdxCreators = []IndexQueryCreator{}
 
 var _ bun.BeforeAppendModelHook = (*User)(nil)
 

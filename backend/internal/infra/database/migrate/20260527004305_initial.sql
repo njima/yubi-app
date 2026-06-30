@@ -5,6 +5,7 @@ CREATE TABLE "organization" (
   "id" bigserial NOT NULL,
   "id_natural" character varying(36) NOT NULL,
   "name" character varying(255) NOT NULL,
+  "kind" character varying(20) NOT NULL DEFAULT 'team',
   "description" text NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "organization_id_natural_key" UNIQUE ("id_natural"),
@@ -41,17 +42,34 @@ CREATE TABLE "user" (
   "updated_at" timestamptz NOT NULL,
   "id" bigserial NOT NULL,
   "id_natural" character varying(36) NOT NULL,
-  "organization_id" character varying(36) NOT NULL,
+  "google_sub" character varying(255) NOT NULL,
   "name" character varying(255) NOT NULL,
   "email" character varying(255) NOT NULL,
-  "role" smallint NOT NULL DEFAULT 0,
+  "avatar_url" text NULL,
   PRIMARY KEY ("id"),
   CONSTRAINT "user_email_key" UNIQUE ("email"),
-  CONSTRAINT "user_id_natural_key" UNIQUE ("id_natural"),
-  CONSTRAINT "user_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organization" ("id_natural") ON UPDATE NO ACTION ON DELETE NO ACTION
+  CONSTRAINT "user_google_sub_key" UNIQUE ("google_sub"),
+  CONSTRAINT "user_id_natural_key" UNIQUE ("id_natural")
 );
--- Create index "user_organization_id_idx" to table: "user"
-CREATE INDEX "user_organization_id_idx" ON "user" ("organization_id");
+-- Create "organization_membership" table
+CREATE TABLE "organization_membership" (
+  "created_at" timestamptz NOT NULL,
+  "updated_at" timestamptz NOT NULL,
+  "id" bigserial NOT NULL,
+  "id_natural" character varying(36) NOT NULL,
+  "user_id" character varying(36) NOT NULL,
+  "organization_id" character varying(36) NOT NULL,
+  "role" smallint NOT NULL DEFAULT 0,
+  PRIMARY KEY ("id"),
+  CONSTRAINT "organization_membership_id_natural_key" UNIQUE ("id_natural"),
+  CONSTRAINT "organization_membership_user_id_organization_id_key" UNIQUE ("user_id", "organization_id"),
+  CONSTRAINT "organization_membership_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user" ("id_natural") ON UPDATE NO ACTION ON DELETE CASCADE,
+  CONSTRAINT "organization_membership_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organization" ("id_natural") ON UPDATE NO ACTION ON DELETE CASCADE
+);
+-- Create index "organization_membership_user_id_idx" to table: "organization_membership"
+CREATE INDEX "organization_membership_user_id_idx" ON "organization_membership" ("user_id");
+-- Create index "organization_membership_organization_id_idx" to table: "organization_membership"
+CREATE INDEX "organization_membership_organization_id_idx" ON "organization_membership" ("organization_id");
 -- Create "api_key" table
 CREATE TABLE "api_key" (
   "created_at" timestamptz NOT NULL,

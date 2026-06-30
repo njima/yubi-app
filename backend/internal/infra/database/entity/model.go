@@ -3,6 +3,7 @@ package entity
 var Models = []any{
 	&Organization{},
 	&User{},
+	&OrganizationMembership{},
 	&Site{},
 	&Location{},
 	&Task{},
@@ -28,6 +29,7 @@ var Models = []any{
 
 var TableCreators = []TableQueryCreator{
 	UserTableCreator,
+	OrganizationMembershipTableCreator,
 	SiteTableCreator,
 	LocationTableCreator,
 	RobotTableCreator,
@@ -55,6 +57,7 @@ var IdxCreators = [][]IndexQueryCreator{
 	EpisodeIdxCreators,
 	EpisodeGradeIdxCreators,
 	UserIdxCreators,
+	OrganizationMembershipIdxCreators,
 	TaskIdxCreators,
 	TaskVersionIdxCreators,
 	SubTaskIdxCreators,
